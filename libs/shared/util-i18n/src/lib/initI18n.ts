@@ -5,24 +5,21 @@
  * loading. Idempotent — subsequent calls resolve immediately (i18next guards
  * re-init internally).
  *
- * Chrome resources (locales/en.json) are bundled here via require(). Content
- * namespaces (tile, word, syllable, game, langMeta) are registered later via
- * registerContentNamespaces() once the lang pack is parsed.
+ * Chrome resources (locales/en.json) are bundled via ESM JSON import (works
+ * under Metro, Vite/Storybook, and ts-jest). Content namespaces (tile, word,
+ * syllable, game, langMeta) register later via registerContentNamespaces()
+ * once the lang pack is parsed.
  *
  * Implements design.md §D1, §D7, §D8, §D9.
  */
 
 import { initReactI18next } from 'react-i18next';
+import enChrome from '../../../../../locales/en.json';
 import { i18n } from './i18nInstance';
 
 // React Native / Metro global — declared here so TS can see it.
 // In tests, set via `(global as unknown as Record<string, unknown>)['__DEV__']`.
 declare const __DEV__: boolean;
-
-// Metro / Webpack require — JSON files bundle cleanly (design.md §D9).
-const enChrome = require('../../../../locales/en.json') as {
-  chrome: Record<string, unknown>;
-};
 
 const NAMESPACES = ['chrome', 'tile', 'word', 'syllable', 'game', 'langMeta'] as const;
 
