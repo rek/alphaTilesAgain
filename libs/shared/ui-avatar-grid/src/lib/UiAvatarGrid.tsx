@@ -5,10 +5,11 @@
  */
 import React from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
 
 export type UiAvatarGridProps = {
-  /** Metro require-id array (up to 12 entries). */
-  avatars: number[];
+  /** Image sources — Metro require-ids in prod (`langManifest.images.avatars`), remote `{uri}` objects in Storybook. */
+  avatars: readonly ImageSourcePropType[];
   /** 0-based index of the currently-selected avatar. */
   selectedIndex?: number;
   /** 0-based indices that should be rendered at reduced opacity (already taken). */

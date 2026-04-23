@@ -12,12 +12,13 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
 
 export type DeleteState = 'idle' | 'armed' | 'confirm';
 
 export type UiPlayerCardProps = {
-  /** Metro require-id for the avatar image. */
-  avatar: number;
+  /** Image source — Metro require-id in prod, `{uri}` placeholder in Storybook. */
+  avatar: ImageSourcePropType;
   /** Player display name. */
   name: string;
   /** Normal tap selects the player. */

@@ -6,8 +6,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { UiAvatarGrid } from './UiAvatarGrid';
 
-// Placeholder require-ids for storybook (avatars are bundled images in real app)
-const PLACEHOLDER_AVATARS = Array.from({ length: 12 }, (_, i) => i + 1);
+// Remote URIs for Storybook — prod uses Metro require-ids from langManifest.images.avatars
+const PLACEHOLDER_AVATARS = Array.from({ length: 12 }, (_, i) => ({
+  uri: `https://picsum.photos/seed/avatar${i + 1}/200`,
+}));
 
 const meta: Meta<typeof UiAvatarGrid> = {
   title: 'shared/ui-avatar-grid/UiAvatarGrid',

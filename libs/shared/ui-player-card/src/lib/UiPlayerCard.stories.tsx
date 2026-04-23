@@ -6,7 +6,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { UiPlayerCard } from './UiPlayerCard';
 
-const AVATAR_PLACEHOLDER = 1;
+const AVATAR_PLACEHOLDER = { uri: 'https://picsum.photos/seed/card/200' };
 
 const meta: Meta<typeof UiPlayerCard> = {
   title: 'shared/ui-player-card/UiPlayerCard',
