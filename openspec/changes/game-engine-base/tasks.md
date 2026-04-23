@@ -22,20 +22,20 @@
 - [ ] 1.8 Export `NO_TRACKER_COUNTRIES` constant and `NoTrackerCountry` type
 - [ ] 1.9 Unit tests for each function covering the Java source edge cases (tracker-country guard, Thailand/Brazil/Georgia display-level branches, mastery detection across modes 1/2/3)
 
-## 2. `libs/alphaTiles/util-phoneme`
+## 2. `libs/shared/util-phoneme` (extend existing lib)
 
-- [ ] 2.1 Scaffold lib: `nx g @nx/js:lib util-phoneme --directory=libs/alphaTiles/util-phoneme --tags='type:util,scope:alphaTiles'`
-- [ ] 2.2 Define `ScriptParser` type: `{ parse, combine, standardizeSequence }`
-- [ ] 2.3 Implement `registerScriptParser(name, parser)` — throws on duplicate key
-- [ ] 2.4 Implement the default unidirectional parser: longest-match left-to-right against `tileList`, respecting `referenceWord.wordInLOP`
-- [ ] 2.5 Register the default parser under key `'default'` at module load
-- [ ] 2.6 Implement `parseWordIntoTiles(word, tileList, referenceWord, scriptType)` — dispatches to registered parser; falls back to `'default'` with a console.warn if scriptType is not registered
-- [ ] 2.7 Implement `combineTilesToMakeWord(tiles, word, indexOfReplacedTile, scriptType)` — dispatches similarly (port `GameActivity.java:952`)
-- [ ] 2.8 Implement `standardizeWordSequence(word, scriptType)` (port `GameActivity.java:1211`)
-- [ ] 2.9 Implement `stackInProperSequence(assembled, word)` private helper (port `GameActivity.java:1066`)
-- [ ] 2.10 Implement `generateProhibitedCharSequences(word)` private helper (port `GameActivity.java:1105`)
-- [ ] 2.11 Unit tests: default parser round-trips every word in `languages/eng/` and `languages/tpx/` (parse → combine === standardized); duplicate registration throws; unknown-script fallback logs warn; extension seam smoke-test with a fake `'Thai'` registration
-- [ ] 2.12 Document the registry pattern in the library's `src/index.ts` JSDoc header — point at `docs/ARCHITECTURE.md §9` and §16
+> `libs/shared/util-phoneme` (`scope:shared`) was pre-built by `lang-pack-validator`. Do NOT scaffold — extend it.
+
+- [ ] 2.1 Add `ScriptParser` type: `{ parse, combine, standardizeSequence }` to existing lib
+- [ ] 2.2 Implement `registerScriptParser(name, parser)` — throws on duplicate key
+- [ ] 2.3 Register the default unidirectional parser under key `'default'` at module load (existing `parseWordIntoTiles` logic is already there — wire it into the registry)
+- [ ] 2.4 Extend `parseWordIntoTiles` to accept optional `scriptType` param and dispatch to registry; falls back to `'default'` with a `console.warn` if scriptType is not registered
+- [ ] 2.5 Implement `combineTilesToMakeWord(tiles, word, indexOfReplacedTile, scriptType)` — dispatches to registry (port `GameActivity.java:952`)
+- [ ] 2.6 Implement `standardizeWordSequence(word, scriptType)` (port `GameActivity.java:1211`)
+- [ ] 2.7 Implement `stackInProperSequence(assembled, word)` private helper (port `GameActivity.java:1066`)
+- [ ] 2.8 Implement `generateProhibitedCharSequences(word)` private helper (port `GameActivity.java:1105`)
+- [ ] 2.9 Export new symbols from `src/index.ts`
+- [ ] 2.10 Unit tests: default parser round-trips every word in `languages/eng/` and `languages/tpx/` (parse → combine === standardized); duplicate registration throws; unknown-script fallback logs warn; extension seam smoke-test with a fake `'Thai'` registration
 
 ## 3. `libs/alphaTiles/util-stages`
 

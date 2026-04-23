@@ -216,6 +216,10 @@ Default `correspondenceRatio = 0.5` when `aa_settings.txt` omits it (matches `St
 
 ### D5. `util-phoneme` — parser registry
 
+> **Note:** `libs/shared/util-phoneme` (`scope:shared`) was pre-built by the `lang-pack-validator` change and already exports `parseWordIntoTiles`, `parseWordIntoTilesPreliminary`, and `buildTileHashMap`. This change **extends** that existing lib — no new lib scaffold needed. The scope stays `shared` (the runtime engine and the validator both consume it).
+
+New additions to `libs/shared/util-phoneme`:
+
 ```ts
 type ScriptType = 'default' | 'Thai' | 'Lao' | 'Khmer' | 'Arabic' | string;
 
@@ -228,10 +232,10 @@ type ScriptParser = {
 export function registerScriptParser(scriptType: string, parser: ScriptParser): void;
 // throws if scriptType already registered (mirrors util-precompute's duplicate-key rule)
 
-export function parseWordIntoTiles(word: string, tileList: Tile[], referenceWord: Word, scriptType: ScriptType): Tile[];
 export function combineTilesToMakeWord(tiles: Tile[], word: Word, indexOfReplacedTile: number, scriptType: ScriptType): string;
 export function standardizeWordSequence(word: Word, scriptType: ScriptType): string;
 
+// parseWordIntoTiles already exported — gains optional scriptType dispatch via registry.
 // Default parser (built-in, registered as 'default' at module load):
 // - Unidirectional left-to-right greedy match against tileList (longest-first).
 // - No multi-pass reordering (that is the RTL/LTR-swap concern of Thai/Lao/Khmer/Arabic, future work).
@@ -318,7 +322,7 @@ Android's score row (at the top of every concrete game's XML) is: `[gameNumber][
 | `libs/alphaTiles/feature-game-shell` | `type:feature` | `scope:alphaTiles` | ui-tile, ui-game-board, ui-celebration, ui-score-bar, data-progress, data-audio, data-language-assets, util-scoring, util-stages, util-phoneme, util-precompute, util-i18n, util-theme, util-analytics, expo-router, react-native, lottie-react-native |
 | `libs/alphaTiles/util-scoring` | `type:util` | `scope:alphaTiles` | nothing (pure) |
 | `libs/alphaTiles/util-stages` | `type:util` | `scope:alphaTiles` | nothing (pure) — parseWordIntoTiles injected as param |
-| `libs/alphaTiles/util-phoneme` | `type:util` | `scope:alphaTiles` | nothing (pure) |
+| `libs/shared/util-phoneme` | `type:util` | `scope:shared` | nothing (pure) — pre-built by lang-pack-validator; extended here |
 | `libs/alphaTiles/data-progress` | `type:data-access` | `scope:alphaTiles` | zustand, @react-native-async-storage/async-storage, util-scoring (for key builder only) |
 | `libs/shared/ui-tile` | `type:ui` | `scope:shared` | react-native, util-theme (shared) — never i18n |
 | `libs/shared/ui-game-board` | `type:ui` | `scope:shared` | react-native, util-theme |
