@@ -1,0 +1,42 @@
+{
+  "chrome": {
+    "back": "Back",
+    "home": "Home",
+    "score": "Score: {{points}}",
+    "choose_player": "Choose Player",
+    "set_player_name": "Set Player Name",
+    "tracker_of_total": "Tracker {{current}} of {{total}}",
+    "play_again": "Play Again",
+    "celebrate": "Great job! You found correct answers to 12 questions on this game!",
+    "about": "About This App",
+    "share": "Share",
+    "resources": "Other Resources In This Language",
+    "resource_item": "A Resource In This Language",
+    "build_word_here": "Build Word Here",
+    "go_backward": "Go To Previous",
+    "go_forward": "Go To Next",
+    "see_more_of_tile": "See More Words Starting With This Game Tile",
+    "expired_title": "Expired",
+    "expired_message": "This app has expired.",
+    "a11y": {
+      "tile": "Tile {{letter}}",
+      "word": "Word {{word}}",
+      "active_word_picture": "Picture of Active Word",
+      "keyboard_key": "Key {{key}}",
+      "backspace": "Backspace",
+      "alpha_tiles_logo": "Alpha Tiles Logo",
+      "tracker": "Tracker {{current}} of {{total}}",
+      "points_background": "Points Background",
+      "player_avatar": "Change Players",
+      "memory_card": "Memory Card {{number}}",
+      "word_choice": "Word Choice {{number}}",
+      "word_image": "Word Image {{number}}",
+      "choice": "Choice {{number}}",
+      "avatar_icon": "Player {{number}} Avatar Icon",
+      "door": "Door {{number}}",
+      "game_tile": "Game Tile {{id}}",
+      "active_word": "Word In Focus",
+      "play_audio_instructions": "Play Audio Instructions"
+    }
+  }
+}

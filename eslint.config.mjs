@@ -28,7 +28,12 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+          allow: [
+            '^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$',
+            // locales/*.json are workspace-root data files, not NX projects.
+            // util-i18n requires them for chrome defaults (design.md D9).
+            '^(?:\\.\\./)*locales/.*\\.json$',
+          ],
           depConstraints: [
             {
               sourceTag: '*',

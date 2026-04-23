@@ -1,6 +1,6 @@
 import React from 'react';
 import Constants from 'expo-constants';
-import * as ExpoLocalization from 'expo-localization';
+import { getLocales } from 'expo-localization';
 import { Stack } from 'expo-router';
 import { I18nManager } from 'react-native';
 import { LangAssetsProvider, useLangAssets } from '@alphaTiles/data-language-assets';
@@ -20,9 +20,13 @@ if (scriptDirection === 'RTL') {
   I18nManager.forceRTL(true);
 }
 
+// Detect device locale — getLocales()[0].languageTag is the BCP-47 primary locale.
+// Falls back to 'en' if expo-localization returns an empty list (unlikely but safe).
+const deviceLocale = getLocales()[0]?.languageTag ?? 'en';
+
 // Boot i18next at module load time alongside font loading (design.md §D1, boot order).
 // initI18n is idempotent — safe to call at module scope.
-void initI18n({ deviceLocale: ExpoLocalization.locale });
+void initI18n({ deviceLocale });
 
 // Font map for expo-font: keys become font-family names at runtime.
 // Shape matches langManifest.fonts: { primary: require(...ttf), primaryBold?: require(...ttf) }
