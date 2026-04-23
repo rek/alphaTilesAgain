@@ -1,0 +1,4 @@
+#!/bin/bash
+command -v node >/dev/null 2>&1 || { echo >&2 "Nx requires NodeJS."; exit 1; }
+path_to_root=$(dirname $BASH_SOURCE)
+$path_to_root/node_modules/.bin/nx "$@"

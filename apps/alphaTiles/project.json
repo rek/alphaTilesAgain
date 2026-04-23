@@ -1,0 +1,52 @@
+{
+  "name": "alphaTiles",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/alphaTiles/src",
+  "projectType": "application",
+  "tags": ["scope:alphaTiles", "type:app"],
+  "targets": {
+    "start": {
+      "executor": "@nx/expo:start",
+      "continuous": true,
+      "options": {
+        "port": 8081
+      }
+    },
+    "prebuild": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx expo prebuild --clean",
+        "cwd": "apps/alphaTiles"
+      }
+    },
+    "buildApk": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          {
+            "command": "cd apps/alphaTiles/android && ./gradlew assembleRelease --warning-mode=all",
+            "description": "Build release APK"
+          },
+          {
+            "command": "mkdir -p dist/apps/alphaTiles",
+            "description": "Create dist directory"
+          },
+          {
+            "command": "cp apps/alphaTiles/android/app/build/outputs/apk/release/app-release.apk dist/apps/alphaTiles/alphaTiles-release.apk",
+            "description": "Copy APK to dist"
+          }
+        ],
+        "parallel": false
+      },
+      "outputs": ["{workspaceRoot}/dist/apps/alphaTiles"]
+    },
+    "web-export": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/web/alpha-tiles"],
+      "options": {
+        "command": "npx expo export --platform web --output-dir dist/web && mkdir -p ../../dist/web/alpha-tiles && cp -r dist/web/. ../../dist/web/alpha-tiles/",
+        "cwd": "apps/alphaTiles"
+      }
+    }
+  }
+}
