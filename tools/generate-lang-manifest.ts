@@ -18,12 +18,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  gameTileAudioNames,
-  gameTileKeys,
-  readSyllables,
-  wordListKeys,
-} from './_lang-pack-mini-parser';
+import { parseGametiles, parseSyllables, parseWordlist } from '../libs/shared/util-lang-pack-parser/src';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -161,7 +156,11 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
   // --- Images: tiles (keyed by tile key from aa_gametiles.txt) ---
   const tilesImgDir = path.join(langDir, 'images', 'tiles');
   const tileImgFiles = new Set(listFiles(tilesImgDir));
-  const tileKeys = gameTileKeys(path.join(rawDir, 'aa_gametiles.txt'));
+  const gametilesFile = path.join(rawDir, 'aa_gametiles.txt');
+  const gametilesRows = fs.existsSync(gametilesFile)
+    ? parseGametiles(fs.readFileSync(gametilesFile, 'utf8')).rows
+    : [];
+  const tileKeys = new Set(gametilesRows.map((r) => r.base).filter(Boolean));
   const tileImgLines: string[] = [];
   for (const key of [...tileKeys].sort()) {
     // Try common extensions
@@ -179,7 +178,11 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
   // --- Images: words (keyed by word LWC key from aa_wordlist.txt) ---
   const wordsImgDir = path.join(langDir, 'images', 'words');
   const wordImgFiles = new Set(listFiles(wordsImgDir));
-  const wordKeys = wordListKeys(path.join(rawDir, 'aa_wordlist.txt'));
+  const wordlistFile = path.join(rawDir, 'aa_wordlist.txt');
+  const wordlistRows = fs.existsSync(wordlistFile)
+    ? parseWordlist(fs.readFileSync(wordlistFile, 'utf8')).rows
+    : [];
+  const wordKeys = new Set(wordlistRows.map((r) => r.wordInLWC).filter(Boolean));
   const wordImgLines: string[] = [];
   const wordImg2Lines: string[] = [];
   for (const key of [...wordKeys].sort()) {
@@ -217,7 +220,13 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
   // --- Audio: tiles ---
   const audioTilesDir = path.join(langDir, 'audio', 'tiles');
   const audioTileFiles = new Set(listFiles(audioTilesDir));
-  const tileAudioNames = gameTileAudioNames(path.join(rawDir, 'aa_gametiles.txt'));
+  const TILE_AUDIO_INVALID = new Set(['none', 'x', 'zz_no_audio_needed']);
+  const tileAudioNames = new Set<string>();
+  for (const row of gametilesRows) {
+    for (const name of [row.audioName, row.audioNameB, row.audioNameC]) {
+      if (name && !TILE_AUDIO_INVALID.has(name.toLowerCase())) tileAudioNames.add(name);
+    }
+  }
   const audioTileLines: string[] = [];
   for (const audioName of [...tileAudioNames].sort()) {
     const fname = `${audioName}.mp3`;
@@ -244,7 +253,10 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
   // --- Audio: syllables ---
   const audioSyllDir = path.join(langDir, 'audio', 'syllables');
   const audioSyllFiles = new Set(listFiles(audioSyllDir));
-  const syllEntries = readSyllables(path.join(rawDir, 'aa_syllables.txt'));
+  const syllablesFile = path.join(rawDir, 'aa_syllables.txt');
+  const syllEntries = fs.existsSync(syllablesFile)
+    ? parseSyllables(fs.readFileSync(syllablesFile, 'utf8')).rows
+    : [];
   const audioSyllLines: string[] = [];
   for (const entry of syllEntries) {
     if (!entry.audioName) continue;

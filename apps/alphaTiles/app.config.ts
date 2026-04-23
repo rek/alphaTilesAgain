@@ -2,7 +2,7 @@
  * app.config.ts — dynamic Expo configuration.
  *
  * Reads APP_LANG from env, loads languages/<APP_LANG>/aa_langinfo.txt via the
- * mini parser, resolves display name / slug / bundle IDs / RTL flag.
+ * lang-pack-parser library, resolves display name / slug / bundle IDs / RTL flag.
  * RTL forcing happens in the app entry (_layout.tsx) via I18nManager.forceRTL —
  * this config only passes scriptDirection through extra so the entry can read it.
  *
@@ -17,7 +17,7 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { readLangInfo } from '../../tools/_lang-pack-mini-parser';
+import { parseLangInfo } from '../../libs/shared/util-lang-pack-parser/src';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const lang = process.env.APP_LANG;
@@ -30,7 +30,29 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   const repoRoot = path.resolve(__dirname, '..', '..');
   const langInfoPath = path.join(repoRoot, 'languages', lang, 'aa_langinfo.txt');
-  const langInfo = readLangInfo(langInfoPath);
+  if (!fs.existsSync(langInfoPath)) {
+    throw new Error(`aa_langinfo.txt not found: ${langInfoPath}`);
+  }
+  const langInfoSrc = fs.readFileSync(langInfoPath, 'utf8');
+  const langInfoParsed = parseLangInfo(langInfoSrc);
+
+  // Build a typed summary matching the previous readLangInfo shape so call sites below are unchanged.
+  const langInfo = {
+    nameInLocalLang: langInfoParsed.find('Lang Name (In Local Lang)') ?? '',
+    nameInEnglish: langInfoParsed.find('Lang Name (In English)') ?? '',
+    ethnologueCode: langInfoParsed.find('Ethnologue code') ?? '',
+    gameNameInLocalLang: langInfoParsed.find('Game Name (In Local Lang)') ?? '',
+    scriptDirection: (
+      (langInfoParsed.find('Script direction (LTR or RTL)') ?? 'LTR').trim().toUpperCase() === 'RTL'
+        ? 'RTL'
+        : 'LTR'
+    ) as 'LTR' | 'RTL',
+    scriptType: langInfoParsed.find('Script type') ?? '',
+  };
+
+  if (!langInfo.nameInLocalLang) {
+    throw new Error(`aa_langinfo.txt missing "Lang Name (In Local Lang)": ${langInfoPath}`);
+  }
 
   // Per-pack icon / splash override detection
   const iconPath = path.join(repoRoot, 'languages', lang, 'images', 'icon.png');

@@ -6,7 +6,7 @@
  * described in docs/ARCHITECTURE.md S5.
  *
  * Audio classification uses aa_gametiles.txt / aa_wordlist.txt /
- * aa_syllables.txt via _lang-pack-mini-parser.ts -- not filename heuristics.
+ * aa_syllables.txt via @shared/util-lang-pack-parser -- not filename heuristics.
  *
  * Run: bun tools/rsync-lang-packs.ts
  * Or:  npx tsx tools/rsync-lang-packs.ts
@@ -14,12 +14,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  gameTileAudioNames,
-  gameTileKeys,
-  syllableAudioNames,
-  wordListKeys,
-} from './_lang-pack-mini-parser';
+import { parseGametiles, parseSyllables, parseWordlist } from '../libs/shared/util-lang-pack-parser/src';
 
 // ---------------------------------------------------------------------------
 // Code -> pack directory mapping
@@ -94,10 +89,34 @@ export function buildAudioClassification(rawDir: string): AudioClassification {
   const wordlistPath = path.join(rawDir, 'aa_wordlist.txt');
   const syllablesPath = path.join(rawDir, 'aa_syllables.txt');
 
+  const INVALID = new Set(['none', 'x', 'zz_no_audio_needed']);
+  const tileAudioNames = new Set<string>();
+  if (fs.existsSync(gametilesPath)) {
+    for (const row of parseGametiles(fs.readFileSync(gametilesPath, 'utf8')).rows) {
+      for (const name of [row.audioName, row.audioNameB, row.audioNameC]) {
+        if (name && !INVALID.has(name.toLowerCase())) tileAudioNames.add(name);
+      }
+    }
+  }
+
+  const wordKeys = new Set<string>();
+  if (fs.existsSync(wordlistPath)) {
+    for (const row of parseWordlist(fs.readFileSync(wordlistPath, 'utf8')).rows) {
+      if (row.wordInLWC) wordKeys.add(row.wordInLWC);
+    }
+  }
+
+  const syllableAudioNamesSet = new Set<string>();
+  if (fs.existsSync(syllablesPath)) {
+    for (const row of parseSyllables(fs.readFileSync(syllablesPath, 'utf8')).rows) {
+      if (row.audioName) syllableAudioNamesSet.add(row.audioName);
+    }
+  }
+
   return {
-    tiles: gameTileAudioNames(gametilesPath),
-    words: wordListKeys(wordlistPath),
-    syllables: syllableAudioNames(syllablesPath),
+    tiles: tileAudioNames,
+    words: wordKeys,
+    syllables: syllableAudioNamesSet,
   };
 }
 
@@ -130,10 +149,22 @@ export type ImageClassification = {
 export function buildImageClassification(rawDir: string): ImageClassification {
   const gametilesPath = path.join(rawDir, 'aa_gametiles.txt');
   const wordlistPath = path.join(rawDir, 'aa_wordlist.txt');
-  return {
-    tileKeys: gameTileKeys(gametilesPath),
-    wordKeys: wordListKeys(wordlistPath),
-  };
+
+  const tileKeys = new Set<string>();
+  if (fs.existsSync(gametilesPath)) {
+    for (const row of parseGametiles(fs.readFileSync(gametilesPath, 'utf8')).rows) {
+      if (row.base) tileKeys.add(row.base);
+    }
+  }
+
+  const wordKeys = new Set<string>();
+  if (fs.existsSync(wordlistPath)) {
+    for (const row of parseWordlist(fs.readFileSync(wordlistPath, 'utf8')).rows) {
+      if (row.wordInLWC) wordKeys.add(row.wordInLWC);
+    }
+  }
+
+  return { tileKeys, wordKeys };
 }
 
 /**

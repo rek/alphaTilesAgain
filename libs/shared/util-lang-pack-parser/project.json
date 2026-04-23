@@ -1,0 +1,29 @@
+{
+  "name": "util-lang-pack-parser",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/util-lang-pack-parser/src",
+  "projectType": "library",
+  "tags": ["type:util", "scope:shared"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared/util-lang-pack-parser",
+        "main": "libs/shared/util-lang-pack-parser/src/index.ts",
+        "tsConfig": "libs/shared/util-lang-pack-parser/tsconfig.lib.json",
+        "assets": ["libs/shared/util-lang-pack-parser/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/shared/util-lang-pack-parser/jest.config.ts"
+      }
+    }
+  }
+}
