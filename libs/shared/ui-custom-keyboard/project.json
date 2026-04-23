@@ -1,0 +1,9 @@
+{
+  "name": "ui-custom-keyboard",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/ui-custom-keyboard/src",
+  "projectType": "library",
+  "tags": ["type:ui", "scope:shared"],
+  "// targets": "to see all targets run: nx show project ui-custom-keyboard --web",
+  "targets": {}
+}

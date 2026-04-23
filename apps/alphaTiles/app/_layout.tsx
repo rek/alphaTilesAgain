@@ -1,12 +1,13 @@
 import React from 'react';
 import Constants from 'expo-constants';
 import { getLocales } from 'expo-localization';
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import { I18nManager } from 'react-native';
 import { LangAssetsProvider, useLangAssets } from '@alphaTiles/data-language-assets';
 import { ThemeProvider, useFontsReady } from '@shared/util-theme';
 import { I18nProvider, initI18n } from '@shared/util-i18n';
 import { langManifest } from '@generated/langManifest';
+import { usePlayersStore } from '@alphaTiles/data-players';
 import type { FontSource } from 'expo-font';
 
 // Apply RTL at module load time, before the root component mounts.
@@ -37,6 +38,31 @@ const FONT_NAME_MAP = {
   primary: 'primary',
   primaryBold: langManifest.fonts.primaryBold !== undefined ? 'primaryBold' : undefined,
 } as const;
+
+/**
+ * Derives the boot entry route from persisted player state.
+ * Reads store synchronously — no useEffect (ARCHITECTURE.md §7, CLAUDE.md rules).
+ *
+ * Rules (spec.md §Entry-route derivation):
+ *  - activePlayerId valid → /menu
+ *  - activePlayerId stale (not in players) → clear it, go to /choose-player
+ *  - activePlayerId null → /choose-player
+ */
+function EntryRedirect(): React.JSX.Element {
+  const { activePlayerId, players, clearActivePlayer } = usePlayersStore.getState();
+
+  if (activePlayerId !== null) {
+    const activeExists = players.some((p) => p.id === activePlayerId);
+    if (!activeExists) {
+      // Stale id — clear and fall through to /choose-player
+      clearActivePlayer();
+      return <Redirect href="/choose-player" />;
+    }
+    return <Redirect href="/menu" />;
+  }
+
+  return <Redirect href="/choose-player" />;
+}
 
 /**
  * Inner layout — must be inside LangAssetsProvider so it can call useLangAssets().

@@ -1,0 +1,19 @@
+{
+  "name": "data-players",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/data-players/src",
+  "projectType": "library",
+  "tags": ["type:data-access", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/data-players",
+        "main": "libs/alphaTiles/data-players/src/index.ts",
+        "tsConfig": "libs/alphaTiles/data-players/tsconfig.lib.json",
+        "assets": ["libs/alphaTiles/data-players/*.md"]
+      }
+    }
+  }
+}

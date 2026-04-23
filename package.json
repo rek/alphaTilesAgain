@@ -59,5 +59,8 @@
     "typescript-eslint": "^8.40.0"
   },
   "nx": {},
-  "dependencies": {}
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
 }

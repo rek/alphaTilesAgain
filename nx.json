@@ -87,6 +87,11 @@
         "unitTestRunner": "jest",
         "linter": "none"
       }
+    },
+    "@nx/react": {
+      "library": {
+        "unitTestRunner": "none"
+      }
     }
   },
   "targetDefaults": {
