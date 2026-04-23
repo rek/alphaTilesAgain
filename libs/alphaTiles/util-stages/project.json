@@ -1,0 +1,19 @@
+{
+  "name": "util-stages",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/util-stages/src",
+  "projectType": "library",
+  "tags": ["type:util", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/util-stages",
+        "main": "libs/alphaTiles/util-stages/src/index.ts",
+        "tsConfig": "libs/alphaTiles/util-stages/tsconfig.lib.json",
+        "assets": ["libs/alphaTiles/util-stages/*.md"]
+      }
+    }
+  }
+}

@@ -65,7 +65,8 @@
         "libs/alphaTiles/feature-resources/src/index.ts"
       ],
       "@shared/storybook-host": ["libs/shared/storybook-host/src/index.ts"],
-      "util-scoring": ["libs/alphaTiles/util-scoring/src/index.ts"]
+      "util-scoring": ["libs/alphaTiles/util-scoring/src/index.ts"],
+      "util-stages": ["libs/alphaTiles/util-stages/src/index.ts"]
     }
   }
 }
