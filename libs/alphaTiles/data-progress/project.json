@@ -1,0 +1,19 @@
+{
+  "name": "data-progress",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/data-progress/src",
+  "projectType": "library",
+  "tags": ["type:data-access", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/data-progress",
+        "main": "libs/alphaTiles/data-progress/src/index.ts",
+        "tsConfig": "libs/alphaTiles/data-progress/tsconfig.lib.json",
+        "assets": ["libs/alphaTiles/data-progress/*.md"]
+      }
+    }
+  }
+}
