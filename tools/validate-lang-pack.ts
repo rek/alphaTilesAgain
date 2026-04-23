@@ -1,22 +1,28 @@
 /**
- * validate-lang-pack.ts -- PLACEHOLDER
+ * validate-lang-pack.ts — full validator CLI
  *
- * Checks structural presence of required files in languages/<APP_LANG>/.
- * Does NOT perform semantic validation (content correctness, column counts,
- * cross-file consistency, orphan detection, etc.).
+ * Replaces the structural-only placeholder. Uses the real validator from
+ * `@alphaTiles/util-lang-pack-validator`.
  *
- * This placeholder will be replaced by a call to the real validator once the
- * `lang-pack-validator` change lands. See openspec/changes/lang-pack-validator/.
+ * Usage:
+ *   bun tools/validate-lang-pack.ts                  # uses APP_LANG env var
+ *   bun tools/validate-lang-pack.ts --fixture eng,tpx,template
+ *   bun tools/validate-lang-pack.ts --json report.json
+ *   bun tools/validate-lang-pack.ts --only-errors
  *
- * Run: bun tools/validate-lang-pack.ts
- * Or:  npx tsx tools/validate-lang-pack.ts
+ * Design: openspec/changes/lang-pack-validator/design.md §D6
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { validateLangPack as runValidator } from '../libs/shared/util-lang-pack-validator/src/validateLangPack';
+import { formatReportHuman } from '../libs/shared/util-lang-pack-validator/src/formatReportHuman';
+import { formatReportJson } from '../libs/shared/util-lang-pack-validator/src/formatReportJson';
+import { readRawFiles } from './_readRawFiles';
+import { buildFileInventory } from './_buildFileInventory';
 
 // ---------------------------------------------------------------------------
-// Validation logic (exported for unit tests)
+// Backward-compat shim — preserves the old export for existing tests
 // ---------------------------------------------------------------------------
 
 export type ValidationError = {
@@ -29,19 +35,10 @@ export type ValidationResult = {
   errors: ValidationError[];
 };
 
-/** Required aa_*.txt files (aa_notes.txt is optional -- validator-only). */
 const REQUIRED_TXT_FILES = [
-  'aa_colors.txt',
-  'aa_games.txt',
-  'aa_gametiles.txt',
-  'aa_keyboard.txt',
-  'aa_langinfo.txt',
-  'aa_names.txt',
-  'aa_resources.txt',
-  'aa_settings.txt',
-  'aa_share.txt',
-  'aa_syllables.txt',
-  'aa_wordlist.txt',
+  'aa_colors.txt', 'aa_games.txt', 'aa_gametiles.txt', 'aa_keyboard.txt',
+  'aa_langinfo.txt', 'aa_names.txt', 'aa_resources.txt', 'aa_settings.txt',
+  'aa_share.txt', 'aa_syllables.txt', 'aa_wordlist.txt',
 ];
 
 function listFiles(dir: string): string[] {
@@ -52,42 +49,31 @@ function listFiles(dir: string): string[] {
   });
 }
 
+/**
+ * Structural-only validation for backward compatibility with existing tests.
+ * For semantic validation use `runValidator` (the real validator).
+ */
 export function validateLangPack(langDir: string): ValidationResult {
   const errors: ValidationError[] = [];
 
-  // 1. Pack directory must exist
   if (!fs.existsSync(langDir) || !fs.statSync(langDir).isDirectory()) {
-    errors.push({
-      code: 'PACK_DIR_MISSING',
-      message: `Pack directory not found: ${langDir}`,
-    });
-    // Can't check anything else without the directory
+    errors.push({ code: 'PACK_DIR_MISSING', message: `Pack directory not found: ${langDir}` });
     return { ok: false, errors };
   }
 
-  // 2. Required txt files
   for (const fname of REQUIRED_TXT_FILES) {
-    const full = path.join(langDir, fname);
-    if (!fs.existsSync(full)) {
-      errors.push({
-        code: 'REQUIRED_TXT_MISSING',
-        message: `Required file missing: ${fname}`,
-      });
+    if (!fs.existsSync(path.join(langDir, fname))) {
+      errors.push({ code: 'REQUIRED_TXT_MISSING', message: `Required file missing: ${fname}` });
     }
   }
 
-  // 3. At least one font
   const fonts = listFiles(path.join(langDir, 'fonts')).filter(
     (f) => f.endsWith('.ttf') || f.endsWith('.otf'),
   );
   if (fonts.length === 0) {
-    errors.push({
-      code: 'NO_FONT',
-      message: 'fonts/ must contain at least one .ttf or .otf file',
-    });
+    errors.push({ code: 'NO_FONT', message: 'fonts/ must contain at least one .ttf or .otf file' });
   }
 
-  // 4. Exactly 12 avatars
   const avatars = listFiles(path.join(langDir, 'images', 'avatars')).filter(
     (f) => f.startsWith('zz_avatar') && !f.startsWith('zz_avataricon'),
   );
@@ -98,7 +84,6 @@ export function validateLangPack(langDir: string): ValidationResult {
     });
   }
 
-  // 5. Exactly 12 avataricons
   const avataricons = listFiles(path.join(langDir, 'images', 'avataricons')).filter(
     (f) => f.startsWith('zz_avataricon'),
   );
@@ -113,6 +98,37 @@ export function validateLangPack(langDir: string): ValidationResult {
 }
 
 // ---------------------------------------------------------------------------
+// CLI argument parsing
+// ---------------------------------------------------------------------------
+
+interface CliArgs {
+  fixture: string[] | null;
+  json: string | null;
+  onlyErrors: boolean;
+}
+
+function parseArgs(argv: string[]): CliArgs {
+  const args: CliArgs = { fixture: null, json: null, onlyErrors: false };
+  let i = 2; // skip 'bun' and script path
+  while (i < argv.length) {
+    const arg = argv[i];
+    if (arg === '--fixture' && argv[i + 1]) {
+      args.fixture = argv[i + 1].split(',').map((c) => c.trim()).filter(Boolean);
+      i += 2;
+    } else if (arg === '--json' && argv[i + 1]) {
+      args.json = argv[i + 1];
+      i += 2;
+    } else if (arg === '--only-errors') {
+      args.onlyErrors = true;
+      i++;
+    } else {
+      i++;
+    }
+  }
+  return args;
+}
+
+// ---------------------------------------------------------------------------
 // CLI entry point
 // ---------------------------------------------------------------------------
 
@@ -121,34 +137,72 @@ function die(msg: string): never {
   process.exit(1);
 }
 
-function main(): void {
-  const lang = process.env.APP_LANG;
-  if (!lang) {
-    die(
-      'APP_LANG env var is not set.\n' +
-        'See docs/GETTING_STARTED.md for setup instructions.',
-    );
-  }
+async function main(): Promise<void> {
+  const cliArgs = parseArgs(process.argv);
+
+  // Resolve which pack codes to validate
+  const codes: string[] = cliArgs.fixture
+    ?? (process.env.APP_LANG ? [process.env.APP_LANG] : null)
+    ?? die('APP_LANG env var is not set and --fixture was not specified.\nSee docs/GETTING_STARTED.md for setup instructions.');
 
   const repoRoot = path.resolve(__dirname, '..');
-  const langDir = path.join(repoRoot, 'languages', lang);
+  let totalErrors = 0;
+  const jsonReports: ReturnType<typeof formatReportJson>[] = [];
 
-  console.log(`[validate-lang-pack] Checking languages/${lang}/ ...`);
+  for (const code of codes) {
+    const langDir = path.join(repoRoot, 'languages', code);
 
-  const result = validateLangPack(langDir);
+    if (!fs.existsSync(langDir)) {
+      console.error(`[validate-lang-pack] ERROR: languages/${code}/ does not exist`);
+      totalErrors++;
+      continue;
+    }
 
-  if (result.ok) {
-    console.log(`[validate-lang-pack] OK -- structural checks passed for "${lang}"`);
-    process.exit(0);
+    let rawFiles: Record<string, string>;
+    let fileInventory: ReturnType<typeof buildFileInventory>;
+
+    try {
+      rawFiles = readRawFiles(langDir);
+      fileInventory = buildFileInventory(langDir);
+    } catch (e) {
+      console.error(`[validate-lang-pack] ERROR reading ${code}: ${(e as Error).message}`);
+      totalErrors++;
+      continue;
+    }
+
+    const report = runValidator({ rawFiles, fileInventory });
+    totalErrors += report.counts.error;
+
+    if (cliArgs.json) {
+      jsonReports.push(formatReportJson(code, report));
+    } else {
+      let output = formatReportHuman(code, report);
+      if (cliArgs.onlyErrors) {
+        // Filter to only show error lines in human output
+        const lines = output.split('\n');
+        const filtered = lines.filter(
+          (l) => l.startsWith('===') || l.startsWith('--- ERROR') || l.startsWith('  ') || l.startsWith('Totals'),
+        );
+        output = filtered.join('\n');
+      }
+      process.stdout.write(output);
+    }
   }
 
-  console.error(`[validate-lang-pack] FAILED -- ${result.errors.length} error(s):`);
-  for (const err of result.errors) {
-    console.error(`  [${err.code}] ${err.message}`);
+  if (cliArgs.json) {
+    const combined = jsonReports.length === 1
+      ? jsonReports[0]
+      : JSON.stringify(JSON.parse(`[${jsonReports.join(',')}]`), null, 2);
+    fs.writeFileSync(cliArgs.json, combined, 'utf8');
+    console.log(`[validate-lang-pack] JSON report written to: ${cliArgs.json}`);
   }
-  process.exit(1);
+
+  process.exit(totalErrors > 0 ? 1 : 0);
 }
 
 if (require.main === module || process.argv[1]?.includes('validate-lang-pack')) {
-  main();
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
 }

@@ -1,0 +1,19 @@
+{
+  "name": "util-phoneme",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/util-phoneme/src",
+  "projectType": "library",
+  "tags": ["type:util", "scope:shared"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared/util-phoneme",
+        "main": "libs/shared/util-phoneme/src/index.ts",
+        "tsConfig": "libs/shared/util-phoneme/tsconfig.lib.json",
+        "assets": ["libs/shared/util-phoneme/*.md"]
+      }
+    }
+  }
+}

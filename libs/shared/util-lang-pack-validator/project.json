@@ -1,0 +1,19 @@
+{
+  "name": "util-lang-pack-validator",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/util-lang-pack-validator/src",
+  "projectType": "library",
+  "tags": ["type:util", "scope:shared"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared/util-lang-pack-validator",
+        "main": "libs/shared/util-lang-pack-validator/src/index.ts",
+        "tsConfig": "libs/shared/util-lang-pack-validator/tsconfig.lib.json",
+        "assets": ["libs/shared/util-lang-pack-validator/*.md"]
+      }
+    }
+  }
+}
