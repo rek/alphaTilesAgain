@@ -9,8 +9,20 @@
     "play_again": "Play Again",
     "celebrate": "Great job! You found correct answers to 12 questions on this game!",
     "about": "About This App",
+    "about.title": "About",
+    "about.version": "Version {{version}}",
+    "about.credits": "Credits",
+    "about.email": "Email us",
+    "about.privacy": "Privacy Policy",
     "share": "Share",
+    "share.title": "Share",
+    "share.instructions": "Scan this QR code to share this app",
+    "share.button": "Share via...",
+    "share.qrAlt": "QR code linking to the Play Store",
+    "share.unavailable": "Sharing not configured for this pack",
     "resources": "Other Resources In This Language",
+    "resources.title": "Resources",
+    "resources.empty": "No resources available",
     "resource_item": "A Resource In This Language",
     "build_word_here": "Build Word Here",
     "go_backward": "Go To Previous",
@@ -18,6 +30,25 @@
     "see_more_of_tile": "See More Words Starting With This Game Tile",
     "expired_title": "Expired",
     "expired_message": "This app has expired.",
+    "players": {
+      "heading": "{{localName}}",
+      "add": "Add new",
+      "delete_confirm": "Tap again to delete",
+      "name_placeholder": "Your name",
+      "name_submit": "Done",
+      "a11y": {
+        "avatar": "Avatar {{index}}",
+        "delete": "Delete player",
+        "keyboard_delete": "Delete last character",
+        "keyboard_next": "Next keyboard page",
+        "keyboard_prev": "Previous keyboard page"
+      },
+      "validation": {
+        "too_short": "Enter a name",
+        "too_long": "Max 20 characters",
+        "duplicate": "Name already used"
+      }
+    },
     "a11y": {
       "tile": "Tile {{letter}}",
       "word": "Word {{word}}",

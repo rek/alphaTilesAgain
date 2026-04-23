@@ -1,0 +1,29 @@
+{
+  "name": "feature-resources",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/feature-resources/src",
+  "projectType": "library",
+  "tags": ["type:feature", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/feature-resources",
+        "main": "libs/alphaTiles/feature-resources/src/index.ts",
+        "tsConfig": "libs/alphaTiles/feature-resources/tsconfig.lib.json",
+        "assets": ["libs/alphaTiles/feature-resources/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/alphaTiles/feature-resources/jest.config.ts"
+      }
+    }
+  }
+}

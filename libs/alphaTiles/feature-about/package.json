@@ -1,0 +1,18 @@
+{
+  "name": "@alphaTiles/feature-about",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@alphaTiles/data-language-assets": "*",
+    "@shared/util-analytics": "*",
+    "@shared/util-i18n": "*",
+    "expo-application": "*",
+    "expo-web-browser": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}
