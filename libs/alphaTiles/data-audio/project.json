@@ -1,0 +1,19 @@
+{
+  "name": "data-audio",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/data-audio/src",
+  "projectType": "library",
+  "tags": ["type:data-access", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/data-audio",
+        "main": "libs/alphaTiles/data-audio/src/index.ts",
+        "tsConfig": "libs/alphaTiles/data-audio/tsconfig.lib.json",
+        "assets": ["libs/alphaTiles/data-audio/*.md"]
+      }
+    }
+  }
+}

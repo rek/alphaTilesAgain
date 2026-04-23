@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../dist/out-tsc",
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "types": ["jest", "node", "react-native"],
+    "paths": {
+      "expo-audio": ["libs/alphaTiles/data-audio/src/__mocks__/expo-audio.ts"],
+      "react-native": ["libs/alphaTiles/data-audio/src/__mocks__/react-native.ts"],
+      "@shared/util-analytics": ["libs/alphaTiles/data-audio/src/__mocks__/util-analytics.ts"]
+    }
+  },
+  "include": [
+    "jest.config.ts",
+    "jest.config.cts",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.spec.ts",
+    "src/**/*.spec.tsx",
+    "src/**/*.d.ts"
+  ]
+}
