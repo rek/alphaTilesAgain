@@ -1,0 +1,19 @@
+{
+  "name": "util-theme",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/util-theme/src",
+  "projectType": "library",
+  "tags": ["type:util", "scope:shared"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared/util-theme",
+        "main": "libs/shared/util-theme/src/index.ts",
+        "tsConfig": "libs/shared/util-theme/tsconfig.lib.json",
+        "assets": ["libs/shared/util-theme/*.md"]
+      }
+    }
+  }
+}

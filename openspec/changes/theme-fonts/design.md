@@ -199,5 +199,7 @@ Only (1) and (2) are in scope for this change.
 ## Open Questions
 
 - Do we need a `useResponsiveTheme()` for tablet/phone size breakpoints? **Defer** — no source spec, Expo apps render the same on phone and tablet by default. Revisit if a feature lib needs it.
-- Should `useTheme()` return a memoized reference that's stable across re-renders? **Yes** — trivial via `useMemo` inside `ThemeProvider` on pack change. Task item.
+- Should `useTheme()` return a memoized reference that's stable across re-renders? **Yes** — implemented via `useMemo` inside `ThemeProvider`.
 - A future `tools/validate-lang-pack.ts` (full validator) could assert `aa_colors.txt` has at least 5 theme-color entries. **Out of scope** for this change — track in `lang-pack-validator`.
+- **`eslint-plugin-react-native` not installed.** Task 7.1 requires `react-native/no-unused-styles`. The plugin is not in `node_modules`. Decision needed: install it (adds a dep) or drop this rule from scope. It's a convenience rule only — the custom `no-raw-margin-left-right` rule is the critical RTL enforcement. **Recommendation**: install `eslint-plugin-react-native` and add the rule in a follow-up; not blocking for this change.
+- **`apps/alphaTiles/app/index.tsx` has a pre-existing `import/namespace` parse error** for `react-native` (eslint-config-expo parser issue). Not introduced by this change. Needs investigation in the expo eslint config.

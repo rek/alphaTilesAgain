@@ -35,7 +35,8 @@
       ],
       "@generated/langManifest": [
         "apps/alphaTiles/src/generated/langManifest.ts"
-      ]
+      ],
+      "@alphaTiles/data-audio": ["libs/alphaTiles/data-audio/src/index.ts"]
     }
   }
 }

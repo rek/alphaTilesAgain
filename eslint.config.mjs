@@ -1,4 +1,18 @@
 import nx from '@nx/eslint-plugin';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+
+/**
+ * Custom ESLint rule: no-raw-margin-left-right
+ * Bans physical-direction style keys (marginLeft, marginRight, paddingLeft,
+ * paddingRight, left, right, borderLeftWidth, borderRightWidth, borderLeftColor,
+ * borderRightColor, borderTopLeftRadius, borderTopRightRadius,
+ * borderBottomLeftRadius, borderBottomRightRadius).
+ * Enforces logical props for RTL safety — ARCHITECTURE.md §16, design.md §D6.
+ * Files under libs/shared/util-theme are allowlisted.
+ */
+const noRawMarginRule = require('./tools/eslint-rules/no-raw-margin-left-right.js');
 
 export default [
   ...nx.configs['flat/base'],
@@ -20,6 +34,22 @@ export default [
               sourceTag: '*',
               onlyDependOnLibsWithTags: ['*'],
             },
+            // type:ui libs must not import react-i18next or i18next directly.
+            // They accept pre-translated strings as props (design.md §D6, ARCHITECTURE.md §10).
+            {
+              sourceTag: 'type:ui',
+              bannedExternalImports: ['react-i18next', 'i18next'],
+            },
+            // Only util-i18n may import i18next/react-i18next as a source lib.
+            // All other libs must import from @shared/util-i18n instead.
+            {
+              sourceTag: 'type:feature',
+              bannedExternalImports: ['i18next'],
+            },
+            {
+              sourceTag: 'type:data-access',
+              bannedExternalImports: ['i18next'],
+            },
           ],
         },
       ],
@@ -38,5 +68,20 @@ export default [
     ],
     // Override or add rules here
     rules: {},
+  },
+  // theme-hygiene: enforce logical props over physical direction keys.
+  // See ARCHITECTURE.md §16 and openspec/changes/theme-fonts/design.md §D6.
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    plugins: {
+      'theme-hygiene': {
+        rules: {
+          'no-raw-margin-left-right': noRawMarginRule,
+        },
+      },
+    },
+    rules: {
+      'theme-hygiene/no-raw-margin-left-right': 'error',
+    },
   },
 ];
