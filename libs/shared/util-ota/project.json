@@ -1,0 +1,19 @@
+{
+  "name": "util-ota",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/util-ota/src",
+  "projectType": "library",
+  "tags": ["type:util", "scope:shared"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/shared/util-ota",
+        "main": "libs/shared/util-ota/src/index.ts",
+        "tsConfig": "libs/shared/util-ota/tsconfig.lib.json",
+        "assets": ["libs/shared/util-ota/*.md"]
+      }
+    }
+  }
+}

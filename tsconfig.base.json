@@ -18,6 +18,7 @@
     "baseUrl": ".",
     "types": ["node", "react-native"],
     "paths": {
+      "@shared/util-ota": ["libs/shared/util-ota/src/index.ts"],
       "@shared/util-precompute": ["libs/shared/util-precompute/src/index.ts"],
       "@shared/util-analytics": ["libs/shared/util-analytics/src/index.ts"],
       "@shared/util-lang-pack-parser": [
@@ -36,7 +37,28 @@
       "@generated/langManifest": [
         "apps/alphaTiles/src/generated/langManifest.ts"
       ],
-      "@alphaTiles/data-audio": ["libs/alphaTiles/data-audio/src/index.ts"]
+      "@alphaTiles/data-audio": ["libs/alphaTiles/data-audio/src/index.ts"],
+      "@alphaTiles/data-players": ["libs/alphaTiles/data-players/src/index.ts"],
+      "@shared/ui-avatar-grid": ["libs/shared/ui-avatar-grid/src/index.ts"],
+      "@shared/ui-player-card": ["libs/shared/ui-player-card/src/index.ts"],
+      "@shared/ui-custom-keyboard": [
+        "libs/shared/ui-custom-keyboard/src/index.ts"
+      ],
+      "@alphaTiles/feature-choose-player": [
+        "libs/alphaTiles/feature-choose-player/src/index.ts"
+      ],
+      "@alphaTiles/feature-set-player-name": [
+        "libs/alphaTiles/feature-set-player-name/src/index.ts"
+      ],
+      "@alphaTiles/feature-about": [
+        "libs/alphaTiles/feature-about/src/index.ts"
+      ],
+      "@alphaTiles/feature-share": [
+        "libs/alphaTiles/feature-share/src/index.ts"
+      ],
+      "@alphaTiles/feature-resources": [
+        "libs/alphaTiles/feature-resources/src/index.ts"
+      ]
     }
   }
 }

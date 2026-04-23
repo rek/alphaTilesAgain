@@ -45,4 +45,18 @@ export type AnalyticsEvent =
         platform: 'ios' | 'android' | 'web';
         osVersion: string;
       };
+    }
+  | { type: 'app_update_available'; props: { updateId: string; channel: string } }
+  | {
+      type: 'app_update_applied';
+      props: { fromUpdateId: string | null; toUpdateId: string; channel: string };
+    }
+  | {
+      type: 'app_update_failed';
+      props: {
+        stage: 'check' | 'fetch' | 'reload';
+        reason: 'timeout' | 'error';
+        errorMessage?: string;
+        channel: string;
+      };
     };

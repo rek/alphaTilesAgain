@@ -3,8 +3,8 @@
  *
  * This file is included in tsconfig.lib.json — it must compile cleanly.
  * It verifies:
- *   - All 11 catalog variants compile with correct props (task 10.2).
- *   - Invalid calls are rejected by TypeScript via `@ts-expect-error` (task 10.3).
+ *   - All 14 catalog variants compile with correct props.
+ *   - Invalid calls are rejected by TypeScript via `@ts-expect-error`.
  *
  * Not a runtime test — no exports, no Jest.
  */
@@ -61,6 +61,19 @@ track('audio_unlock_web', { millisecondsSinceBoot: 4200 });
 
 // app_boot
 track('app_boot', { appLang: 'eng', platform: 'ios', osVersion: '17.0' });
+
+// app_update_available
+track('app_update_available', { updateId: 'uuid-1', channel: 'eng' });
+
+// app_update_applied
+track('app_update_applied', { fromUpdateId: null, toUpdateId: 'uuid-2', channel: 'eng' });
+track('app_update_applied', { fromUpdateId: 'uuid-1', toUpdateId: 'uuid-2', channel: 'eng' });
+
+// app_update_failed — timeout (no errorMessage)
+track('app_update_failed', { stage: 'check', reason: 'timeout', channel: 'eng' });
+
+// app_update_failed — error with message
+track('app_update_failed', { stage: 'fetch', reason: 'error', errorMessage: 'Network error', channel: 'eng' });
 
 // identify + screen
 identify('uuid-123', { avatarIndex: 2 });

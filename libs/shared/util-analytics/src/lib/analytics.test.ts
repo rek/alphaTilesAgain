@@ -387,3 +387,82 @@ describe('screen', () => {
     expect(spy.screen).toHaveBeenCalledWith('/', { referrer: 'boot' });
   });
 });
+
+// ---------------------------------------------------------------------------
+// Task 7.3 — OTA event catalog additions
+// ---------------------------------------------------------------------------
+
+describe('OTA events (ota-updates change)', () => {
+  it('app_update_available reaches adapter with correct payload', () => {
+    const spy = makeSpy();
+    setAnalyticsAdapter(spy);
+    setAnalyticsEnabled(true);
+    track('app_update_available', { updateId: 'uuid-1', channel: 'eng' });
+    expect(spy.track).toHaveBeenCalledWith('app_update_available', {
+      updateId: 'uuid-1',
+      channel: 'eng',
+    });
+  });
+
+  it('app_update_applied reaches adapter with correct payload (with fromUpdateId)', () => {
+    const spy = makeSpy();
+    setAnalyticsAdapter(spy);
+    setAnalyticsEnabled(true);
+    track('app_update_applied', {
+      fromUpdateId: 'old-id',
+      toUpdateId: 'new-id',
+      channel: 'tpx',
+    });
+    expect(spy.track).toHaveBeenCalledWith('app_update_applied', {
+      fromUpdateId: 'old-id',
+      toUpdateId: 'new-id',
+      channel: 'tpx',
+    });
+  });
+
+  it('app_update_applied allows null fromUpdateId (first update)', () => {
+    const spy = makeSpy();
+    setAnalyticsAdapter(spy);
+    setAnalyticsEnabled(true);
+    track('app_update_applied', {
+      fromUpdateId: null,
+      toUpdateId: 'first-id',
+      channel: 'eng',
+    });
+    expect(spy.track).toHaveBeenCalledWith('app_update_applied', {
+      fromUpdateId: null,
+      toUpdateId: 'first-id',
+      channel: 'eng',
+    });
+  });
+
+  it('app_update_failed reaches adapter with stage check and reason timeout', () => {
+    const spy = makeSpy();
+    setAnalyticsAdapter(spy);
+    setAnalyticsEnabled(true);
+    track('app_update_failed', { stage: 'check', reason: 'timeout', channel: 'eng' });
+    expect(spy.track).toHaveBeenCalledWith('app_update_failed', {
+      stage: 'check',
+      reason: 'timeout',
+      channel: 'eng',
+    });
+  });
+
+  it('app_update_failed carries errorMessage on reason error', () => {
+    const spy = makeSpy();
+    setAnalyticsAdapter(spy);
+    setAnalyticsEnabled(true);
+    track('app_update_failed', {
+      stage: 'fetch',
+      reason: 'error',
+      errorMessage: 'Network error',
+      channel: 'yue',
+    });
+    expect(spy.track).toHaveBeenCalledWith('app_update_failed', {
+      stage: 'fetch',
+      reason: 'error',
+      errorMessage: 'Network error',
+      channel: 'yue',
+    });
+  });
+});

@@ -23,18 +23,21 @@
     },
     "eng": {
       "extends": "production",
+      "channel": "eng",
       "env": {
         "APP_LANG": "eng"
       }
     },
     "tpx": {
       "extends": "production",
+      "channel": "tpx",
       "env": {
         "APP_LANG": "tpx"
       }
     },
     "yue": {
       "extends": "production",
+      "channel": "yue",
       "env": {
         "APP_LANG": "yue"
       }

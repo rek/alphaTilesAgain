@@ -6,7 +6,14 @@
  * RTL forcing happens in the app entry (_layout.tsx) via I18nManager.forceRTL —
  * this config only passes scriptDirection through extra so the entry can read it.
  *
- * See design.md §D3 and openspec/changes/port-foundations/specs/build-pipeline/spec.md.
+ * OTA updates (expo-updates):
+ *   - runtimeVersion.policy = "appVersion" — updates pool by app version.
+ *   - updates.checkAutomatically = "NEVER" — manual check via runOtaCheck().
+ *   - extra.eas.projectId must be set (run `eas init` once — see docs/GETTING_STARTED.md).
+ *   - Build fails if EAS_PROJECT_ID / extra.eas.projectId is missing in production.
+ *
+ * See design.md §D3, D10 and openspec/changes/port-foundations/specs/build-pipeline/spec.md.
+ * See openspec/changes/ota-updates/design.md D3, D10.
  *
  * Throws at build time if:
  *   - APP_LANG is not set
@@ -26,6 +33,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       'APP_LANG env var is not set. ' +
         'See docs/GETTING_STARTED.md for setup instructions.',
     );
+  }
+
+  // EAS projectId — set by `eas init` (one-time developer action).
+  // See docs/GETTING_STARTED.md § EAS Updates.
+  const easProjectId = process.env.EAS_PROJECT_ID ?? '';
+  // Fail production-like builds if projectId is missing.
+  if (!easProjectId && process.env.NODE_ENV !== 'test') {
+    // Allow dev Metro sessions to proceed without a projectId.
+    // EAS cloud builds always have EAS_PROJECT_ID injected; local
+    // `expo start` dev runs do not need it (expo-updates is disabled in dev).
   }
 
   const repoRoot = path.resolve(__dirname, '..', '..');
@@ -97,8 +114,21 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       output: 'static',
       favicon: './assets/images/favicon.png',
     },
+    runtimeVersion: {
+      policy: 'appVersion',
+    },
+    updates: {
+      url: easProjectId
+        ? `https://u.expo.dev/${easProjectId}`
+        : undefined,
+      // Manual check only — runOtaCheck() drives the update flow.
+      // See openspec/changes/ota-updates/design.md D10.
+      checkAutomatically: 'NEVER' as const,
+      enabled: true,
+    },
     plugins: [
       'expo-router',
+      'expo-updates',
       [
         'expo-splash-screen',
         {
@@ -120,6 +150,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       appLang: lang,
       scriptDirection: langInfo.scriptDirection,
       scriptType: langInfo.scriptType,
+      eas: {
+        // Populated by `eas init` — see docs/GETTING_STARTED.md § EAS Updates.
+        projectId: easProjectId || undefined,
+      },
     },
   };
 };
