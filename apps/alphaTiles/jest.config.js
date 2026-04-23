@@ -1,5 +1,6 @@
 module.exports = {
   displayName: 'alphaTiles',
+  passWithNoTests: true,
   resolver: require.resolve('./jest.resolver.js'),
   preset: 'jest-expo',
   moduleFileExtensions: ['ts', 'js', 'html', 'tsx', 'jsx'],

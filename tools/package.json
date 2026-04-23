@@ -1,0 +1,13 @@
+{
+  "name": "@alpha-tiles/tools",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "rsync-lang-packs": "bun rsync-lang-packs.ts",
+    "validate-lang-pack": "bun validate-lang-pack.ts",
+    "generate-lang-manifest": "bun generate-lang-manifest.ts",
+    "rsync-lang-packs:node": "npx tsx rsync-lang-packs.ts",
+    "validate-lang-pack:node": "npx tsx validate-lang-pack.ts",
+    "generate-lang-manifest:node": "npx tsx generate-lang-manifest.ts"
+  }
+}

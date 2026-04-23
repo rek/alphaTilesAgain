@@ -1,0 +1,46 @@
+{
+  "cli": {
+    "version": ">= 12.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "APP_LANG": "eng"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "APP_LANG": "eng"
+      }
+    },
+    "production": {
+      "env": {
+        "APP_LANG": "eng"
+      }
+    },
+    "eng": {
+      "extends": "production",
+      "env": {
+        "APP_LANG": "eng"
+      }
+    },
+    "tpx": {
+      "extends": "production",
+      "env": {
+        "APP_LANG": "tpx"
+      }
+    },
+    "yue": {
+      "extends": "production",
+      "env": {
+        "APP_LANG": "yue"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

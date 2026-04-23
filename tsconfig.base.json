@@ -17,6 +17,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "types": ["node", "react-native"],
-    "paths": {}
+    "paths": {
+      "@shared/util-precompute": ["libs/shared/util-precompute/src/index.ts"]
+    }
   }
 }

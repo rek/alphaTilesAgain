@@ -44,3 +44,9 @@ yarn-error.*
 
 # Build output
 coverage/
+
+# Language packs — rsync'd from PublicLanguageAssets, never committed
+languages/
+
+# Generated prebuild artifacts — recreated by generate-lang-manifest
+apps/alphaTiles/src/generated/

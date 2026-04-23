@@ -8,6 +8,7 @@
     "start": {
       "executor": "@nx/expo:start",
       "continuous": true,
+      "dependsOn": ["prebuild-lang"],
       "options": {
         "port": 8081
       }
@@ -17,6 +18,20 @@
       "options": {
         "command": "npx expo prebuild --clean",
         "cwd": "apps/alphaTiles"
+      }
+    },
+    "run-android": {
+      "executor": "@nx/expo:run",
+      "dependsOn": ["prebuild-lang"],
+      "options": {
+        "platform": "android"
+      }
+    },
+    "run-ios": {
+      "executor": "@nx/expo:run",
+      "dependsOn": ["prebuild-lang"],
+      "options": {
+        "platform": "ios"
       }
     },
     "buildApk": {
@@ -42,11 +57,39 @@
     },
     "web-export": {
       "executor": "nx:run-commands",
+      "dependsOn": ["prebuild-lang"],
       "outputs": ["{workspaceRoot}/dist/web/alpha-tiles"],
       "options": {
         "command": "npx expo export --platform web --output-dir dist/web && mkdir -p ../../dist/web/alpha-tiles && cp -r dist/web/. ../../dist/web/alpha-tiles/",
         "cwd": "apps/alphaTiles"
       }
+    },
+    "rsync-lang-pack": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun tools/rsync-lang-packs.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "validate-lang-pack": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["rsync-lang-pack"],
+      "options": {
+        "command": "bun tools/validate-lang-pack.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "generate-lang-manifest": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["validate-lang-pack"],
+      "options": {
+        "command": "bun tools/generate-lang-manifest.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "prebuild-lang": {
+      "executor": "nx:noop",
+      "dependsOn": ["generate-lang-manifest"]
     }
   }
 }

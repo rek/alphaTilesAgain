@@ -1,0 +1,2 @@
+# Ignore agent worktrees — they contain copies of projects that conflict with NX project graph
+.claude/worktrees/

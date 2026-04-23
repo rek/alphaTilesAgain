@@ -8,6 +8,8 @@ A language community provides a folder of assets (word lists, phoneme data, imag
 
 Read these before writing code:
 
+- **[Architecture](./docs/ARCHITECTURE.md)** — stable overview; read before touching any code
+- **[Decisions](./docs/decisions/)** — ADR-001–010; skim titles, read relevant in full
 - **[Code Style](./docs/CODE_STYLE.md)** — always follow
 - **[Project Organization](./docs/PROJECT_ORGANIZATION.md)** — NX library types, dependency rules, tagging
 - **[AI Workflow](./docs/AI_WORKFLOW.md)** — OpenSpec workflow, prompt templates, quality checklist
