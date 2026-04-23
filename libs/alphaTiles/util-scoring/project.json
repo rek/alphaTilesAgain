@@ -1,0 +1,19 @@
+{
+  "name": "util-scoring",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/util-scoring/src",
+  "projectType": "library",
+  "tags": ["type:util", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/util-scoring",
+        "main": "libs/alphaTiles/util-scoring/src/index.ts",
+        "tsConfig": "libs/alphaTiles/util-scoring/tsconfig.lib.json",
+        "assets": ["libs/alphaTiles/util-scoring/*.md"]
+      }
+    }
+  }
+}
