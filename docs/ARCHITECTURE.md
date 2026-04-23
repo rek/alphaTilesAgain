@@ -322,6 +322,8 @@ Per EAS Update. Each language pack has its own update channel (`eng`, `tpx`, `yu
 | `type:ui` | Storybook stories; no mandatory unit tests |
 | `type:feature` | No mandatory automated tests in v1 — manual verification during development |
 
+**Storybook**: composite host at `libs/shared/storybook-host/` — run `./nx storybook storybook-host`. All `type:ui` stories aggregate via glob; no per-lib Storybook. Framework: `@storybook/react-vite`. RN primitives render via `react-native-web`. Native-only visual bugs (Android ripple, iOS haptics) are NOT caught by Storybook; catch via manual device QA per change.
+
 Fixtures for unit tests live under `languages/eng/` and `languages/template/`. The validator's own test suite runs against all three pack fixtures in CI.
 
 No Detox / Playwright e2e in v1.

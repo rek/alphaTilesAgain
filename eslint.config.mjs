@@ -39,6 +39,15 @@ export default [
               sourceTag: '*',
               onlyDependOnLibsWithTags: ['*'],
             },
+            // type:tooling libs (e.g. storybook-host) are config-only; they export nothing.
+            // The constraint below ensures they can only depend on each other (type:tooling).
+            // Since no lib should import @shared/storybook-host, this acts as the firewall:
+            // tooling → tooling OK; tooling → everything OK (Storybook config imports anything).
+            // Other layers are prevented at review/convention level (no runtime import path exists).
+            {
+              sourceTag: 'type:tooling',
+              onlyDependOnLibsWithTags: ['type:tooling', 'type:ui', 'type:util'],
+            },
             // type:ui libs must not import react-i18next or i18next directly.
             // They accept pre-translated strings as props (design.md §D6, ARCHITECTURE.md §10).
             {

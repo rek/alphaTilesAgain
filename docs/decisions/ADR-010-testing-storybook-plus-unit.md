@@ -93,7 +93,8 @@ Storybook + automated image diff.
 ## Implementation Notes
 
 - Jest config lives at the repo root (`jest.preset.js`), per-lib `jest.config.ts` extends it.
-- Storybook config lives in `libs/shared/ui-*/.storybook/` per library (or a shared preset). Start with the root `libs/shared/ui-*` libs — tile, keyboard-key, button. Game-specific `ui-*` libs get stories as they're created.
+- Storybook uses the **composite "One Storybook For All" pattern** — a single host at `libs/shared/storybook-host/` aggregates stories from every `type:ui` lib via glob. No per-lib `.storybook/` configs. Run with `./nx storybook storybook-host`. See [NX One Storybook For All guide](https://nx.dev/docs/technologies/test-tools/storybook/guides/one-storybook-for-all) and `openspec/changes/storybook-setup/design.md`.
+- Game-specific `ui-*` libs get stories as they're created — no host config edit needed.
 - Fixtures imported by path from `languages/eng/` etc. — tests that touch assets require a prebuild step before running (document in `GETTING_STARTED.md`). Tests that don't touch assets run standalone.
 - Golden-file pattern for validator tests: expected issue lists committed per fixture pack (ADR-008).
 - Feature-lib manual playtest: each OpenSpec change's `tasks.md` includes a "Manual verification" section listing the screens/flows to exercise before merge.

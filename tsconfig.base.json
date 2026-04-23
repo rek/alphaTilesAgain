@@ -18,6 +18,9 @@
     "baseUrl": ".",
     "types": ["node", "react-native"],
     "paths": {
+      "@shared/util-theme": ["libs/shared/util-theme/src/index.ts"],
+      "@shared/util-theme/testing": ["libs/shared/util-theme/src/testing/index.ts"],
+      "@shared/util-i18n": ["libs/shared/util-i18n/src/index.ts"],
       "@shared/util-ota": ["libs/shared/util-ota/src/index.ts"],
       "@shared/util-precompute": ["libs/shared/util-precompute/src/index.ts"],
       "@shared/util-analytics": ["libs/shared/util-analytics/src/index.ts"],
@@ -58,7 +61,8 @@
       ],
       "@alphaTiles/feature-resources": [
         "libs/alphaTiles/feature-resources/src/index.ts"
-      ]
+      ],
+      "@shared/storybook-host": ["libs/shared/storybook-host/src/index.ts"]
     }
   }
 }

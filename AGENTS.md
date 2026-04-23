@@ -77,6 +77,7 @@ Every change ships in this state:
 - [ ] `npx tsc --noEmit` clean across the workspace.
 - [ ] `nx affected:lint` clean.
 - [ ] `nx affected:test` passes (unit tests for pure-logic libs per ADR-010; features + ui have no mandatory tests in v1 — `type:ui` libs get Storybook stories instead).
+- [ ] For `type:ui` changes: story added/updated + visually verified in `./nx storybook storybook-host`. Native-only visual regressions NOT caught by Storybook — manual device QA per change.
 - [ ] For UI changes: manual smoke test on iOS, Android, and web (or explicitly-noted exclusions).
 - [ ] For libraries: exports surface through `src/index.ts` only; no barrel files below that.
 - [ ] Commits follow `docs/COMMIT_CONVENTIONS.md` (`<type>(<scope>): <subject>`).
@@ -98,6 +99,9 @@ Every change ships in this state:
 - **Container/presenter split is mandatory for every feature screen.** `<Feature>Container` owns hooks + i18n + navigation; `<Feature>Screen` is pure props → JSX.
 - **Script direction is build-time.** `I18nManager.forceRTL` is called in the entry based on `Constants.expoConfig.extra.scriptDirection`. Hot-toggling at runtime is not supported and not needed (per-build = one lang).
 - **Do not add deps casually.** Each new dependency needs a line in the change's design.md + a bump entry in `apps/alphaTiles/package.json` or the relevant lib.
+- **Storybook runs from the composite host — NOT per-lib.** Run `./nx storybook storybook-host`. Do NOT add `.storybook/` dirs or `storybook` NX targets to individual `ui-*` libs. See `docs/TOOLING.md § Storybook`.
+- **Storybook web does NOT catch native-only regressions.** `react-native-web` renders RN primitives in browser but native-only APIs (`Haptics`, `DeviceEventEmitter`, Android ripple, iOS haptic feedback) are absent. Manual device QA per change fills this gap.
+- **Expo-module imports in stories:** `expo-*` packages that use `expo-modules-core` (e.g. `expo-haptics`, `expo-audio`) are stubbed out in `libs/shared/storybook-host/.storybook/mocks/`. If a new `ui-*` lib imports an `expo-*` module not yet stubbed, add a stub there — do NOT import expo native modules in story files directly.
 
 ## Commit / PR etiquette
 

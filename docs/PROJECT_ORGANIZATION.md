@@ -43,6 +43,7 @@ locales/                       # Translation files (at workspace root)
 | `ui` | `type:ui` | Presentational components, design system | util only |
 | `data-access` | `type:data-access` | API calls, storage, state hooks | util only |
 | `util` | `type:util` | Pure functions, helpers, constants | nothing |
+| `tooling` | `type:tooling` | Config-only tooling projects (e.g. storybook-host); no runtime exports; **MUST NOT be imported by any other lib** | nothing |
 
 ## Dependency Rules
 

@@ -103,11 +103,20 @@ Test placement: co-located with source (`foo.test.ts` next to `foo.ts`).
 ## Storybook
 
 ```sh
-./nx storybook <lib>                        # launches Storybook for one ui-* lib
-./nx build-storybook <lib>                  # static build
+./nx storybook storybook-host               # launches composite Storybook at localhost:4400
+./nx build-storybook storybook-host         # static build → dist/storybook/storybook-host/
 ```
 
-Storybook is only scaffolded for `type:ui` libraries per ADR-010. Features + utils do NOT use Storybook.
+Storybook uses the "One Storybook For All" composite pattern (`libs/shared/storybook-host/`).
+All `type:ui` library stories are aggregated via a glob — no per-lib Storybook configs.
+
+**Do NOT run** `./nx storybook ui-*` — those targets do not exist. All stories are visible from the single host.
+
+Stories are discovered automatically: any `.stories.tsx` file under `libs/**/src/` appears in the sidebar after restarting the dev server.
+
+Rendering: React Native primitives render via `react-native-web`. Native-only APIs (`Haptics`, `expo-modules-core` native modules) are stubbed. Use manual device QA for native-only visual differences.
+
+Storybook is only required for `type:ui` libraries per ADR-010. Features + utils do NOT use Storybook.
 
 ## TypeScript
 

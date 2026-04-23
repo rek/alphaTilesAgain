@@ -44,6 +44,7 @@ yarn-error.*
 
 # Build output
 coverage/
+dist/storybook/
 
 # Language packs — rsync'd from PublicLanguageAssets, never committed
 languages/
