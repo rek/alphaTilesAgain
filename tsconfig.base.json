@@ -20,7 +20,22 @@
     "paths": {
       "@shared/util-precompute": ["libs/shared/util-precompute/src/index.ts"],
       "@shared/util-analytics": ["libs/shared/util-analytics/src/index.ts"],
-      "@shared/util-lang-pack-parser": ["libs/shared/util-lang-pack-parser/src/index.ts"]
+      "@shared/util-lang-pack-parser": [
+        "libs/shared/util-lang-pack-parser/src/index.ts"
+      ],
+      "@shared/util-lang-pack-validator": [
+        "libs/shared/util-lang-pack-validator/src/index.ts"
+      ],
+      "@shared/util-phoneme": ["libs/shared/util-phoneme/src/index.ts"],
+      "@alphaTiles/data-language-pack": [
+        "libs/alphaTiles/data-language-pack/src/index.ts"
+      ],
+      "@alphaTiles/data-language-assets": [
+        "libs/alphaTiles/data-language-assets/src/index.ts"
+      ],
+      "@generated/langManifest": [
+        "apps/alphaTiles/src/generated/langManifest.ts"
+      ]
     }
   }
 }

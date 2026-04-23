@@ -103,7 +103,7 @@ One Expo project, one codebase, N builds (one per language pack).
 
 1. **`rsync-lang-packs`** — copies `$PUBLIC_LANG_ASSETS/<pack>/res/` → `languages/<APP_LANG>/` (flat normalized shape — see §5). Fails if the pack is absent or fails schema validation.
 2. **`lang-pack-validator`** — runs full validator against `languages/<APP_LANG>/`. Fails the build on errors; emits warnings to console.
-3. **`generate-lang-manifest`** — scans `languages/<APP_LANG>/` and emits `apps/alphaTiles/src/generated/langManifest.ts`. That file is the only place `require('../../languages/…')` calls live. Everything at runtime consumes the typed manifest.
+3. **`generate-lang-manifest`** — scans `languages/<APP_LANG>/` and emits `apps/alphaTiles/src/generated/langManifest.ts`. That file is the only place `require('../../languages/…')` calls live. Everything at runtime consumes the typed manifest via the `@generated/langManifest` path alias (see §6).
 4. **`app.config.ts`** — reads `languages/<APP_LANG>/aa_langinfo.txt`, derives display name, slug, `applicationId` suffix, RTL flag, icon path (override if present, else shared default). Exports the final Expo config object.
 
 ### EAS build profiles
@@ -165,13 +165,15 @@ Shared (non-pack) audio lives at `apps/alphaTiles/assets/audio/{correct,incorrec
                           prebuild                   runtime
                    ┌──────────────────────┐   ┌────────────────────┐
 languages/<APP_LANG>/  →   langManifest.ts  →   lang-pack-parser  →  LangAssetsProvider
+                      (@generated/langManifest)  (parsePack)          (loadLangPack)
                                                                         │
                                                                         ▼
                                               ┌─────────────────────────────────────────┐
                                               │ Context (boot-immutable, read-only):    │
                                               │  tiles, words, syllables, keys, games,  │
                                               │  langInfo, settings, colors, fonts,     │
-                                              │  audio handles, image requires          │
+                                              │  audio handles, image requires,         │
+                                              │  precomputes (Map<string,unknown>)      │
                                               └─────────────────────────────────────────┘
                                                                         │
                           ┌─────────────────────────────────────────────┤
@@ -187,6 +189,14 @@ languages/<APP_LANG>/  →   langManifest.ts  →   lang-pack-parser  →  LangA
               │   content lookups    │
               └──────────────────────┘
 ```
+
+### `@generated/langManifest` path alias
+
+`apps/alphaTiles/src/generated/langManifest.ts` is regenerated at every prebuild.
+Libs import it via the `@generated/langManifest` alias (declared in `tsconfig.base.json`),
+never via relative paths into the app. This alias is exempt from the standard
+"libs don't import from app" rule — the generated manifest is a build artifact,
+not app logic. The `data-language-assets` and `data-language-pack` libs use this alias.
 
 ### What goes where
 

@@ -11,9 +11,12 @@
  * See ARCHITECTURE.md §9 and design.md §D7.
  */
 
-// Forward reference — replaced by the real type when `lang-assets-runtime` lands.
-// Callers that need typed assets cast at the boundary.
-export type LangAssets = unknown;
+// Real type imported from data-language-pack (type-only — no runtime dependency).
+// See lang-assets-runtime design.md §D5 and precompute-registry MODIFIED spec.
+// The boundary override below is intentional: type-only cycle, safe at runtime.
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import type { LangAssets as _LangAssets } from '@alphaTiles/data-language-pack';
+export type LangAssets = _LangAssets;
 
 export type PrecomputeFn<T = unknown> = (assets: LangAssets) => T;
 

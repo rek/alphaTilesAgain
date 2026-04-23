@@ -1,0 +1,29 @@
+{
+  "name": "data-language-pack",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/data-language-pack/src",
+  "projectType": "library",
+  "tags": ["type:data-access", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/data-language-pack",
+        "main": "libs/alphaTiles/data-language-pack/src/index.ts",
+        "tsConfig": "libs/alphaTiles/data-language-pack/tsconfig.lib.json",
+        "assets": ["libs/alphaTiles/data-language-pack/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/alphaTiles/data-language-pack/jest.config.ts"
+      }
+    }
+  }
+}

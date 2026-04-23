@@ -1,17 +1,17 @@
 /**
  * Unit tests for libs/shared/util-precompute.
- * Covers: register, run, hook read, duplicate-key, missing-key, throwing-fn.
+ * Covers: register, run, duplicate-key, missing-key, throwing-fn.
  *
- * Note: `usePrecompute` is a thin hook over `useContext` — tested here by
- * calling the underlying `usePrecomputeContext` via its exported map directly,
- * since @testing-library/dom is not in the project's test dependencies.
- * A full integration test (with a rendered component tree) belongs in
- * `lang-assets-runtime` once that change lands and sets up a jsdom environment.
+ * Note: usePrecompute moved to @alphaTiles/data-language-assets (design §D7).
+ * Tests here cover registerPrecompute + runPrecomputes only.
+ *
+ * LangAssets is now a real type; test fixtures cast partial objects via `as`.
  */
 
 import { registerPrecompute } from './registerPrecompute';
 import { runPrecomputes } from './runPrecomputes';
 import { registry, precomputeCache } from './precomputeRegistry';
+import type { LangAssets } from './precomputeRegistry';
 
 // ---------------------------------------------------------------------------
 // Reset shared state between tests
@@ -21,6 +21,11 @@ beforeEach(() => {
   registry.clear();
   precomputeCache.clear();
 });
+
+// Helper: cast a partial fixture to LangAssets for test purposes
+function mockAssets(partial: Record<string, unknown> = {}): LangAssets {
+  return partial as unknown as LangAssets;
+}
 
 // ---------------------------------------------------------------------------
 // registerPrecompute
@@ -56,30 +61,29 @@ describe('registerPrecompute', () => {
 
 describe('runPrecomputes', () => {
   it('calls registered functions with assets and caches results', () => {
-    const mockAssets = { lang: 'eng' };
-    const fn = jest.fn((assets) => ({ processed: true, lang: (assets as typeof mockAssets).lang }));
+    const fake = mockAssets({ lang: 'eng' });
+    const fn = jest.fn(() => ({ processed: true }));
     registerPrecompute('mykey', fn);
 
-    const cache = runPrecomputes(mockAssets);
-    expect(fn).toHaveBeenCalledWith(mockAssets);
-    expect(cache.get('mykey')).toEqual({ processed: true, lang: 'eng' });
+    const cache = runPrecomputes(fake);
+    expect(fn).toHaveBeenCalledWith(fake);
+    expect(cache.get('mykey')).toEqual({ processed: true });
   });
 
   it('populates the global precomputeCache', () => {
     registerPrecompute('k', () => 'value');
-    runPrecomputes(null);
+    runPrecomputes(mockAssets());
     expect(precomputeCache.get('k')).toBe('value');
   });
 
   it('clears cache before running (idempotent on re-run)', () => {
     registerPrecompute('x', () => 1);
-    runPrecomputes(null);
+    runPrecomputes(mockAssets());
     expect(precomputeCache.get('x')).toBe(1);
 
-    // Re-register after clearing registry, run again
     registry.clear();
     registerPrecompute('x', () => 2);
-    runPrecomputes(null);
+    runPrecomputes(mockAssets());
     expect(precomputeCache.get('x')).toBe(2);
   });
 
@@ -87,52 +91,51 @@ describe('runPrecomputes', () => {
     registerPrecompute('bad', () => {
       throw new Error('computation failed');
     });
-    expect(() => runPrecomputes(null)).toThrow(/Precompute "bad" failed/);
-    expect(() => runPrecomputes(null)).toThrow(/computation failed/);
+    expect(() => runPrecomputes(mockAssets())).toThrow(/Precompute "bad" failed/);
+    expect(() => runPrecomputes(mockAssets())).toThrow(/computation failed/);
   });
 
   it('returns the cache map containing all results', () => {
     registerPrecompute('a', () => 1);
     registerPrecompute('b', () => 2);
-    const cache = runPrecomputes(null);
+    const cache = runPrecomputes(mockAssets());
     expect(cache.get('a')).toBe(1);
     expect(cache.get('b')).toBe(2);
   });
 
   it('passes assets to all registered functions', () => {
-    const assets = { tile: 'a' };
+    const fake = mockAssets({ tile: 'a' });
     const fnA = jest.fn(() => 'resultA');
     const fnB = jest.fn(() => 'resultB');
     registerPrecompute('p', fnA);
     registerPrecompute('q', fnB);
-    runPrecomputes(assets);
-    expect(fnA).toHaveBeenCalledWith(assets);
-    expect(fnB).toHaveBeenCalledWith(assets);
+    runPrecomputes(fake);
+    expect(fnA).toHaveBeenCalledWith(fake);
+    expect(fnB).toHaveBeenCalledWith(fake);
   });
 });
 
 // ---------------------------------------------------------------------------
-// usePrecompute — test missing-key error message via the cache directly
+// Typed registerPrecompute — compile-time check via inference
 // ---------------------------------------------------------------------------
 
-describe('usePrecompute error paths (cache level)', () => {
-  it('missing-key error lists registered keys', () => {
-    // Simulate what usePrecompute does: check cache, throw with key list
-    registerPrecompute('exists', () => 1);
-    const cache = runPrecomputes(null);
-
-    const key = 'missing';
-    if (!cache.has(key)) {
-      const registeredKeys = [...registry.keys()].join(', ');
-      const err = new Error(
-        `[util-precompute] No precomputed value for key "${key}". ` +
-          `Registered keys: ${registeredKeys}.`,
-      );
-      expect(err.message).toMatch(/exists/);
-      expect(err.message).toMatch(/missing/);
-    }
+describe('typed registerPrecompute', () => {
+  it('callback receives LangAssets-typed parameter (compile-time; cast in test)', () => {
+    type ChileShape = { total: number };
+    // This tests that the type parameter flows correctly at compile time:
+    // registerPrecompute<ChileShape>('chile', (assets: LangAssets) => { ... })
+    registerPrecompute<ChileShape>('chile', () => ({ total: 42 }));
+    const cache = runPrecomputes(mockAssets());
+    const result = cache.get('chile') as ChileShape;
+    expect(result.total).toBe(42);
   });
+});
 
+// ---------------------------------------------------------------------------
+// Error message contract
+// ---------------------------------------------------------------------------
+
+describe('error message contracts', () => {
   it('duplicate key error identifies conflicting key', () => {
     registerPrecompute('target', () => 'first');
     let caught: Error | null = null;
@@ -147,10 +150,12 @@ describe('usePrecompute error paths (cache level)', () => {
   });
 
   it('throwing fn error wraps message with key', () => {
-    registerPrecompute('broken', () => { throw new Error('inner error'); });
+    registerPrecompute('broken', () => {
+      throw new Error('inner error');
+    });
     let caught: Error | null = null;
     try {
-      runPrecomputes(null);
+      runPrecomputes(mockAssets());
     } catch (e) {
       caught = e as Error;
     }

@@ -1,5 +1,5 @@
 {
-  "name": "@shared/util-precompute",
+  "name": "@alphaTiles/data-language-pack",
   "version": "0.0.1",
   "private": true,
   "type": "commonjs",
@@ -7,7 +7,7 @@
   "types": "./src/index.d.ts",
   "dependencies": {
     "tslib": "^2.3.0",
-    "react": "*",
-    "@alphaTiles/data-language-pack": "*"
+    "@shared/util-lang-pack-parser": "*",
+    "@shared/util-precompute": "*"
   }
 }

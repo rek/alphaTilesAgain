@@ -1,27 +1,15 @@
-import { registry } from './precomputeRegistry';
-import { usePrecomputeContext } from './PrecomputeProvider';
-
 /**
- * Hook that reads a precomputed value by key from the nearest PrecomputeProvider.
+ * usePrecompute has moved to @alphaTiles/data-language-assets.
  *
- * Usage (inside a component wrapped by PrecomputeProvider):
- *   const chileData = usePrecompute<ChileData>('chile');
+ * This file is kept as a pointer to avoid broken imports in the transition
+ * period. Import from @alphaTiles/data-language-assets instead.
  *
- * Throws if:
- *   - Called outside a PrecomputeProvider
- *   - The key was never registered (likely a typo or missing registerPrecompute call)
+ * See lang-assets-runtime design.md §D7.
+ *
+ * @deprecated Import usePrecompute from '@alphaTiles/data-language-assets'
  */
-export function usePrecompute<T>(key: string): T {
-  const cache = usePrecomputeContext();
 
-  if (!cache.has(key)) {
-    const registeredKeys = [...registry.keys()].join(', ') || '(none)';
-    throw new Error(
-      `[util-precompute] No precomputed value for key "${key}". ` +
-        `Registered keys: ${registeredKeys}. ` +
-        'Ensure registerPrecompute was called before runPrecomputes.',
-    );
-  }
-
-  return cache.get(key) as T;
-}
+// Re-exporting here would create a runtime circular dependency.
+// Callers must update their import to @alphaTiles/data-language-assets.
+// See design.md §D7: PrecomputeProvider removed; precomputes live in LangAssets.
+export {};
