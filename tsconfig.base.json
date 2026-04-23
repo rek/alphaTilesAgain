@@ -18,7 +18,9 @@
     "baseUrl": ".",
     "types": ["node", "react-native"],
     "paths": {
-      "@shared/util-precompute": ["libs/shared/util-precompute/src/index.ts"]
+      "@shared/util-precompute": ["libs/shared/util-precompute/src/index.ts"],
+      "@shared/util-analytics": ["libs/shared/util-analytics/src/index.ts"],
+      "@shared/util-lang-pack-parser": ["libs/shared/util-lang-pack-parser/src/index.ts"]
     }
   }
 }
