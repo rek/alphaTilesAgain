@@ -1,0 +1,8 @@
+{
+  "name": "ui-door",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/ui-door/src",
+  "projectType": "library",
+  "tags": ["type:ui", "scope:shared"],
+  "targets": {}
+}

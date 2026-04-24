@@ -55,6 +55,19 @@
         "duplicate": "Name already used"
       }
     },
+    "menu": {
+      "score": "Score: {{points}}",
+      "a11y": {
+        "door": "Game {{index}}, {{state}}",
+        "prev": "Previous page",
+        "next": "Next page",
+        "back_to_players": "Back to player selection",
+        "about": "About",
+        "share": "Share",
+        "resources": "Resources",
+        "audio_instructions": "Play audio instructions"
+      }
+    },
     "a11y": {
       "tile": "Tile {{letter}}",
       "word": "Word {{word}}",
