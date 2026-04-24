@@ -71,13 +71,23 @@
       "@shared/storybook-host": ["libs/shared/storybook-host/src/index.ts"],
       "@alphaTiles/util-scoring": ["libs/alphaTiles/util-scoring/src/index.ts"],
       "@alphaTiles/util-stages": ["libs/alphaTiles/util-stages/src/index.ts"],
-      "@alphaTiles/data-progress": ["libs/alphaTiles/data-progress/src/index.ts"],
-      "@alphaTiles/feature-game-shell": ["libs/alphaTiles/feature-game-shell/src/index.ts"],
-      "@alphaTiles/feature-loading": ["libs/alphaTiles/feature-loading/src/index.ts"],
+      "@alphaTiles/data-progress": [
+        "libs/alphaTiles/data-progress/src/index.ts"
+      ],
+      "@alphaTiles/feature-game-shell": [
+        "libs/alphaTiles/feature-game-shell/src/index.ts"
+      ],
+      "@alphaTiles/feature-loading": [
+        "libs/alphaTiles/feature-loading/src/index.ts"
+      ],
       "@shared/ui-door": ["libs/shared/ui-door/src/index.ts"],
       "@shared/ui-door-grid": ["libs/shared/ui-door-grid/src/index.ts"],
-      "@alphaTiles/feature-game-menu": ["libs/alphaTiles/feature-game-menu/src/index.ts"],
-      "@alphaTiles/feature-game-china": ["libs/alphaTiles/feature-game-china/src/index.ts"]
+      "@alphaTiles/feature-game-menu": [
+        "libs/alphaTiles/feature-game-menu/src/index.ts"
+      ],
+      "@alphaTiles/feature-game-china": [
+        "libs/alphaTiles/feature-game-china/src/index.ts"
+      ]
     }
   }
 }

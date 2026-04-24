@@ -92,6 +92,12 @@
       "library": {
         "unitTestRunner": "none"
       }
+    },
+    "@nx/web:application": {
+      "style": "css",
+      "linter": "none",
+      "unitTestRunner": "none",
+      "e2eTestRunner": "none"
     }
   },
   "targetDefaults": {
@@ -125,6 +131,11 @@
     },
     "serve": {
       "cache": false
+    },
+    "@nx/js:swc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "analytics": false
