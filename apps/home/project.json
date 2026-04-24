@@ -21,6 +21,12 @@
       "options": {
         "buildTarget": "home:build"
       }
+    },
+    "serve-build": {
+      "executor": "@nx/vite:server",
+      "options": {
+        "buildTarget": "home:build"
+      }
     }
   }
 }

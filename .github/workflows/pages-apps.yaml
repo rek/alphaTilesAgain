@@ -1,0 +1,46 @@
+name: Deploy Apps to GitHub Pages
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      NX_NO_CLOUD: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm ci --legacy-peer-deps
+
+      # ─── Build all apps ──────────────────────────────────────────────
+      - name: Build Hub
+        run: npx nx run hub:build
+
+      - name: Build English
+        run: npx nx run alphaTiles:web-export
+        env:
+          EXPO_BASE_URL: /en
+
+      # ─── Assemble into one dir ───────────────────────────────────────
+      - name: Assemble site
+        run: |
+          mkdir -p dist/site
+          cp -r dist/apps/hub/. dist/site/
+          for app in en; do
+            mkdir -p "dist/site/$app"
+            cp -r "dist/web/$app/." "dist/site/$app/"
+            echo "/*  /index.html  200" > "dist/site/$app/_redirects"
+          done
