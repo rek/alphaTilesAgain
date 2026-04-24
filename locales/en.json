@@ -30,6 +30,12 @@
     "see_more_of_tile": "See More Words Starting With This Game Tile",
     "expired_title": "Expired",
     "expired_message": "This app has expired.",
+    "loading": {
+      "title": "Loading AlphaTiles",
+      "progress": "Loading {{percent}}%",
+      "tap_to_begin": "Tap to begin",
+      "error": "Something went wrong. Please restart."
+    },
     "players": {
       "heading": "{{localName}}",
       "add": "Add new",

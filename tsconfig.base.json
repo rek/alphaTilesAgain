@@ -72,7 +72,8 @@
       "@alphaTiles/util-scoring": ["libs/alphaTiles/util-scoring/src/index.ts"],
       "@alphaTiles/util-stages": ["libs/alphaTiles/util-stages/src/index.ts"],
       "@alphaTiles/data-progress": ["libs/alphaTiles/data-progress/src/index.ts"],
-      "@alphaTiles/feature-game-shell": ["libs/alphaTiles/feature-game-shell/src/index.ts"]
+      "@alphaTiles/feature-game-shell": ["libs/alphaTiles/feature-game-shell/src/index.ts"],
+      "@alphaTiles/feature-loading": ["libs/alphaTiles/feature-loading/src/index.ts"]
     }
   }
 }

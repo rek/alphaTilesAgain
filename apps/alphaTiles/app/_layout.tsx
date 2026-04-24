@@ -1,14 +1,19 @@
 import React from 'react';
 import Constants from 'expo-constants';
 import { getLocales } from 'expo-localization';
-import { Redirect, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { I18nManager } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
 import { LangAssetsProvider, useLangAssets } from '@alphaTiles/data-language-assets';
 import { ThemeProvider, useFontsReady } from '@shared/util-theme';
 import { I18nProvider, initI18n } from '@shared/util-i18n';
 import { langManifest } from '@generated/langManifest';
-import { usePlayersStore } from '@alphaTiles/data-players';
+import { AudioProvider } from '@alphaTiles/data-audio';
+import { useAudioHandlesStore } from '@alphaTiles/feature-loading';
 import type { FontSource } from 'expo-font';
+
+// Keep splash visible until LoadingContainer hides it explicitly (design D5).
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Apply RTL at module load time, before the root component mounts.
 // scriptDirection is set by app.config.ts reading aa_langinfo.txt.
@@ -40,31 +45,6 @@ const FONT_NAME_MAP = {
 } as const;
 
 /**
- * Derives the boot entry route from persisted player state.
- * Reads store synchronously — no useEffect (ARCHITECTURE.md §7, CLAUDE.md rules).
- *
- * Rules (spec.md §Entry-route derivation):
- *  - activePlayerId valid → /menu
- *  - activePlayerId stale (not in players) → clear it, go to /choose-player
- *  - activePlayerId null → /choose-player
- */
-function EntryRedirect(): React.JSX.Element {
-  const { activePlayerId, players, clearActivePlayer } = usePlayersStore.getState();
-
-  if (activePlayerId !== null) {
-    const activeExists = players.some((p) => p.id === activePlayerId);
-    if (!activeExists) {
-      // Stale id — clear and fall through to /choose-player
-      clearActivePlayer();
-      return <Redirect href="/choose-player" />;
-    }
-    return <Redirect href="/menu" />;
-  }
-
-  return <Redirect href="/choose-player" />;
-}
-
-/**
  * Inner layout — must be inside LangAssetsProvider so it can call useLangAssets().
  * Gates rendering until fonts have loaded to prevent flash of unstyled text.
  * See design.md §D5.
@@ -72,13 +52,13 @@ function EntryRedirect(): React.JSX.Element {
 function InnerLayout(): React.JSX.Element | null {
   const assets = useLangAssets();
   const fontsReady = useFontsReady(FONT_ASSET_MAP);
+  const { handles } = useAudioHandlesStore();
 
   if (!fontsReady) {
-    // Fonts still loading — render nothing (prevents flash of unstyled text)
     return null;
   }
 
-  return (
+  const stack = (
     <ThemeProvider
       palette={assets.colors.hexByIndex}
       fontMap={FONT_NAME_MAP}
@@ -86,6 +66,13 @@ function InnerLayout(): React.JSX.Element | null {
       <Stack />
     </ThemeProvider>
   );
+
+  if (handles === null) {
+    // Audio not yet preloaded — loading screen renders, AudioProvider not yet needed.
+    return stack;
+  }
+
+  return <AudioProvider handles={handles}>{stack}</AudioProvider>;
 }
 
 export default function RootLayout(): React.JSX.Element {
