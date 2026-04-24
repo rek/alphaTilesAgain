@@ -108,6 +108,10 @@ Every change ships in this state:
 - **`app.config.ts` cannot import workspace TS libs.** Expo's config loader runs in Node before TypeScript compilation. `import { foo } from '../../libs/...'` fails because the compiled `.js` doesn't exist yet. Inline any config-time logic directly in `app.config.ts`.
 - **`useGameShell()` must be called inside a child of `GameShellContainer`.** The hook reads from a React context. The component that renders `<GameShellContainer>` cannot also call `useGameShell()` — it must pass a child component that does. Pattern: outer `XContainer` renders `<GameShellContainer><XGame /></GameShellContainer>`; inner `XGame` calls `useGameShell()`.
 - **`registerPrecompute` is from `@shared/util-precompute`, not `@alphaTiles/util-precompute`.** No alphaTiles-scoped precompute lib exists. The side-effect import in a feature-game lib's `index.ts` must use the shared path.
+- **`flex: 1, aspectRatio: 1` children inside `flexWrap: 'wrap'` do NOT form a grid.** All children collapse into one line (they all fit at W/N each, no wrapping triggers). Sliding-tile boards and any fixed-grid layout must use explicit `width`/`height` from `useWindowDimensions`, not `flex: 1` on tiles.
+- **Blank tile in sliding-tile games needs a visually distinct color.** `'#FFFFFF'` on a white screen is invisible. Use a light-gray (`#E0E0E0`) or bordered style so users can see the empty slot.
+- **Badge text on game-color backgrounds needs contrast-aware color.** Game color index 5 is `#FFFF00` (pure yellow); white text on yellow is unreadable. Use a luminance check (`0.299r + 0.587g + 0.114b > 127.5`) to choose `#000` vs `#fff` text. See `ScoreBar.tsx` `contrastColor()`.
+- **`chrome.score` i18n key is a label only (`"Score"`), not an interpolated string.** The score number is displayed separately by `ScoreBar`. Do not add `{{points}}` interpolation to this key — the `menu.score` key carries the full interpolated string for the menu screen.
 
 ## Commit / PR etiquette
 
