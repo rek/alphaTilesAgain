@@ -31,10 +31,6 @@ export function WebAudioUnlockGate({
 }: WebAudioUnlockGateProps): React.JSX.Element | null {
   const ctx = useContext(AudioContext);
 
-  if (ctx === null) {
-    throw new Error('WebAudioUnlockGate must be used inside <AudioProvider>');
-  }
-
   if (!ctx.isAudioUnlocked) {
     return <>{fallback}</>;
   }

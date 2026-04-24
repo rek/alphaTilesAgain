@@ -18,7 +18,7 @@ export function AudioProvider({
   handles,
   children,
 }: {
-  handles: AudioHandles;
+  handles: AudioHandles | null;
   children: React.ReactNode;
 }): React.JSX.Element {
   const [isAudioUnlocked, setIsAudioUnlocked] = useState<boolean>(

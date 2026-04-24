@@ -48,14 +48,11 @@ async function playHandle(handle: SoundHandle): Promise<void> {
 }
 
 export function useAudio() {
-  const ctx = useContext(AudioContext);
-  if (ctx === null) {
-    throw new Error('useAudio must be called inside <AudioProvider>');
-  }
-  const { handles, isAudioUnlocked, setIsAudioUnlocked } = ctx;
+  const { handles, isAudioUnlocked, setIsAudioUnlocked } = useContext(AudioContext);
 
   // ── playTile ──────────────────────────────────────────────────────────
   const playTile = async (id: string): Promise<void> => {
+    if (!handles) return;
     const handle = handles.tiles.get(id);
     if (handle === undefined) {
       // tiles map is empty because hasTileAudio = false, or id not in manifest.
@@ -81,6 +78,7 @@ export function useAudio() {
 
   // ── playWord ──────────────────────────────────────────────────────────
   const playWord = async (id: string): Promise<void> => {
+    if (!handles) return;
     const handle = handles.words.get(id);
     if (handle === undefined || handle === null) {
       if (!warnedWords.has(id)) {
@@ -96,6 +94,7 @@ export function useAudio() {
 
   // ── playSyllable ──────────────────────────────────────────────────────
   const playSyllable = async (id: string): Promise<void> => {
+    if (!handles) return;
     const handle = handles.syllables.get(id);
     if (handle === undefined) {
       if (!warnedSyllables.has(id)) {
@@ -120,6 +119,7 @@ export function useAudio() {
 
   // ── playInstruction ───────────────────────────────────────────────────
   const playInstruction = async (id: string): Promise<void> => {
+    if (!handles) return;
     const handle = handles.instructions.get(id);
     if (handle === undefined || handle === null) {
       if (!warnedInstructions.has(id)) {
@@ -135,33 +135,36 @@ export function useAudio() {
 
   // ── Chimes ────────────────────────────────────────────────────────────
   const playCorrect = async (): Promise<void> => {
+    if (!handles) return;
     await playHandle(handles.chimes.correct);
   };
 
   const playIncorrect = async (): Promise<void> => {
+    if (!handles) return;
     await playHandle(handles.chimes.incorrect);
   };
 
   const playCorrectFinal = async (): Promise<void> => {
+    if (!handles) return;
     await playHandle(handles.chimes.correctFinal);
   };
 
   // ── Duration getters ──────────────────────────────────────────────────
   const getTileDuration = (id: string): number | undefined => {
-    return handles.durations.get(id);
+    return handles?.durations.get(id);
   };
 
   const getWordDuration = (id: string): number | undefined => {
-    return handles.durations.get(id);
+    return handles?.durations.get(id);
   };
 
   const getSyllableDuration = (id: string): number | undefined => {
-    return handles.durations.get(id);
+    return handles?.durations.get(id);
   };
 
   // ── Web unlock (design D9) ────────────────────────────────────────────
   const unlockAudio = async (): Promise<void> => {
-    if (Platform.OS !== 'web' || isAudioUnlocked) return;
+    if (Platform.OS !== 'web' || isAudioUnlocked || !handles) return;
 
     try {
       // Prime the AudioContext by playing a zero-volume chime.

@@ -6,9 +6,15 @@ import { createContext } from 'react';
 import type { AudioHandles } from './AudioHandles';
 
 export type AudioContextValue = {
-  handles: AudioHandles;
+  handles: AudioHandles | null;
   isAudioUnlocked: boolean;
   setIsAudioUnlocked: (v: boolean) => void;
 };
 
-export const AudioContext = createContext<AudioContextValue | null>(null);
+// Default is a no-op sentinel — AudioProvider is always mounted, handles may
+// arrive after fonts load but before audio preload completes.
+export const AudioContext = createContext<AudioContextValue>({
+  handles: null,
+  isAudioUnlocked: false,
+  setIsAudioUnlocked: () => undefined,
+});

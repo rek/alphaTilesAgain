@@ -58,21 +58,18 @@ function InnerLayout(): React.JSX.Element | null {
     return null;
   }
 
-  const stack = (
-    <ThemeProvider
-      palette={assets.colors.hexByIndex}
-      fontMap={FONT_NAME_MAP}
-    >
-      <Stack screenOptions={{ headerShown: false }} />
-    </ThemeProvider>
+  // AudioProvider always in the tree — handles is null until preload completes,
+  // during which time all play* calls are no-ops. Stable tree prevents Stack remounts.
+  return (
+    <AudioProvider handles={handles}>
+      <ThemeProvider
+        palette={assets.colors.hexByIndex}
+        fontMap={FONT_NAME_MAP}
+      >
+        <Stack screenOptions={{ headerShown: false }} />
+      </ThemeProvider>
+    </AudioProvider>
   );
-
-  if (handles === null) {
-    // Audio not yet preloaded — loading screen renders, AudioProvider not yet needed.
-    return stack;
-  }
-
-  return <AudioProvider handles={handles}>{stack}</AudioProvider>;
 }
 
 export default function RootLayout(): React.JSX.Element {
