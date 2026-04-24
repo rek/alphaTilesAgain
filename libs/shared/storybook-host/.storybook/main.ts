@@ -27,6 +27,22 @@ const config: StorybookConfig = {
       directory: '../../../shared/ui-custom-keyboard/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
+    {
+      directory: '../../../shared/ui-tile/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../shared/ui-game-board/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../shared/ui-score-bar/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../shared/ui-celebration/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
   ],
   addons: [],
   typescript: { reactDocgen: false },
