@@ -212,7 +212,7 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
   const packSplash = fs.existsSync(path.join(langDir, 'images', 'splash.png'));
   const iconRequire = packIcon
     ? requireLiteral(lang, 'images', 'icon.png')
-    : requireAppAsset('images', 'icon-default.png');
+    : requireAppAsset('images', 'icon.png');
   const splashRequire = packSplash
     ? requireLiteral(lang, 'images', 'splash.png')
     : requireAppAsset('images', 'splash-icon.png');

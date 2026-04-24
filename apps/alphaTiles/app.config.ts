@@ -24,7 +24,19 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { parseLangInfo } from '../../libs/shared/util-lang-pack-parser/src';
+// Inline minimal langinfo parser — avoids requiring the TS lib in Node's config-load context.
+function parseLangInfo(src: string): { find: (label: string) => string | undefined } {
+  const normalizeLabel = (l: string) => l.replace(/^\d+\.\s*/, '').trim();
+  const map = new Map<string, string>();
+  const lines = src.replace(/\r\n/g, '\n').split('\n').filter(Boolean).slice(1);
+  for (const line of lines) {
+    const tab = line.indexOf('\t');
+    const key = normalizeLabel(tab === -1 ? line : line.slice(0, tab));
+    const value = tab === -1 ? '' : line.slice(tab + 1).trim();
+    if (key) map.set(key, value);
+  }
+  return { find: (label: string) => map.get(normalizeLabel(label)) };
+}
 
 export default ({ config }: ConfigContext): ExpoConfig => {
   const lang = process.env.APP_LANG;
