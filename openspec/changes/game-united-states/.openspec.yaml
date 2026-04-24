@@ -1,0 +1,7 @@
+name: game-united-states
+status: proposing
+applyRequires:
+  - proposal.md
+  - design.md
+  - specs/pairing-spelling/spec.md
+  - tasks.md
