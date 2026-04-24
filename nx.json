@@ -45,12 +45,7 @@
         "watchDepsTargetName": "watch-deps"
       }
     },
-    {
-      "plugin": "@nx/jest/plugin",
-      "options": {
-        "targetName": "test"
-      }
-    },
+    { "plugin": "@nx/jest/plugin", "options": { "targetName": "test" } },
     {
       "plugin": "@nx/react-native/plugin",
       "options": {
@@ -65,34 +60,17 @@
         "syncDepsTargetName": "sync-deps"
       }
     },
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "lint"
-      }
-    }
+    { "plugin": "@nx/eslint/plugin", "options": { "targetName": "lint" } }
   ],
   "generators": {
     "@nx/expo": {
-      "application": {
-        "e2eTestRunner": "none",
-        "unitTestRunner": "jest"
-      },
-      "library": {
-        "unitTestRunner": "jest"
-      }
+      "application": { "e2eTestRunner": "none", "unitTestRunner": "jest" },
+      "library": { "unitTestRunner": "jest" }
     },
     "@nx/react-native": {
-      "library": {
-        "unitTestRunner": "jest",
-        "linter": "none"
-      }
+      "library": { "unitTestRunner": "jest", "linter": "none" }
     },
-    "@nx/react": {
-      "library": {
-        "unitTestRunner": "none"
-      }
-    },
+    "@nx/react": { "library": { "unitTestRunner": "none" } },
     "@nx/web:application": {
       "style": "css",
       "linter": "none",
@@ -116,27 +94,17 @@
       "cache": true,
       "inputs": ["default", "^default", "{workspaceRoot}/jest.preset.js"]
     },
-    "lint": {
-      "cache": true,
-      "inputs": ["default"]
-    },
-    "start": {
-      "cache": false
-    },
-    "run-ios": {
-      "cache": false
-    },
-    "run-android": {
-      "cache": false
-    },
-    "serve": {
-      "cache": false
-    },
+    "lint": { "cache": true, "inputs": ["default"] },
+    "start": { "cache": false },
+    "run-ios": { "cache": false },
+    "run-android": { "cache": false },
+    "serve": { "cache": false },
     "@nx/js:swc": {
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     }
   },
-  "analytics": false
+  "analytics": false,
+  "nxCloudId": "69eb93752f0f386d494823d6"
 }
