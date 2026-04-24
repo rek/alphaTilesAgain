@@ -1,0 +1,8 @@
+{
+  "name": "ui-celebration",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/ui-celebration/src",
+  "projectType": "library",
+  "tags": ["type:ui", "scope:shared"],
+  "targets": {}
+}

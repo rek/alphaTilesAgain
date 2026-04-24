@@ -1,0 +1,8 @@
+{
+  "name": "ui-game-board",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/ui-game-board/src",
+  "projectType": "library",
+  "tags": ["type:ui", "scope:shared"],
+  "targets": {}
+}
