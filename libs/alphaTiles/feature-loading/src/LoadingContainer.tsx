@@ -118,7 +118,7 @@ export function LoadingContainer(): React.JSX.Element {
   const progressLabel =
     phase === 'audio'
       ? t('loading.progress', { percent: Math.floor(audioProgress * 100) })
-      : t('loading.title');
+      : '';
 
   return (
     <LoadingScreen

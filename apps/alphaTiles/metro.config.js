@@ -14,7 +14,12 @@ const customConfig = {
   projectRoot,
   resolver: {
     assetExts: assetExts.filter((ext) => ext !== 'svg'),
-    sourceExts: [...sourceExts, 'cjs', 'mjs', 'svg'],
+    // Exclude 'mjs' — ESM files use import.meta which Metro's CJS transform can't handle.
+    // Packages like zustand ship both CJS (.js) and ESM (.mjs); we want the CJS build.
+    sourceExts: [...sourceExts, 'cjs', 'svg'],
+    unstable_enablePackageExports: true,
+    // Prefer 'require' (CJS) over 'import' (ESM) when resolving package.json exports.
+    unstable_conditionNames: ['react-native', 'browser', 'require', 'default'],
   },
 };
 

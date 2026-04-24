@@ -63,7 +63,7 @@ function InnerLayout(): React.JSX.Element | null {
       palette={assets.colors.hexByIndex}
       fontMap={FONT_NAME_MAP}
     >
-      <Stack />
+      <Stack screenOptions={{ headerShown: false }} />
     </ThemeProvider>
   );
 

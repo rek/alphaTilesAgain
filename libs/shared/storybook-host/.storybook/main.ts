@@ -43,6 +43,18 @@ const config: StorybookConfig = {
       directory: '../../../shared/ui-celebration/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
+    {
+      directory: '../../../shared/ui-door/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../shared/ui-door-grid/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-china/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
   ],
   addons: [],
   typescript: { reactDocgen: false },

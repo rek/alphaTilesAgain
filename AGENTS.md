@@ -44,29 +44,30 @@ The port pulls from two **sibling local repos**. Paths assume this repo is at `/
 
 At runtime, packs land under `languages/<code>/` (gitignored — never commit a pack).
 
-## The OpenSpec change in flight
+## Port status
 
-Run `openspec status --all` to see current status. Current port phase: **15 changes plotted, implementation not yet started.** Dependency chart (also in `openspec/AGENT_PROTOCOL.md`):
+**All 16 foundational changes are implemented and archived** (as of 2026-04-24). Run `openspec status --all` — no active changes remain. The app boots end-to-end on web and native, the game menu renders, and the China sliding-tile game plays.
 
 ```
-port-foundations                   (batch 1, no deps)
-lang-pack-parser                   (batch 1, no deps)
-analytics-abstraction              (batch 1, no deps)
-lang-pack-validator                (needs parser)
-lang-assets-runtime                (needs parser + port-foundations util-precompute)
-audio-system                       (needs lang-assets-runtime)
-theme-fonts                        (needs lang-assets-runtime)
-i18n-foundation                    (needs lang-assets-runtime)
-player-profiles                    (needs i18n + theme + lang-assets)
-about-share-resources-screens      (needs i18n + theme + lang-assets)
-game-engine-base                   (needs audio + theme + i18n + analytics + lang-assets + util-precompute)
-loading-screen                     (needs audio + theme + i18n + lang-assets + player-profiles + util-precompute)
-game-menu                          (needs lang-assets; optional forward dep on game-engine-base's progress store)
-game-china                         (needs game-engine-base)
-ota-updates                        (needs analytics)
+port-foundations                   ✓ archived 2026-04-23
+lang-pack-parser                   ✓ archived 2026-04-23
+analytics-abstraction              ✓ archived 2026-04-23
+lang-pack-validator                ✓ archived 2026-04-23
+lang-assets-runtime                ✓ archived 2026-04-23
+audio-system                       ✓ archived 2026-04-23
+theme-fonts                        ✓ archived 2026-04-23
+i18n-foundation                    ✓ archived 2026-04-23
+player-profiles                    ✓ archived 2026-04-23
+about-share-resources-screens      ✓ archived 2026-04-23
+storybook-setup                    ✓ archived 2026-04-23
+ota-updates                        ✓ archived 2026-04-23
+game-engine-base                   ✓ archived 2026-04-24
+loading-screen                     ✓ archived 2026-04-24
+game-menu                          ✓ archived 2026-04-24
+game-china                         ✓ archived 2026-04-24
 ```
 
-Pick a ready change (all deps merged); never work on two changes in parallel unless they're independent batch peers.
+Next changes must be proposed with `/opsx:propose <name>`, then implemented via `/opsx:apply <name>`.
 
 ## Definition of Done — per change
 
@@ -102,6 +103,11 @@ Every change ships in this state:
 - **Storybook runs from the composite host — NOT per-lib.** Run `./nx storybook storybook-host`. Do NOT add `.storybook/` dirs or `storybook` NX targets to individual `ui-*` libs. See `docs/TOOLING.md § Storybook`.
 - **Storybook web does NOT catch native-only regressions.** `react-native-web` renders RN primitives in browser but native-only APIs (`Haptics`, `DeviceEventEmitter`, Android ripple, iOS haptic feedback) are absent. Manual device QA per change fills this gap.
 - **Expo-module imports in stories:** `expo-*` packages that use `expo-modules-core` (e.g. `expo-haptics`, `expo-audio`) are stubbed out in `libs/shared/storybook-host/.storybook/mocks/`. If a new `ui-*` lib imports an `expo-*` module not yet stubbed, add a stub there — do NOT import expo native modules in story files directly.
+- **Metro web + ESM packages:** Metro's `sourceExts` must NOT include `'mjs'`. Packages like `zustand` publish ESM builds (`.mjs`) that use `import.meta`, which Metro's CJS transform cannot handle. The metro.config.js sets `unstable_conditionNames: ['react-native', 'browser', 'require', 'default']` to force CJS resolution. Do not add `'mjs'` back.
+- **Zustand selectors that return new objects cause infinite re-render loops.** Any selector that builds a new `{}` or `[]` on every call will be seen as a new value by `Object.is`, causing zustand to re-render on every store update. Wrap such selectors with `useShallow` from `zustand/react/shallow`. This applies to `useTrackerCounts` and any future selector returning a derived object.
+- **`app.config.ts` cannot import workspace TS libs.** Expo's config loader runs in Node before TypeScript compilation. `import { foo } from '../../libs/...'` fails because the compiled `.js` doesn't exist yet. Inline any config-time logic directly in `app.config.ts`.
+- **`useGameShell()` must be called inside a child of `GameShellContainer`.** The hook reads from a React context. The component that renders `<GameShellContainer>` cannot also call `useGameShell()` — it must pass a child component that does. Pattern: outer `XContainer` renders `<GameShellContainer><XGame /></GameShellContainer>`; inner `XGame` calls `useGameShell()`.
+- **`registerPrecompute` is from `@shared/util-precompute`, not `@alphaTiles/util-precompute`.** No alphaTiles-scoped precompute lib exists. The side-effect import in a feature-game lib's `index.ts` must use the shared path.
 
 ## Commit / PR etiquette
 

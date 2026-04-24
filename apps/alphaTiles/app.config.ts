@@ -141,6 +141,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       'expo-router',
       'expo-updates',
+      'expo-audio',
+      'expo-localization',
       [
         'expo-splash-screen',
         {

@@ -23,36 +23,28 @@ Slash-commands (from `.claude/commands/opsx/`):
 
 ## Dependency chart (snapshot, maintain in `AGENTS.md`)
 
+All 16 foundational changes are **merged** as of 2026-04-24. No active changes remain.
+
 ```
-Batch 1 (no deps, can run in parallel)
-  port-foundations        — build pipeline, docs, util-precompute skeleton
-  lang-pack-parser        — pure TS aa_*.txt parsers
-  analytics-abstraction   — no-op interface + event catalog
-
-Batch 2 (needs Batch 1)
-  lang-pack-validator     — depends on parser
-  lang-assets-runtime     — depends on parser + port-foundations (util-precompute)
-
-Batch 3 (needs lang-assets-runtime)
-  audio-system            — expo-audio wrapper
-  theme-fonts             — palette + typography + fonts loader
-  i18n-foundation         — i18next w/ chrome + content namespaces
-
-Batch 4 (needs audio + theme + i18n)
-  player-profiles         — choose/set player, zustand+persist
-  about-share-resources-screens — info screens
-
-Batch 5 (needs players and/or engine)
-  game-engine-base        — GameActivity abstraction (big)
-  loading-screen          — boot orchestration
-
-Batch 6 (needs engine)
-  game-china              — exemplar concrete game
-  game-menu               — Earth.java door grid
-
-Any time after analytics
-  ota-updates             — EAS Update plumbing
+✓ port-foundations        — build pipeline, docs, util-precompute skeleton
+✓ lang-pack-parser        — pure TS aa_*.txt parsers
+✓ analytics-abstraction   — no-op interface + event catalog
+✓ lang-pack-validator     — depends on parser
+✓ lang-assets-runtime     — depends on parser + port-foundations (util-precompute)
+✓ audio-system            — expo-audio wrapper
+✓ theme-fonts             — palette + typography + fonts loader
+✓ i18n-foundation         — i18next w/ chrome + content namespaces
+✓ storybook-setup         — composite storybook host
+✓ player-profiles         — choose/set player, zustand+persist
+✓ about-share-resources-screens — info screens
+✓ ota-updates             — EAS Update plumbing
+✓ game-engine-base        — GameActivity abstraction
+✓ loading-screen          — boot orchestration
+✓ game-menu               — Earth.java door grid
+✓ game-china              — exemplar concrete game (sliding-tile puzzle)
 ```
+
+New changes go through `/opsx:propose` → `/opsx:apply` → `/opsx:archive`.
 
 ## Pickup protocol
 

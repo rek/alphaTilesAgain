@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 import { rnStorage } from './rnStorage';
 
 export type ProgressKey = string;
@@ -107,7 +108,7 @@ export const useProgressStore = create<ProgressState & ProgressActions>()(
 
 export function useProgressEntry(key: ProgressKey): ProgressEntry {
   return useProgressStore(
-    (state) => state.progress[key] ?? { ...DEFAULT_ENTRY },
+    useShallow((state) => state.progress[key] ?? DEFAULT_ENTRY),
   );
 }
 
