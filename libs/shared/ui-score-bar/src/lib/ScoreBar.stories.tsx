@@ -2,9 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { ScoreBar } from './ScoreBar';
 import type { TrackerState } from './ScoreBar';
 
-const COMPLETE = { uri: 'https://placehold.co/18x18/4CAF50/4CAF50' };
-const INCOMPLETE = { uri: 'https://placehold.co/18x18/bdbdbd/bdbdbd' };
-
 const meta: Meta<typeof ScoreBar> = {
   title: 'shared/ui-score-bar/ScoreBar',
   component: ScoreBar,
@@ -14,8 +11,6 @@ const meta: Meta<typeof ScoreBar> = {
     challengeLevel: 1,
     score: 0,
     scoreLabel: 'pts',
-    completeSource: COMPLETE,
-    incompleteSource: INCOMPLETE,
   },
 };
 

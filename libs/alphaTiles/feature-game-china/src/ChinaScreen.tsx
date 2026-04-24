@@ -1,16 +1,18 @@
 /**
  * Pure presenter for the China sliding-tile game.
  * Zero hook imports, zero i18n imports — all data arrives as props.
+ *
+ * Layout: image strip on the left, 4x4 tile grid on the right.
+ * Cell size is computed from window dimensions so the grid always fits.
  */
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import { Tile } from '@shared/ui-tile';
-import { GameBoard } from '@shared/ui-game-board';
 
 const SOLVED_COLOR = '#4CAF50';
-const UNSOLVED_COLOR = '#000000';
-const BLANK_COLOR = '#FFFFFF';
+const UNSOLVED_COLOR = '#1565C0';
+const BLANK_COLOR = '#E0E0E0';
+const IMAGE_BG = '#555555';
 
 type CellColor = 'solved' | 'unsolved' | 'blank';
 
@@ -39,38 +41,76 @@ export function ChinaScreen({
   onTilePress,
   onImagePress,
 }: ChinaScreenProps): React.JSX.Element {
+  const { width, height } = useWindowDimensions();
+
+  // 5 columns total: 1 image column + 4 tile columns; 4 rows; leave room for chrome
+  const byWidth = Math.floor(width / 5);
+  const byHeight = Math.floor((height * 0.72) / 4);
+  const cellSize = Math.max(40, Math.min(byWidth, byHeight));
+  const gap = 3;
+
   return (
     <View style={styles.root}>
-      <View style={styles.imageStrip}>
+      {/* Left strip: one word image per row */}
+      <View style={{ flexDirection: 'column', gap }}>
         {wordImages.map((img, i) => (
-          <Tile
+          <Pressable
             key={i}
-            imageSource={img.src}
-            color="#555555"
-            accessibilityLabel={img.label}
             onPress={interactionLocked ? undefined : () => onImagePress(i)}
-          />
+            style={[styles.imageCell, { width: cellSize, height: cellSize, backgroundColor: IMAGE_BG }]}
+            accessibilityLabel={img.label}
+            accessibilityRole="button"
+          >
+            {img.src ? (
+              <Image
+                source={img.src}
+                style={styles.cellImage}
+                resizeMode="contain"
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
+            ) : (
+              <Text style={styles.imageLabel} numberOfLines={1} adjustsFontSizeToFit>
+                {img.label}
+              </Text>
+            )}
+          </Pressable>
         ))}
       </View>
-      <GameBoard columns={4} rows={4} accessibilityLabel="China sliding tile board">
-        {board.map((text, i) => {
-          const row = Math.floor(i / 4);
-          const col = i % 4;
-          const colorKey = rowColors[row]?.[col] ?? 'unsolved';
-          const bg = cellBgColor(colorKey);
-          const isBlank = i === blankIndex;
-          return (
-            <Tile
-              key={i}
-              text={isBlank ? '' : text}
-              color={bg}
-              fontColor="#FFFFFF"
-              accessibilityLabel={isBlank ? 'blank' : text}
-              onPress={interactionLocked ? undefined : () => onTilePress(i)}
-            />
-          );
-        })}
-      </GameBoard>
+
+      {/* 4×4 tile grid */}
+      <View style={{ marginStart: gap }}>
+        {[0, 1, 2, 3].map((row) => (
+          <View key={row} style={{ flexDirection: 'row', gap, marginBottom: row < 3 ? gap : 0 }}>
+            {[0, 1, 2, 3].map((col) => {
+              const idx = row * 4 + col;
+              const isBlank = idx === blankIndex;
+              const colorKey = rowColors[row]?.[col] ?? 'unsolved';
+              const bg = cellBgColor(colorKey);
+              const text = board[idx] ?? '';
+              return (
+                <Pressable
+                  key={idx}
+                  onPress={interactionLocked ? undefined : () => onTilePress(idx)}
+                  style={({ pressed }) => [
+                    styles.tileCell,
+                    { width: cellSize, height: cellSize, backgroundColor: bg },
+                    pressed && !isBlank && styles.pressed,
+                  ]}
+                  accessibilityLabel={isBlank ? 'empty' : text}
+                  accessibilityRole={isBlank ? 'none' : 'button'}
+                >
+                  {!isBlank && (
+                    <Text style={styles.tileLabel} numberOfLines={1} adjustsFontSizeToFit>
+                      {text}
+                    </Text>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -82,8 +122,35 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
   },
-  imageStrip: {
-    flexDirection: 'column',
-    marginEnd: 8,
+  imageCell: {
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  cellImage: {
+    width: '80%',
+    height: '80%',
+  },
+  imageLabel: {
+    color: '#fff',
+    fontSize: 11,
+    textAlign: 'center',
+    paddingHorizontal: 2,
+  },
+  tileCell: {
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tileLabel: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  pressed: {
+    opacity: 0.75,
+    transform: [{ scale: 0.93 }],
   },
 });

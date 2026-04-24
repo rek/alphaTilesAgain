@@ -223,15 +223,17 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
   if (board.length === 0 || !currentWords) return <></>;
 
   return (
-    <ChinaScreen
-      board={board}
-      blankIndex={blankIndex}
-      rowColors={rowColors}
-      wordImages={wordImagesData}
-      interactionLocked={shell.interactionLocked}
-      onTilePress={onTilePress}
-      onImagePress={onImagePress}
-    />
+    <>
+      <ChinaScreen
+        board={board}
+        blankIndex={blankIndex}
+        rowColors={rowColors}
+        wordImages={wordImagesData}
+        interactionLocked={shell.interactionLocked}
+        onTilePress={onTilePress}
+        onImagePress={onImagePress}
+      />
+    </>
   );
 }
 

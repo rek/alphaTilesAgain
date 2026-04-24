@@ -2,10 +2,12 @@
   "chrome": {
     "back": "Back",
     "home": "Home",
-    "score": "Score: {{points}}",
+    "score": "Score",
     "choose_player": "Choose Player",
     "set_player_name": "Set Player Name",
     "tracker_of_total": "Tracker {{current}} of {{total}}",
+    "replay": "Replay",
+    "instructions": "Instructions",
     "play_again": "Play Again",
     "celebrate": "Great job! You found correct answers to 12 questions on this game!",
     "about": "About This App",

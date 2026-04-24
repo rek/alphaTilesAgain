@@ -19,15 +19,9 @@ import {
   Text,
   View,
 } from 'react-native';
-import type { ImageSourcePropType } from 'react-native';
 import { ScoreBar } from '@shared/ui-score-bar';
 import { Celebration } from '@shared/ui-celebration';
 import type { CelebrationProps } from '@shared/ui-celebration';
-
-// Placeholder tracker icon sources — in production, these are injected from lang assets.
-// The shell accepts them as props so stories can supply { uri } placeholders.
-const COMPLETE_PLACEHOLDER: ImageSourcePropType = { uri: 'https://placehold.co/18x18/4CAF50/4CAF50' };
-const INCOMPLETE_PLACEHOLDER: ImageSourcePropType = { uri: 'https://placehold.co/18x18/bdbdbd/bdbdbd' };
 
 export type GameShellScreenProps = {
   score: number;
@@ -54,9 +48,6 @@ export type GameShellScreenProps = {
   onCelebrationBack: () => void;
   // Slot
   children: React.ReactNode;
-  // Optional injected tracker sources (useful for testing/Storybook)
-  completeSource?: ImageSourcePropType;
-  incompleteSource?: ImageSourcePropType;
   /** Lottie animation source for the celebration screen — injected from app (Metro static require). */
   celebrationSource?: CelebrationProps['animationSource'];
 };
@@ -82,8 +73,6 @@ export function GameShellScreen({
   onAdvancePress,
   onCelebrationBack,
   children,
-  completeSource = COMPLETE_PLACEHOLDER,
-  incompleteSource = INCOMPLETE_PLACEHOLDER,
   celebrationSource = { uri: 'https://assets10.lottiefiles.com/packages/lf20_jR229r.json' },
 }: GameShellScreenProps): React.JSX.Element {
   return (
@@ -96,8 +85,6 @@ export function GameShellScreen({
         trackerStates={trackerStates}
         score={score}
         scoreLabel={scoreLabel}
-        completeSource={completeSource}
-        incompleteSource={incompleteSource}
       />
 
       {/* Mechanic-specific board slot */}

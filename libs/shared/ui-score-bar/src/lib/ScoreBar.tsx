@@ -1,11 +1,12 @@
 import React from 'react';
-import {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import type { ImageSourcePropType } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+
+function contrastColor(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5 ? '#000' : '#fff';
+}
 
 export type TrackerState = 'complete' | 'incomplete';
 
@@ -16,8 +17,6 @@ export type ScoreBarProps = {
   trackerStates: TrackerState[]; // always length 12
   score: number;
   scoreLabel: string; // pre-translated
-  completeSource: ImageSourcePropType;
-  incompleteSource: ImageSourcePropType;
 };
 
 export function ScoreBar({
@@ -27,14 +26,13 @@ export function ScoreBar({
   trackerStates,
   score,
   scoreLabel,
-  completeSource,
-  incompleteSource,
 }: ScoreBarProps): React.JSX.Element {
+  const textColor = contrastColor(gameColor);
   return (
     <View style={styles.row}>
       {/* Game number badge */}
       <View style={[styles.badge, { backgroundColor: gameColor }]}>
-        <Text style={styles.badgeText} adjustsFontSizeToFit numberOfLines={1}>
+        <Text style={[styles.badgeText, { color: textColor }]} adjustsFontSizeToFit numberOfLines={1}>
           {gameNumber}
         </Text>
       </View>
@@ -46,13 +44,12 @@ export function ScoreBar({
         </Text>
       </View>
 
-      {/* 12 tracker icons */}
+      {/* 12 tracker dots */}
       <View style={styles.trackers}>
         {trackerStates.map((state, i) => (
-          <Image
+          <View
             key={i}
-            source={state === 'complete' ? completeSource : incompleteSource}
-            style={styles.tracker}
+            style={[styles.dot, state === 'complete' ? styles.dotComplete : styles.dotIncomplete]}
             accessibilityElementsHidden
             importantForAccessibility="no"
           />
@@ -61,10 +58,10 @@ export function ScoreBar({
 
       {/* Score */}
       <View style={[styles.badge, { backgroundColor: gameColor }]}>
-        <Text style={styles.badgeText} adjustsFontSizeToFit numberOfLines={1}>
+        <Text style={[styles.badgeText, { color: textColor }]} adjustsFontSizeToFit numberOfLines={1}>
           {score}
         </Text>
-        <Text style={styles.scoreLabel} adjustsFontSizeToFit numberOfLines={1}>
+        <Text style={[styles.scoreLabel, { color: textColor }]} adjustsFontSizeToFit numberOfLines={1}>
           {scoreLabel}
         </Text>
       </View>
@@ -90,7 +87,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 2,
   },
   badgeText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -115,14 +111,20 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 2,
   },
-  tracker: {
-    width: 18,
-    height: 18,
-    margin: 1,
+  dot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
+  dotComplete: {
+    backgroundColor: '#4CAF50',
+  },
+  dotIncomplete: {
+    backgroundColor: '#BDBDBD',
   },
   scoreLabel: {
-    color: '#fff',
     fontSize: 10,
   },
 });
