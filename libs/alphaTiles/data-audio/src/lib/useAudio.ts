@@ -164,23 +164,27 @@ export function useAudio() {
 
   // ── Web unlock (design D9) ────────────────────────────────────────────
   const unlockAudio = async (): Promise<void> => {
-    if (Platform.OS !== 'web' || isAudioUnlocked || !handles) return;
+    if (Platform.OS !== 'web' || isAudioUnlocked) return;
 
-    try {
-      // Prime the AudioContext by playing a zero-volume chime.
-      const chime = handles.chimes.correct;
-      const originalVolume = chime.volume;
-      chime.volume = 0;
-      chime.play();
-      // Brief tick to let the browser allow audio context to resume.
-      await new Promise<void>((resolve) => setTimeout(resolve, 50));
-      chime.pause();
-      await chime.seekTo(0);
-      chime.volume = originalVolume;
-    } catch {
-      // Non-fatal — still mark as unlocked so the app can proceed.
-      if (__DEV__) {
-        console.warn('[data-audio] unlockAudio: priming failed (non-fatal)');
+    // Priming requires loaded handles — skip chime if called before preload completes
+    // (e.g. from the loading screen tap handler before audio phase).
+    if (handles) {
+      try {
+        // Prime the AudioContext by playing a zero-volume chime.
+        const chime = handles.chimes.correct;
+        const originalVolume = chime.volume;
+        chime.volume = 0;
+        chime.play();
+        // Brief tick to let the browser allow audio context to resume.
+        await new Promise<void>((resolve) => setTimeout(resolve, 50));
+        chime.pause();
+        await chime.seekTo(0);
+        chime.volume = originalVolume;
+      } catch {
+        // Non-fatal — still mark as unlocked so the app can proceed.
+        if (__DEV__) {
+          console.warn('[data-audio] unlockAudio: priming failed (non-fatal)');
+        }
       }
     }
 

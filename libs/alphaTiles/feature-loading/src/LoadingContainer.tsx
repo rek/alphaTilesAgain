@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { registerContentNamespaces } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
-import { preloadAudio, BASE_CHIMES } from '@alphaTiles/data-audio';
+import { preloadAudio, BASE_CHIMES, useAudio } from '@alphaTiles/data-audio';
 import type { AudioConfig } from '@alphaTiles/data-audio';
 import { bootSequence } from './bootSequence';
 import type { Phase } from './bootSequence';
@@ -35,6 +35,7 @@ export function LoadingContainer(): React.JSX.Element {
   const [audioTotal, setAudioTotal] = useState(1);
   const [error, setError] = useState<Error | null>(null);
 
+  const { unlockAudio } = useAudio();
   const webGestureResolveRef = useRef<(() => void) | null>(null);
 
   // One-shot mount effect — permitted per CODE_STYLE.md for boot-time kickoffs.
@@ -127,7 +128,7 @@ export function LoadingContainer(): React.JSX.Element {
       error={error}
       onTapToBegin={
         phase === 'web-gate'
-          ? () => { webGestureResolveRef.current?.(); }
+          ? () => { void unlockAudio(); webGestureResolveRef.current?.(); }
           : undefined
       }
       labels={{
