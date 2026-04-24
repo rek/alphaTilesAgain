@@ -76,7 +76,8 @@
       "@alphaTiles/feature-loading": ["libs/alphaTiles/feature-loading/src/index.ts"],
       "@shared/ui-door": ["libs/shared/ui-door/src/index.ts"],
       "@shared/ui-door-grid": ["libs/shared/ui-door-grid/src/index.ts"],
-      "@alphaTiles/feature-game-menu": ["libs/alphaTiles/feature-game-menu/src/index.ts"]
+      "@alphaTiles/feature-game-menu": ["libs/alphaTiles/feature-game-menu/src/index.ts"],
+      "@alphaTiles/feature-game-china": ["libs/alphaTiles/feature-game-china/src/index.ts"]
     }
   }
 }
