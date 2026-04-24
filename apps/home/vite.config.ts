@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 export default defineConfig(({ mode: _mode }) => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/apps/home',
-  base: '/',
+  base: '/alphaTilesAgain/',
   plugins: [react()],
   build: {
     outDir: '../../dist/apps/home',
