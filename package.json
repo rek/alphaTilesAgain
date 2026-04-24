@@ -70,7 +70,6 @@
   },
   "nx": {},
   "dependencies": {
-    "@expo/metro-config": "~55.0.16",
     "@expo/metro-runtime": "~55.0.9",
     "@lottiefiles/dotlottie-react": "^0.19.0",
     "expo": "~55.0.14",
@@ -82,11 +81,13 @@
     "expo-image": "~55.0.8",
     "expo-linking": "~55.0.12",
     "expo-localization": "~55.0.13",
-    "expo-modules-core": "~55.0.22",
     "expo-router": "~55.0.12",
     "lottie-react-native": "~7.3.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-native": "0.83.6",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
     "react-native-web": "0.21.2"
   }
 }
