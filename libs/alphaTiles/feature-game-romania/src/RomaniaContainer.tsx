@@ -102,7 +102,7 @@ function RomaniaGame(): React.JSX.Element {
         wordLabel=""
         boldFocusTile={false}
         focusTileBase=""
-        nextLabel={t('next', 'Next')}
+        nextLabel={t('next')}
         onNext={() => undefined}
       />
     );
@@ -115,7 +115,7 @@ function RomaniaGame(): React.JSX.Element {
       wordLabel={currentWord.wordInLOP}
       boldFocusTile={boldFocusTile}
       focusTileBase={focusTile.base}
-      nextLabel={t('next', 'Next')}
+      nextLabel={t('next')}
       onNext={onNext}
     />
   );
