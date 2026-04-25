@@ -39,8 +39,8 @@ Implement the 'Mexico' game (Matching/Memory).
   - State: `cards: CardState[]`, `firstIdx: number | null`.
   - Effect: On second card selected, trigger match logic after `REVEAL_DELAY`.
   - `onCardPress(index)`: handles selection, reveal, and ignoring clicks on revealed/paired cards.
-  - Win logic: `shell.incrementPointsAndTracker(true)` and `shell.playCorrectFinal()`.
-  - Restart logic: wired to shell's advance arrow.
+  - Win logic: `shell.incrementPointsAndTracker(true)` and `audio.playCorrectFinal()`.
+  - [ ] Restart logic: `startRound` is NOT wired to shell's advance arrow — no `onAdvance` prop passed to `GameShellContainer`.
 
 ## 5. Verification
 
@@ -48,3 +48,10 @@ Implement the 'Mexico' game (Matching/Memory).
 - [x] Lint: `nx lint alphaTiles-feature-game-mexico`.
 - [x] Manual smoke test (Web): `APP_LANG=eng nx serve alphaTiles`.
 - [ ] Verify RTL: Test with a RTL language pack if available (or simulated).
+
+## 6. Known Gaps / Violations
+
+- [ ] **`useEffect` violations** (`MexicoContainer.tsx:70,95`): two direct `useEffect` calls — cleanup (`:70`) and mount-kickoff (`:95`). `CODE_STYLE.md §Hooks` forbids direct `useEffect`; mount-kickoff must use `useMountEffect`; cleanup should fold into the same `useMountEffect` return.
+- [ ] **Restart not wired** (`MexicoContainer.tsx`): `startRound` is defined but never passed to `GameShellContainer` as an advance/restart callback. The shell's advance arrow does not trigger a new round.
+- [ ] **`pairsCompleted` state absent** (`MexicoContainer.tsx`): design D1 maps Java's `pairsCompleted` to explicit state, but the container derives it inline from filtered card array each match-check. Minor deviation — acceptable but diverges from spec table.
+- [ ] **`audio.playCorrectFinal()` vs `shell.playCorrectFinal()`**: design table (D1) writes `shell.playCorrectFinal()`, but `useGameShell` context has no such method — correctly implemented via `useAudio().playCorrectFinal()`. Spec table is wrong; implementation is correct.

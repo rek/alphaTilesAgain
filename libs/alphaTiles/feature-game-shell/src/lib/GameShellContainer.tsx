@@ -147,6 +147,12 @@ export function GameShellContainer({
   const celebrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nextGameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Optional mechanic-registered callback for the advance arrow
+  const onAdvanceRef = useRef<(() => void) | null>(null);
+  const setOnAdvance = useCallback((fn: (() => void) | null) => {
+    onAdvanceRef.current = fn;
+  }, []);
+
   // AppState subscription — pause audio on background (GameActivity.java Android lifecycle)
   // One-shot subscription pattern per CODE_STYLE.md §Hooks.
   useEffect(() => {
@@ -288,6 +294,7 @@ export function GameShellContainer({
   const handleAdvancePress = useCallback(() => {
     setRepeatLocked(false);
     setInteractionLocked(false);
+    onAdvanceRef.current?.();
   }, []);
 
   const handleCelebrationBack = useCallback(() => {
@@ -343,6 +350,7 @@ export function GameShellContainer({
     setRefWord,
     progressEntry,
     gameUniqueId,
+    setOnAdvance,
   };
 
   return (

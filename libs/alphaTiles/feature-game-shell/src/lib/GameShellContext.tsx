@@ -25,6 +25,8 @@ export type GameShellContextValue = {
   progressEntry: ProgressEntry;
   /** Unique ID used to key the progress entry. */
   gameUniqueId: string;
+  /** Register a callback to fire when the shell's advance arrow is pressed. Pass null to unregister. */
+  setOnAdvance: (fn: (() => void) | null) => void;
 };
 
 export const GameShellContext = createContext<GameShellContextValue | null>(null);

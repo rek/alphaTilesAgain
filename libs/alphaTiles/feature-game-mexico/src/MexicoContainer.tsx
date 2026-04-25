@@ -67,14 +67,6 @@ function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.E
   const flipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef(true);
 
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-      if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
-      if (flipTimerRef.current) clearTimeout(flipTimerRef.current);
-    };
-  }, []);
-
   const startRound = useCallback(() => {
     if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
     if (flipTimerRef.current) clearTimeout(flipTimerRef.current);
@@ -91,9 +83,16 @@ function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.E
     shell.setInteractionLocked(false);
   }, [mexicoData, pairCount, shell]);
 
-  // One-shot mount kickoff
+  // One-shot mount kickoff + wire advance arrow to startRound
   useEffect(() => {
     startRound();
+    shell.setOnAdvance(startRound);
+    return () => {
+      isMountedRef.current = false;
+      if (revealTimerRef.current) clearTimeout(revealTimerRef.current);
+      if (flipTimerRef.current) clearTimeout(flipTimerRef.current);
+      shell.setOnAdvance(null);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
