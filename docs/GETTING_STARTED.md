@@ -45,16 +45,25 @@ nx run-many -t test          # all tests in parallel
 
 ## Language Pack Setup
 
-The prebuild pipeline requires two env vars. Set them in your shell profile (`~/.zshrc` or `~/.bashrc`):
+Language pack text files, fonts, images, and audio are committed to the repo under `languages/`. After cloning, only `APP_LANG` is needed to run the app:
 
 ```sh
-export PUBLIC_LANG_ASSETS=/home/adam/dev/alphaTilesAgain/PublicLanguageAssets
-export APP_LANG=eng
+export APP_LANG=eng   # selects the language pack (eng, tpx, template, yue)
 ```
 
-`PUBLIC_LANG_ASSETS` must point at your local clone of the sibling `PublicLanguageAssets` repo. `APP_LANG` selects the language pack (`eng`, `tpx`, `template`, `yue`).
+Set this in your shell profile (`~/.zshrc` or `~/.bashrc`). Without it, `nx start` will fail with an actionable error.
 
-Without these set, `nx start alphaTiles` and `nx prebuild-lang alphaTiles` will fail immediately with an actionable error message.
+### Updating a language pack
+
+To pull in new content from the `PublicLanguageAssets` source repo, you also need `PUBLIC_LANG_ASSETS`:
+
+```sh
+export PUBLIC_LANG_ASSETS=/path/to/PublicLanguageAssets
+./nx rsync-lang-pack alphaTiles
+./nx validate-lang-pack alphaTiles
+./nx generate-lang-manifest alphaTiles
+# commit changes to languages/ and langManifest.ts
+```
 
 ## AI Spec Tools
 

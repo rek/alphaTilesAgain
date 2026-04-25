@@ -5,11 +5,10 @@ Invocation sheet for this repo. Cross-linked from `AGENTS.md`.
 ## Environment
 
 - **Node**: latest LTS via `nvm`/`asdf`
-- **Bun**: `/home/adam/.bun/bin/bun` (used for `tools/` scripts; Node `tsx` fallback acceptable)
 - **Package manager**: npm (workspaces); do not switch to yarn/pnpm without an ADR
 - **Required env vars**:
-  - `APP_LANG` — language pack code (e.g. `eng`, `tpx`, `yue`)
-  - `PUBLIC_LANG_ASSETS` — absolute path to sibling `PublicLanguageAssets` repo (set in `~/.zshrc` or per-shell)
+  - `APP_LANG` — language pack code (e.g. `eng`, `tpx`, `yue`); needed by `app.config.ts` and `nx start`
+  - `PUBLIC_LANG_ASSETS` — absolute path to sibling `PublicLanguageAssets` repo; only needed when updating a language pack via `rsync-lang-pack`
 
 ## NX
 
@@ -34,11 +33,13 @@ Invocation sheet for this repo. Cross-linked from `AGENTS.md`.
 ./nx run-ios alphaTiles                  # iOS build + run
 ./nx web-export alphaTiles               # Static web export
 
-# Prebuild chain (from port-foundations)
-./nx rsync-lang-pack alphaTiles          # rsync from $PUBLIC_LANG_ASSETS
-./nx validate-lang-pack alphaTiles       # run the (placeholder → full) validator
+# Language pack tools (run manually when updating a language pack)
+./nx rsync-lang-pack alphaTiles          # rsync from $PUBLIC_LANG_ASSETS → languages/<APP_LANG>/
+./nx validate-lang-pack alphaTiles       # validate the rsynced pack
 ./nx generate-lang-manifest alphaTiles   # write src/generated/langManifest.ts
-./nx prebuild-lang alphaTiles            # chain of the above three
+# Then commit languages/ and langManifest.ts
+
+./nx prebuild-lang alphaTiles            # no-op target (build hook only; does not chain the above)
 
 # Testing + linting
 ./nx test <lib>                          # unit tests for one lib
@@ -128,18 +129,22 @@ npx tsc --noEmit --project apps/alphaTiles  # type-check the app
 
 Strict mode is on. `any` banned. Prefer inference — no explicit return types unless required for public API clarity (per `docs/CODE_STYLE.md`).
 
-## Bun (tools/)
+## Tool scripts (tools/)
+
+Run via `npx tsx` (installed as a devDependency — no Bun required):
 
 ```sh
-bun tools/rsync-lang-packs.ts               # manual rsync
-bun tools/generate-lang-manifest.ts         # manual manifest regen
-bun tools/validate-lang-pack.ts             # validator CLI (placeholder → full)
+npx tsx tools/rsync-lang-packs.ts           # manual rsync
+npx tsx tools/generate-lang-manifest.ts     # manual manifest regen
+npx tsx tools/validate-lang-pack.ts         # validator CLI
 ```
 
-Node `tsx` fallback if Bun unavailable:
+Or via NX targets (same scripts, convenience wrappers):
 
 ```sh
-npx tsx tools/rsync-lang-packs.ts
+./nx rsync-lang-pack alphaTiles
+./nx validate-lang-pack alphaTiles
+./nx generate-lang-manifest alphaTiles
 ```
 
 ## Git
@@ -155,8 +160,17 @@ See `docs/COMMIT_CONVENTIONS.md`. Summary:
 ```sh
 git clone <repo> alphaTilesAgain && cd alphaTilesAgain
 npm ci
-export PUBLIC_LANG_ASSETS=/home/adam/dev/alphaTilesAgain/PublicLanguageAssets
+export APP_LANG=eng          # languages/ and langManifest.ts are committed — no rsync needed
+./nx start alphaTiles        # Metro boots against engEnglish4
+```
+
+To update a language pack from `PublicLanguageAssets`:
+
+```sh
+export PUBLIC_LANG_ASSETS=/path/to/PublicLanguageAssets
 export APP_LANG=eng
-./nx prebuild-lang alphaTiles                # rsync + validate + manifest
-./nx start alphaTiles                        # Metro boots against engEnglish4
+./nx rsync-lang-pack alphaTiles
+./nx validate-lang-pack alphaTiles
+./nx generate-lang-manifest alphaTiles
+# commit languages/ and langManifest.ts
 ```
