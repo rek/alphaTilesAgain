@@ -45,6 +45,6 @@
 - [x] Type-check: `npx tsc --noEmit -p libs/alphaTiles/feature-game-romania/tsconfig.lib.json`.
 - [x] Lint: `nx lint alphaTiles-feature-game-romania`.
 - [x] Test: `nx test alphaTiles-feature-game-romania`.
-- [ ] Manual smoke test: `APP_LANG=eng nx serve alphaTiles`.
+- [ ] Manual smoke test: `APP_LANG=eng nx start alphaTiles`.
 - [ ] Verify `scanSetting` 1, 2, 3 behavior with `engEnglish4`.
 - [ ] Verify `boldInitialFocusTiles` on/off.
