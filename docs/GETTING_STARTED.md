@@ -14,13 +14,40 @@ npm install
 ### Running the App
 
 ```sh
-nx start alphaTiles          # Metro bundler
-nx serve alphaTiles          # Web dev server (expo start --web)
-nx run-android alphaTiles    # Run on Android device/emulator
-nx run-ios alphaTiles        # Run on iOS simulator
+APP_LANG=eng nx start alphaTiles      # Metro bundler
+APP_LANG=eng nx serve alphaTiles      # Web dev server (http://localhost:8081)
+APP_LANG=eng nx run-android alphaTiles
+APP_LANG=eng nx run-ios alphaTiles
 ```
 
 > Tip: `nx show project alphaTiles` lists all available targets.
+
+### Switching Language During Dev
+
+`APP_LANG` selects the language pack. To switch:
+
+1. Regenerate the manifest for the new language:
+   ```sh
+   APP_LANG=yue node_modules/.bin/tsx tools/generate-lang-manifest.ts
+   ```
+2. Restart the dev server with the new `APP_LANG`:
+   ```sh
+   APP_LANG=yue nx serve alphaTiles
+   ```
+
+Metro does not watch `APP_LANG` — a full restart is required. The manifest regeneration step is also required because `langManifest.ts` is generated once and the dev server reads it as a static import.
+
+### Validating a language pack
+
+Run after any change to files under `languages/<code>/`:
+
+```sh
+APP_LANG=yue node_modules/.bin/tsx tools/validate-lang-pack.ts
+```
+
+The validator checks audio/image references, tile structure, word cross-refs, and more.
+It must pass before `generate-lang-manifest.ts` is run — CI enforces this order.
+Use `nx validate-lang-pack alphaTiles` only when `PUBLIC_LANG_ASSETS` is set (it also triggers rsync from the source repo).
 
 ### Type Checking
 
@@ -87,6 +114,28 @@ Key commands: `/opsx:propose`, `/opsx:apply`, `/opsx:archive`
    ```sh
    claude mcp add context7 -- npx -y @upstash/context7-mcp --api-key xxx
    ```
+
+## Web Export (GitHub Pages)
+
+The app is exported as a static site and deployed to GitHub Pages via CI.
+Each language gets its own sub-path: `/alphaTilesAgain/<langSlug>/`.
+
+### Building locally
+
+```sh
+APP_LANG=eng EXPO_BASE_URL=/alphaTilesAgain/engEnglish4 npx nx run alphaTiles:web-export
+```
+
+`EXPO_BASE_URL` **must include the repo name** (`/alphaTilesAgain/...`). Without it,
+`experiments.baseUrl` stays empty and all HTML asset paths are root-absolute, causing
+404s on GitHub Pages. See **ADR-011** for the full explanation.
+
+### Adding a new language to CI
+
+In `deploy.yaml`, add a build step and a stage step following the eng/yue pattern.
+Set `EXPO_BASE_URL: /alphaTilesAgain/<langSlug>` to match the stage directory name.
+
+---
 
 ## Local Builds
 

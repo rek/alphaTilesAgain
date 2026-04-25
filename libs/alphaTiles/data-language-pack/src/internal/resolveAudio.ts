@@ -19,10 +19,10 @@ import { LangAssetsBindError } from '../LangAssetsBindError';
 const NO_AUDIO_SENTINEL = 'zz_no_audio_needed';
 
 /**
- * Reserved token for instruction audio entries that have no audio file.
- * Java source: used in aa_games.txt when a game has no instruction audio.
+ * Reserved tokens for instruction audio entries that have no audio file.
+ * Java source: naWhileMPOnly and X are both valid no-audio sentinels in aa_games.txt.
  */
-const NA_WHILE_MP_ONLY = 'naWhileMPOnly';
+const NO_INSTRUCTION_AUDIO_SENTINELS = new Set(['naWhileMPOnly', 'X']);
 
 type ManifestAudio = {
   tiles: Record<string, number>;
@@ -84,7 +84,7 @@ export function resolveAudio(
   const seen = new Set<string>();
   for (const game of parsed.games.rows) {
     const key = game.instructionAudio;
-    if (key === NA_WHILE_MP_ONLY) continue;
+    if (NO_INSTRUCTION_AUDIO_SENTINELS.has(key)) continue;
     if (seen.has(key)) continue;
     seen.add(key);
     const h = manifestAudio.instructions[key];

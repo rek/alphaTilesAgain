@@ -57,8 +57,13 @@ export function buildFileInventory(langDir: string): FileInventory {
 
   const avatars = listDir(path.join(langDir, 'images', 'avatars')).map(stripExt);
   const avataricons = listDir(path.join(langDir, 'images', 'avataricons')).map(stripExt);
-  const wordImages = listDir(path.join(langDir, 'images', 'words')).map(stripExt);
-  const tileImages = listDir(path.join(langDir, 'images', 'tiles')).map(stripExt);
+  const SUPPORTED_IMG_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
+  const wordImages = listDir(path.join(langDir, 'images', 'words'))
+    .filter((f) => SUPPORTED_IMG_EXTS.has(path.extname(f).toLowerCase()))
+    .map(stripExt);
+  const tileImages = listDir(path.join(langDir, 'images', 'tiles'))
+    .filter((f) => SUPPORTED_IMG_EXTS.has(path.extname(f).toLowerCase()))
+    .map(stripExt);
 
   const tileAudio = collectWithSizes(path.join(langDir, 'audio', 'tiles'), sizes);
   const wordAudio = collectWithSizes(path.join(langDir, 'audio', 'words'), sizes);

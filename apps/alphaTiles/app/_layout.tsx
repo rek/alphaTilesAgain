@@ -36,12 +36,14 @@ void initI18n({ deviceLocale });
 
 // Font map for expo-font: keys become font-family names at runtime.
 // Shape matches langManifest.fonts: { primary: require(...ttf), primaryBold?: require(...ttf) }
-const FONT_ASSET_MAP = langManifest.fonts as Record<string, FontSource>;
+const FONT_ASSET_MAP = Object.fromEntries(
+  Object.entries(langManifest.fonts).filter(([, v]) => v != null),
+) as Record<string, FontSource>;
 
 // Font-family name strings are the keys used in useFonts() — must match exactly.
 const FONT_NAME_MAP = {
   primary: 'primary',
-  primaryBold: langManifest.fonts.primaryBold !== undefined ? 'primaryBold' : undefined,
+  primaryBold: langManifest.fonts.primaryBold != null ? 'primaryBold' : undefined,
 } as const;
 
 /**

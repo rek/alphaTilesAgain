@@ -10,3 +10,5 @@ Item	Answer
 9. Audio and image credits	Lead-M (HK) 
 10. The word NAME in local language	廣東話
 11. Script type	Chinese
+12. Email	yue@example.com
+13. Privacy Policy	https://alphatilesapps.org/privacy

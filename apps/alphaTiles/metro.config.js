@@ -38,5 +38,15 @@ module.exports = {
   resolver: {
     ...nxConfig.resolver,
     nodeModulesPaths: defaultConfig.resolver.nodeModulesPaths,
+    // expo-router@55 ships without a node/ dir; the SSR renderer lives in @expo/router-server.
+    resolveRequest: (context, moduleName, platform) => {
+      if (moduleName === 'expo-router/node/render.js') {
+        return {
+          filePath: require.resolve('@expo/router-server/node/render.js'),
+          type: 'sourceFile',
+        };
+      }
+      return context.resolveRequest(context, moduleName, platform);
+    },
   },
 };

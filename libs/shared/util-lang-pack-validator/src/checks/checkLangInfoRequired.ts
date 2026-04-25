@@ -6,7 +6,7 @@
  * Checks:
  * - Required labels present
  * - Script direction ∈ {LTR, RTL}
- * - Script type ∈ {Roman, Arabic, Devanagari, Khmer, Lao, Thai}
+ * - Script type ∈ {Roman, Arabic, Devanagari, Khmer, Lao, Thai, Chinese}
  * - Game name length ≤ 30 (warning — Play Store limit)
  * - Ethnologue code matches [a-z]{3}
  */
@@ -31,7 +31,7 @@ const REQUIRED_LABELS = [
 ] as const;
 
 const VALID_SCRIPT_DIRECTIONS = ['LTR', 'RTL'] as const;
-const VALID_SCRIPT_TYPES = ['Roman', 'Arabic', 'Devanagari', 'Khmer', 'Lao', 'Thai'] as const;
+const VALID_SCRIPT_TYPES = ['Roman', 'Arabic', 'Devanagari', 'Khmer', 'Lao', 'Thai', 'Chinese'] as const;
 
 export function checkLangInfoRequired(parsed: ParsedPack): Issue[] {
   const issues: Issue[] = [];

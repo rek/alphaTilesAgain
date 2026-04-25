@@ -56,6 +56,7 @@ jobs:
       # ─── Build each language (sequential — each overwrites dist/web/alpha-tiles) ───
       - name: Build eng
         run: |
+          npx tsx tools/validate-lang-pack.ts
           npx tsx tools/generate-lang-manifest.ts
           npx nx run alphaTiles:web-export
         env:
@@ -70,6 +71,7 @@ jobs:
 
       - name: Build yue
         run: |
+          npx tsx tools/validate-lang-pack.ts
           npx tsx tools/generate-lang-manifest.ts
           npx nx run alphaTiles:web-export --skip-nx-cache
         env:

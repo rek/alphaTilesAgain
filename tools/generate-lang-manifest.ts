@@ -165,7 +165,7 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
   const tileImgLines: string[] = [];
   for (const key of [...tileKeys].sort()) {
     // Try common extensions
-    for (const ext of ['.png', '.jpg', '.webp']) {
+    for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
       const fname = `${key}${ext}`;
       if (tileImgFiles.has(fname)) {
         tileImgLines.push(
@@ -187,7 +187,7 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
   const wordImgLines: string[] = [];
   const wordImg2Lines: string[] = [];
   for (const key of [...wordKeys].sort()) {
-    for (const ext of ['.png', '.jpg', '.webp']) {
+    for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
       const fname = `${key}${ext}`;
       if (wordImgFiles.has(fname)) {
         wordImgLines.push(
@@ -197,7 +197,7 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
       }
     }
     // Distractor variant
-    for (const ext of ['.png', '.jpg', '.webp']) {
+    for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
       const fname2 = `${key}2${ext}`;
       if (wordImgFiles.has(fname2)) {
         wordImg2Lines.push(

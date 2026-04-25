@@ -1,6 +1,6 @@
-Door	Country	ChallengeLevel	Color	InstructionAudio	AudioDuration	SyllOrTile
-1	Thailand	165	3	X	naWhileMPOnly	T
-2	Thailand	265	3	X	naWhileMPOnly	T
-3	Thailand	365	3	X	naWhileMPOnly	T
-4	Thailand	234	3	X	naWhileMPOnly	T
-5	Thailand	344	3	X	naWhileMPOnly	T
+Door	Country	ChallengeLevel	Color	InstructionAudio	AudioDuration	SyllOrTile	StagesIncluded
+1	Thailand	165	3	X	1999	T	-
+2	Thailand	265	3	X	1999	T	-
+3	Thailand	365	3	X	1999	T	-
+4	Thailand	234	3	X	1999	T	-
+5	Thailand	344	3	X	1999	T	-

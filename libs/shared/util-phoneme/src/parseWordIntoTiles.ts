@@ -17,7 +17,7 @@ import {
 } from './parseWordIntoTilesPreliminary';
 import { buildTileHashMap } from './buildTileHashMap';
 
-export type ScriptType = 'Roman' | 'Arabic' | 'Devanagari' | 'Khmer' | 'Lao' | 'Thai';
+export type ScriptType = 'Roman' | 'Arabic' | 'Devanagari' | 'Khmer' | 'Lao' | 'Thai' | 'Chinese';
 
 export interface ParseWordOptions {
   wordInLOP: string;

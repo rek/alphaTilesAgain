@@ -61,6 +61,26 @@ Build a dev client: `eas build --profile development --platform android`
 
 ---
 
+## Web / GitHub Pages
+
+### App stuck on "Loading AlphaTiles" at deployed URL
+
+**Cause:** JS bundle / font assets 404. The HTML has root-absolute paths (`/_expo/...`)
+that resolve to the wrong origin on GitHub Pages.
+
+**Root cause:** `experiments.baseUrl` was empty in `app.config.ts`, so the export
+pipeline didn't prefix asset paths. See **ADR-011**.
+
+**Fix:** Ensure `app.config.ts` has `baseUrl: process.env.EXPO_BASE_URL ?? ''` in
+`experiments`, and `deploy.yaml` sets `EXPO_BASE_URL: /alphaTilesAgain/<langSlug>`
+(full path including repo name).
+
+**Verify:** `curl -I https://rek.github.io/alphaTilesAgain/engEnglish4/` — check
+`content-length` matches the deployed file; then inspect the HTML's `src=` attribute to
+confirm it starts with `/alphaTilesAgain/`.
+
+---
+
 ## Getting Help
 
 1. Check console logs in Metro terminal
