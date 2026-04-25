@@ -1,0 +1,20 @@
+name: e2e-tests-maestro
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  spec:
+    status: done
+    path: specs/e2e-tests-maestro/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, spec]
+  status: pending
