@@ -46,9 +46,7 @@ yarn-error.*
 coverage/
 dist/storybook/
 
-# Language packs — text files and fonts committed; audio/images gitignored (too large)
-languages/**/audio/
-languages/**/images/
+# Language packs — fully committed (2 packs, ~51MB total)
 
 # Generated prebuild artifacts — recreated by generate-lang-manifest
 apps/alphaTiles/src/generated/
