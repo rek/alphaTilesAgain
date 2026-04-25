@@ -355,6 +355,7 @@ Other classes are not spec'd until a language pack demands them. Each new class 
 - `docs/CODE_STYLE.md` — TypeScript / React Native conventions (always follow)
 - `docs/PROJECT_ORGANIZATION.md` — NX tagging, dependency rules (always follow)
 - `docs/AI_WORKFLOW.md` — OpenSpec workflow
+- `docs/GAME_PATTERNS.md` — accumulated patterns from implemented game classes (read before any game-* change)
 - `docs/COMMIT_CONVENTIONS.md` — conventional commits format
 - `docs/decisions/ADR-*.md` — per-decision rationale
 - `openspec/changes/<change>/design.md` — tactical per-change design

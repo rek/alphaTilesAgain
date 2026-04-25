@@ -371,7 +371,7 @@ function main(): void {
 
   const outPath = path.join(
     repoRoot,
-    'apps', 'alphaTiles', 'src', 'generated', 'langManifest.ts',
+    'libs', 'alphaTiles', 'data-language-assets', 'src', 'generated', 'langManifest.ts',
   );
 
   generateManifest(lang, langDir, outPath);

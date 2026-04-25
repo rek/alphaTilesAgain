@@ -23,7 +23,7 @@ Slash-commands (from `.claude/commands/opsx/`):
 
 ## Dependency chart (snapshot, maintain in `AGENTS.md`)
 
-All 16 foundational changes are **merged** as of 2026-04-24. No active changes remain.
+16 foundational changes **merged + implemented** as of 2026-04-24.
 
 ```
 ✓ port-foundations        — build pipeline, docs, util-precompute skeleton
@@ -42,6 +42,21 @@ All 16 foundational changes are **merged** as of 2026-04-24. No active changes r
 ✓ loading-screen          — boot orchestration
 ✓ game-menu               — Earth.java door grid
 ✓ game-china              — exemplar concrete game (sliding-tile puzzle)
+```
+
+**Active changes** (spec merged, apply pending unless noted):
+
+```
+✓ home-landing-page       — Vite home app, Tailwind language grid (APPLIED — ready to archive)
+~ qa-remaining-flows      — score label, audio unlock, menu interpolation (IN PROGRESS: 10/18 tasks)
+· game-mexico             — Matching/Memory game (spec proposed, apply pending)
+· game-thailand           — Multiple-choice (3-digit CL: prompt×choice×difficulty) (spec proposed, apply pending)
+· game-united-states      — Pairing + Spelling game (spec proposed, apply pending)
+· game-chile              — Image-to-Word identification, 4 choices (spec proposed, apply pending)
+· game-japan              — Missing-Tile fill-in, CL scales choices 2/4/6 (spec proposed, apply pending)
+· game-romania            — Scanning / focus-tile word sequence, NO_TRACKER (spec proposed, apply pending)
+· deploy-gh-pages         — GH Pages CI/CD (spec proposed, apply pending)
+· landing-page-dashboard  — lang-pack build dashboard (spec proposed, apply pending)
 ```
 
 New changes go through `/opsx:propose` → `/opsx:apply` → `/opsx:archive`.
@@ -88,7 +103,9 @@ After the PR merges:
 1. `openspec archive <name>` (or `/opsx:archive`). Moves `openspec/changes/<name>/` → `openspec/changes/archive/<date>-<name>/`.
 2. If the change introduced new capabilities, OpenSpec moves their specs to `openspec/specs/<capability>/spec.md` automatically. Modified capabilities get their deltas applied.
 3. Update the Dependency chart in `AGENTS.md` and this file if order / readiness shifted.
-4. Push archive commit to main.
+4. **If this is a `game-*` change:** update `docs/GAME_PATTERNS.md` with anything the implementation revealed — shell API gaps found, challenge-level decoding added, patterns that diverged from the standard, edge cases hit. Add the game to the "Latest entry" line at the top.
+5. **If pending game specs exist and are now more informed by this implementation:** open each pending `game-*/design.md` and enrich it using the new patterns. Thin specs (< 3 KB design.md) should be treated as drafts, not final.
+6. Push archive commit to main.
 
 ## When you hit ambiguity
 

@@ -26,7 +26,7 @@ Port `UnitedStates.java` to the Expo/React Native monorepo as a new feature libr
 - **Library:** `libs/alphaTiles/feature-game-united-states` (`type:feature`, `scope:alphaTiles`)
 - **Pattern:** Container/Presenter split.
   - `UnitedStatesContainer.tsx`: Logic, data fetching (via `useGameShell`), i18n strings.
-  - `UnitedStatesScreen.tsx`: Pure UI, 18-button grid (9 pairs), word display.
+  - `UnitedStatesScreen.tsx`: Pure UI, grid of N pairs (N = word's tile length, up to level max), word display.
 - **Data:**
   - Uses `util-precompute` to register a data builder that selects words and generates distractor pairs during app boot.
   - Consumes `useGameShell` for shared game state (score, stage, etc.).

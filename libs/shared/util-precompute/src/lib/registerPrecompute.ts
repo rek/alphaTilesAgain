@@ -9,7 +9,7 @@ import type { PrecomputeFn } from './precomputeRegistry';
  *
  * Throws if `key` is already registered (prevents silent overwrites).
  */
-export function registerPrecompute<T>(key: string, fn: PrecomputeFn<T>): void {
+export function registerPrecompute<T, A>(key: string, fn: PrecomputeFn<T, A>): void {
   if (registry.has(key)) {
     const existing = registry.get(key);
     const registeredBy = existing?.registeredBy ?? '(unknown location)';
@@ -19,5 +19,5 @@ export function registerPrecompute<T>(key: string, fn: PrecomputeFn<T>): void {
     );
   }
   const registeredBy = new Error().stack ?? '(stack unavailable)';
-  registry.set(key, { fn: fn as PrecomputeFn, registeredBy });
+  registry.set(key, { fn: fn as PrecomputeFn<unknown, unknown>, registeredBy });
 }

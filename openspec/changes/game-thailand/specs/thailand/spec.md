@@ -1,44 +1,82 @@
 # Capability: Thailand Game
 
-Thailand is a multiple-choice game class where players match a prompt (Reference) to one of several options (Choices).
+Thailand is a fixed 4-choice identification game where a reference item (tile, word, or syllable — in text, image, or audio form) is matched to one of four choice buttons.
 
 ## Requirements
 
 ### R1. Challenge Level Decoding
-The game MUST decode the 3-digit `challengeLevel` into:
-- **Difficulty**: Number of choices displayed (1=2, 2=4, 3=6, 4=8).
-- **RefType**: The type of prompt (1=Audio, 2=Image, 3=Word).
-- **ChoiceType**: The type of options (1=Tile, 2=Word).
 
-### R2. Round Setup
-On each round, the game MUST:
-- Select a correct `refWord` based on the current stage.
-- Select `N-1` unique distractors from the available word/tile pool.
-- Shuffle the correct answer and distractors into a grid of `N` choices.
+The game MUST decode the 3-digit `challengeLevel` using the TYPES enum:
 
-### R3. User Interaction
-- Selecting the correct choice MUST increment points and trackers via the game shell.
-- Selecting an incorrect choice MUST provide negative feedback and (optionally) allow retry.
-- Tapping an image/word prompt or the audio icon MUST replay the prompt's audio.
+```
+TYPES = [TILE_LOWER, TILE_UPPER, TILE_AUDIO, WORD_TEXT, WORD_IMAGE, WORD_AUDIO, SYLLABLE_TEXT, SYLLABLE_AUDIO]
+```
 
-### R4. Win Condition
-- The round is complete when the correct choice is selected.
-- The game shell handles the transition to the next door or celebration after 12 successful rounds.
+- Hundreds digit → `distractorStrategy` (1=random, 2=phonetically-similar, 3=same-initial-tile)
+- Tens digit → `refType` (1-indexed into TYPES)
+- Units digit → `choiceType` (1-indexed into TYPES)
 
-## Scenarios
+#### Scenario: Decoding CL 235
+- **GIVEN** challengeLevel is 235
+- **THEN** distractorStrategy is 2 (phonetically-similar distractors)
+- **AND** refType is TYPES[2] = TILE_AUDIO
+- **AND** choiceType is TYPES[4] = WORD_IMAGE
 
-### Scenario 1: 2-choice Image-to-Word (CL 122)
-- **Given** challengeLevel is 122
-- **When** the game starts
-- **Then** difficulty is 1 (2 choices)
-- **And** refType is 2 (Image prompt)
-- **And** choiceType is 2 (Word options)
-- **And** 2 word buttons are displayed, one showing the correct word.
+### R2. Always 4 Choices
 
-### Scenario 2: 4-choice Audio-to-Tile (CL 211)
-- **Given** challengeLevel is 211
-- **When** the game starts
-- **Then** difficulty is 2 (4 choices)
-- **And** refType is 1 (Audio prompt - show play icon)
-- **And** choiceType is 1 (Tile options)
-- **And** 4 tile buttons are displayed, one showing the correct tile.
+The game MUST always display exactly 4 choices (1 correct + 3 distractors), regardless of challengeLevel.
+
+#### Scenario: Choice count is always 4
+- **GIVEN** any valid challengeLevel
+- **WHEN** a round is set up
+- **THEN** exactly 4 choice buttons are displayed
+
+### R3. Reference Item Display
+
+The reference item MUST be rendered according to `refType`:
+- `TILE_LOWER` / `TILE_UPPER` / `WORD_TEXT` / `SYLLABLE_TEXT` → show as styled text
+- `WORD_IMAGE` → show as image
+- `TILE_AUDIO` / `WORD_AUDIO` / `SYLLABLE_AUDIO` → show audio icon; plays on render
+
+#### Scenario: WORD_IMAGE reference
+- **GIVEN** refType is WORD_IMAGE
+- **WHEN** a round starts
+- **THEN** the reference area shows the word's image (not text)
+- **AND** the word audio plays automatically
+
+### R4. Correct Selection
+
+Selecting the correct choice MUST call `updatePointsAndTrackers(1)`, highlight the correct button in `refColor`, and play the correct sound followed by the reference audio.
+
+#### Scenario: Correct tile selected
+- **GIVEN** refType is TILE_AUDIO and the correct tile "ba" is in choices
+- **WHEN** user selects "ba"
+- **THEN** `updatePointsAndTrackers(1)` is called
+- **AND** correct sound plays, then tile audio for "ba" plays
+
+### R5. Incorrect Selection
+
+Selecting an incorrect choice MUST play the incorrect sound. The choice remains selectable (no locking).
+
+#### Scenario: Wrong word selected
+- **GIVEN** the correct word is "apple" and user selects "banana"
+- **WHEN** user taps "banana"
+- **THEN** incorrect sound plays
+- **AND** all 4 buttons remain tappable
+
+### R6. Reference Audio Replay
+
+Tapping the reference item MUST replay its audio (tile clip, word clip, or syllable clip as appropriate).
+
+#### Scenario: Tap audio icon replays tile audio
+- **GIVEN** refType is TILE_AUDIO
+- **WHEN** user taps the reference area
+- **THEN** the tile audio plays again
+
+### R7. Container / Presenter split
+
+`<ThailandContainer>` SHALL own all hooks and decoding logic. `<ThailandScreen>` SHALL be a pure props→JSX presenter.
+
+#### Scenario: Presenter audit
+- **WHEN** `ThailandScreen.tsx` is inspected
+- **THEN** it contains no `useGameShell`, `useLangAssets`, or `useTranslation` calls

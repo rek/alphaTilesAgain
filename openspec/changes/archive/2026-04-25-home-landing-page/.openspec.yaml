@@ -1,4 +1,4 @@
-name: game-chile
+name: home-landing-page
 artifacts:
   proposal:
     status: done
@@ -11,10 +11,6 @@ artifacts:
     status: done
     path: tasks.md
     dependencies: [design]
-  specs/chile:
-    status: done
-    path: specs/chile/spec.md
-    dependencies: [design]
 apply:
-  requires: [tasks, specs/chile]
-  status: pending
+  requires: [tasks]
+  status: done

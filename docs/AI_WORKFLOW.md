@@ -69,14 +69,20 @@ ls openspec/changes/archive/  # completed features
 
 ### New game feature library
 
+Before proposing, read `docs/GAME_PATTERNS.md` and the most recent archived game's `design.md` under `openspec/changes/archive/`. The patterns file is the baseline — a new spec should be at least as detailed as the exemplar.
+
 ```
 Generate a feature library for the [name] literacy game in alphaTiles scope.
+
+Read docs/GAME_PATTERNS.md first — use it as the structural baseline for design.md and tasks.md.
 
 1. Create: libs/alphaTiles/feature-[name]
    Tags: "type:feature,scope:alphaTiles"
 2. Can import from: ui (ui-tile, ui-game-board), data-access (data-word-list), util
 3. Create [Name]Container as container, [Name]Screen as presenter
 4. Container owns useTranslation + game state — presenter accepts pre-translated strings + tile data
+5. design.md must include: Java→TS mapping table, challenge-level decoding, precompute plan (if needed), Container/Presenter split detail
+6. tasks.md must follow the standard group structure in GAME_PATTERNS.md
 ```
 
 ### New UI component library

@@ -1,2 +1,20 @@
-schema: spec-driven
-created: 2026-04-24
+name: game-romania
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/romania:
+    status: done
+    path: specs/romania/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/romania]
+  status: pending

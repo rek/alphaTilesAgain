@@ -13,6 +13,7 @@ Read these before writing code:
 - **[Code Style](./docs/CODE_STYLE.md)** — always follow
 - **[Project Organization](./docs/PROJECT_ORGANIZATION.md)** — NX library types, dependency rules, tagging
 - **[AI Workflow](./docs/AI_WORKFLOW.md)** — OpenSpec workflow, prompt templates, quality checklist
+- **[Game Patterns](./docs/GAME_PATTERNS.md)** — accumulated patterns from implemented games; read before any `game-*` change
 - **[Commit Conventions](./docs/COMMIT_CONVENTIONS.md)** — `<type>(<scope>): <subject>`
 - **[Getting Started](./docs/GETTING_STARTED.md)** — setup, commands, builds
 - **Templates:** [Design docs](./docs/designs/_TEMPLATE.md) | [ADRs](./docs/decisions/_TEMPLATE.md)

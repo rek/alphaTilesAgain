@@ -90,10 +90,11 @@ interface CardState {
 
 ### D6. Match Check Delay
 
-Java uses 800ms for "quickViewDelay" and a configurable `flipCardsBackOver` delay (defaulting to 0 or setting-based). 
+Java uses 800ms for "quickViewDelay". The flip-back delay is read from settings (`"View memory cards for _ milliseconds"`); if absent, the default is **0ms** (cards flip back immediately).
+
 We will use:
 - `REVEAL_DELAY = 800ms` (time showing the second card before checking match).
-- `FLIP_BACK_DELAY = 1200ms` (if no match, stay revealed for this long before flipping back).
+- `FLIP_BACK_DELAY`: read from `LangAssets.settings["View memory cards for _ milliseconds"]`; default to `0` if not set.
 
 ## Unresolved Questions
 

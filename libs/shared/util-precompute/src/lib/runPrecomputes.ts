@@ -1,5 +1,5 @@
 import { registry, precomputeCache } from './precomputeRegistry';
-import type { LangAssets } from './precomputeRegistry';
+import type { PrecomputeFn } from './precomputeRegistry';
 
 /**
  * Execute all registered precompute functions against `assets`.
@@ -8,11 +8,11 @@ import type { LangAssets } from './precomputeRegistry';
  * Throws if any precompute function throws — the error is re-thrown with the
  * precompute key attached so the boot sequence surfaces a clear failure.
  */
-export function runPrecomputes(assets: LangAssets): Map<string, unknown> {
+export function runPrecomputes<A>(assets: A): Map<string, unknown> {
   precomputeCache.clear();
   for (const [key, { fn }] of registry) {
     try {
-      const result = fn(assets);
+      const result = (fn as PrecomputeFn<unknown, A>)(assets);
       precomputeCache.set(key, result);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

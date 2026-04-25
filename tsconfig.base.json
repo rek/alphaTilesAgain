@@ -40,7 +40,7 @@
         "libs/alphaTiles/data-language-assets/src/index.ts"
       ],
       "@generated/langManifest": [
-        "apps/alphaTiles/src/generated/langManifest.ts"
+        "libs/alphaTiles/data-language-assets/src/generated/langManifest.ts"
       ],
       "@alphaTiles/data-audio": ["libs/alphaTiles/data-audio/src/index.ts"],
       "@alphaTiles/data-players": ["libs/alphaTiles/data-players/src/index.ts"],

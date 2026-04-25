@@ -1,2 +1,20 @@
-schema: spec-driven
-created: 2026-04-24
+name: deploy-gh-pages
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/gh-pages-deploy:
+    status: done
+    path: specs/gh-pages-deploy/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/gh-pages-deploy]
+  status: pending

@@ -14,7 +14,7 @@ Tactical design for the "United States" game implementation.
 | ---- | -- | ----- |
 | `UnitedStates` class | `UnitedStatesContainer.tsx` + `UnitedStatesScreen.tsx` | Feature lib |
 | `onCreate` / `wordLengthLimitInTiles` | `usePrecompute('united-states')` + `challengeLevel` logic | Precompute filters words by length |
-| `GAME_BUTTONS` (18 buttons) | `UnitedStatesScreen` props | Flat list of 18 tile states |
+| `GAME_BUTTONS` (18 buttons in layout) | `UnitedStatesScreen` props | Render only N pairs (word tile length); hide unused buttons |
 | `onBtnClick` | `onTilePress` callback | Updates selection state |
 | `buildWord` | `useMemo` for constructed word + win check | Derived state |
 | `combineTilesToMakeWord` | `util-phoneme` / `util-scoring` | Re-use existing word reconstruction logic |

@@ -5,7 +5,7 @@ Romania.java is a "Scanning" game. Unlike most AlphaTiles games, it doesn't test
 ### Required reading for implementers
 
 - `AGENTS.md`, `ARCHITECTURE.md`.
-- `openspec/changes/game-engine-base/design.md`.
+- `openspec/changes/archive/2026-04-24-game-engine-base/design.md`.
 - `libs/alphaTiles/util-scoring/src/lib/noTrackerCountries.ts` (Romania is a NO_TRACKER_COUNTRY).
 
 ## Goals / Non-Goals

@@ -1,22 +1,26 @@
 ## Why
 
-Chile is a foundational "Identification" game (Picture-to-Word). It exercises word recognition by matching a visual prompt with the correct written word from a set of distractors. This mechanic is a staple of literacy training.
+Chile is a tile-based Wordle clone. It builds phonemic awareness by having players guess a secret word using the language pack's tile alphabet. Unlike standard Wordle, tiles are phonemic units (which may be multi-character) rather than individual letters.
 
 ## What Changes
 
 - Add `libs/alphaTiles/feature-game-chile` — `<ChileContainer>` + `<ChileScreen>`.
-- Port Chile's identification mechanic:
-    - Display a word image.
-    - Provide 4 word choices (1 correct, 3 distractors).
-    - Selecting correct word increments points/trackers via shell.
-- Level scaling: difficulty can be adjusted by distractor selection similarity.
-- Use `feature-game-shell` for UI chrome, audio instructions, and navigation.
+- Port Chile's Wordle mechanic:
+    - A secret word is randomly selected from the pack's wordlist (filtered by min/max tile length).
+    - The player builds guesses tile-by-tile using an on-screen tile keyboard.
+    - Submitting a complete guess colors each tile: GREEN (correct tile, correct position), BLUE (correct tile, wrong position), GRAY (tile not in word).
+    - The keyboard updates to reflect the best known color for each tile.
+    - Win: a guess where all tiles are GREEN → `updatePointsAndTrackers(1)`.
+    - Lose: exhausted all rows → show correct answer in GREEN, no points.
+- Number of guess rows = `baseGuessCount - challengeLevel + 1` (default `baseGuessCount = 8`; L1 = 8 rows, L2 = 7, L3 = 6).
+- Precompute (`chilePreProcess`): builds the tile keyboard (sorted union of all tiles used in valid words, max 50) and the filtered word list.
+- Use `feature-game-shell` for UI chrome and navigation.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `game-chile` — Chile identification mechanic: Matching an image to one of four word choices.
+- `game-chile` — Chile Wordle mechanic: guess a phonemic-tile word within N rows; green/blue/gray tile feedback; keyboard reflects best-known colors.
 
 ## Impact
 
@@ -25,4 +29,6 @@ Chile is a foundational "Identification" game (Picture-to-Word). It exercises wo
 
 ## Out of Scope
 
-- Other matching variants (Audio-to-Word, etc.) — those may be Italy or other countries.
+- Hard-mode constraints (must use confirmed tiles in subsequent guesses).
+- Hint system or audio prompts — Chile is text-only.
+- Custom keyboard layout beyond `keyboardWidth` setting.

@@ -1,2 +1,20 @@
-schema: spec-driven
-created: 2026-04-24
+name: game-japan
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/japan:
+    status: done
+    path: specs/japan/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/japan]
+  status: pending

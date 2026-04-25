@@ -1,7 +1,20 @@
 name: game-united-states
-status: proposing
-applyRequires:
-  - proposal.md
-  - design.md
-  - specs/pairing-spelling/spec.md
-  - tasks.md
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/pairing-spelling:
+    status: done
+    path: specs/pairing-spelling/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/pairing-spelling]
+  status: pending

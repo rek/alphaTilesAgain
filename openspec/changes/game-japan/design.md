@@ -42,6 +42,9 @@ The missing tile in the word will be represented by an underscore `_` or a dedic
 - The missing tile is visually distinct (e.g., a dashed border or `?`).
 - Renders choice tiles in a grid or row.
 
-## Unresolved Questions
+### D4. Challenge-Level → Choice Count
 
-- **Number of Choices**: Does it scale with `challengeLevel`? (Likely yes: 2, 4, 6 choices).
+`challengeLevel` maps to the number of tile choices displayed:
+- `1` → 2 choices (1 correct + 1 distractor)
+- `2` → 4 choices (1 correct + 3 distractors)
+- `3` → 6 choices (1 correct + 5 distractors)
