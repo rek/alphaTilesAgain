@@ -1,0 +1,86 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      NX_NO_CLOUD: true
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --legacy-peer-deps
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - name: Restore NX cache
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            nx-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
+
+      # ─── Build landing page (always) ─────────────────────────────────
+      - name: Build home
+        run: npx nx build home
+
+      # ─── Build affected game apps only ───────────────────────────────
+      - name: Build affected apps
+        run: npx nx affected -t web-export
+        env:
+          EXPO_BASE_URL: /engEnglish4
+
+      # ─── Assemble into one site tree ─────────────────────────────────
+      - name: Assemble site
+        run: |
+          mkdir -p dist/site
+          cp -r dist/apps/home/. dist/site/
+          for app in engEnglish4; do
+            if [ -d "dist/web/$app" ]; then
+              mkdir -p "dist/site/$app"
+              cp -r "dist/web/$app/." "dist/site/$app/"
+              echo "/*  /index.html  200" > "dist/site/$app/_redirects"
+            fi
+          done
+
+      # ─── Deploy ──────────────────────────────────────────────────────
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
