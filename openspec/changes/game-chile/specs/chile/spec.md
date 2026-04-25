@@ -1,93 +1,212 @@
-# Capability: Chile Game (Phonemic Wordle)
+## ADDED Requirements
 
-Chile is a tile-based Wordle clone where players guess a secret word using the language pack's phonemic tile alphabet. Tile feedback (GREEN/BLUE/GRAY) guides the player to the correct word.
+### Requirement: Guess Row Count Scales With Challenge Level
 
-## Requirements
-
-### R1. Guess Row Count Scales with Challenge Level
-
-The number of available guess rows MUST equal `baseGuessCount - challengeLevel + 1` (default `baseGuessCount = 8`).
+The number of available guess rows SHALL equal `baseGuessCount - challengeLevel + 1` (default `baseGuessCount = 8`, settable via `Chile base guess count`). Java reference: `Chile.java:91`.
 
 #### Scenario: Level 1 has 8 rows
-- **GIVEN** challengeLevel is 1 and baseGuessCount is 8
-- **WHEN** a game starts
-- **THEN** 8 guess rows are displayed
+
+- **GIVEN** `challengeLevel = 1` and `baseGuessCount = 8`
+- **WHEN** a Chile round starts
+- **THEN** the guess grid renders 8 rows of `secret.length` cells
 
 #### Scenario: Level 3 has 6 rows
-- **GIVEN** challengeLevel is 3 and baseGuessCount is 8
-- **WHEN** a game starts
-- **THEN** 6 guess rows are displayed
 
-### R2. Tile Feedback — Correct Position (GREEN)
+- **GIVEN** `challengeLevel = 3` and `baseGuessCount = 8`
+- **WHEN** a Chile round starts
+- **THEN** the guess grid renders 6 rows
 
-A guessed tile in the exact correct position MUST be colored GREEN.
+### Requirement: Two-Pass Tile Feedback
 
-#### Scenario: Exact match
-- **GIVEN** secret is ["c", "a", "t"] and guess is ["c", "a", "t"]
+On submit, the game SHALL score the current guess row using a two-pass algorithm matching `Chile.java:205–221`:
+
+- Pass 1: every guess cell whose text equals `secret[i]` MUST be marked GREEN, and `frontCor[i]` MUST be set true.
+- Pass 2: for every non-green guess cell at index `i`, the algorithm SHALL scan guess positions `x` for the first `x` where `row[x] === secret[i]` AND `row[x] !== secret[x]` AND `!frontCor[i]` AND `correct[x] === 0`; if found it MUST set `frontCor[i] = true` and `correct[x] = 2` (BLUE) at the **guess slot `x`**.
+- Cells with `correct === 0` MUST render GRAY.
+
+Color values: GREEN = `colorList[3]`, BLUE = `colorList[1]`, GRAY = `colorList[8]`.
+
+#### Scenario: Exact match all green
+
+- **GIVEN** `secret = ["c","a","t"]` and guess `["c","a","t"]`
 - **WHEN** the guess is submitted
-- **THEN** all three tiles are GREEN
+- **THEN** all 3 cells are GREEN
 
-### R3. Tile Feedback — Correct Tile, Wrong Position (BLUE)
+#### Scenario: BLUE at guess-slot of duplicate
 
-A guessed tile that exists in the secret word but is in the wrong position MUST be colored BLUE (if not already accounted for by a GREEN match).
-
-#### Scenario: Tile in word but wrong position
-- **GIVEN** secret is ["c", "a", "t"] and guess is ["a", "c", "t"]
+- **GIVEN** `secret = ["c","a","t"]` and guess `["a","c","t"]`
 - **WHEN** the guess is submitted
-- **THEN** "a" at position 0 is BLUE, "c" at position 1 is BLUE, "t" at position 2 is GREEN
+- **THEN** cell at index 0 is BLUE, cell at index 1 is BLUE, cell at index 2 is GREEN
 
-### R4. Tile Feedback — Not in Word (GRAY)
+#### Scenario: Tile not in word is gray
 
-A guessed tile that does not appear in the secret word MUST be colored GRAY.
-
-#### Scenario: Tile not in word
-- **GIVEN** secret is ["c", "a", "t"] and guess is ["d", "o", "g"]
+- **GIVEN** `secret = ["c","a","t"]` and guess `["d","o","g"]`
 - **WHEN** the guess is submitted
-- **THEN** all three tiles are GRAY
+- **THEN** all 3 cells are GRAY
 
-### R5. Keyboard Color Update
+#### Scenario: Duplicate guess letter scored once
 
-After each guess, each keyboard tile's color MUST update to reflect the best-known feedback (GREEN > BLUE > GRAY). A tile's color never regresses to a lower certainty.
-
-#### Scenario: Keyboard reflects best result
-- **GIVEN** "a" was BLUE in a prior guess
-- **WHEN** a new guess places "a" in the correct position (GREEN)
-- **THEN** the "a" keyboard key updates to GREEN
-
-### R6. Win Condition
-
-When all tiles in a guess row are GREEN, the game MUST call `updatePointsAndTrackers(1)` and show the reset button.
-
-#### Scenario: Winning guess
-- **GIVEN** the secret is ["ba", "na", "na"] and the player guesses ["ba", "na", "na"]
+- **GIVEN** `secret = ["c","a","t"]` and guess `["a","a","t"]`
 - **WHEN** the guess is submitted
-- **THEN** all tiles are GREEN
-- **AND** `updatePointsAndTrackers(1)` is called
+- **THEN** cell 0 is BLUE (claims `secret[1]`), cell 1 is GRAY (already claimed), cell 2 is GREEN
 
-### R7. Lose Condition
+### Requirement: Keyboard Color Promotion
 
-When the player exhausts all guess rows without a full GREEN row, the secret word MUST be revealed (tiles shown in GREEN below the grid). No points awarded.
+After each guess is scored, every keyboard key whose text matches a just-scored guess cell SHALL update color following promotion rules from `Chile.java:250–258`:
+
+- A key at `KEY_COLOR` MAY transition to GRAY, BLUE, or GREEN.
+- A key at GRAY MAY transition to BLUE or GREEN.
+- A key at BLUE MAY transition only to GREEN.
+- A key at GREEN MUST NOT change.
+
+#### Scenario: Key promotes BLUE → GREEN
+
+- **GIVEN** key `"a"` is BLUE from a prior guess
+- **WHEN** a new guess places `"a"` at the correct position (GREEN)
+- **THEN** the keyboard key `"a"` becomes GREEN
+
+#### Scenario: Key never regresses
+
+- **GIVEN** key `"a"` is GREEN
+- **WHEN** a later guess places `"a"` at a wrong position
+- **THEN** the keyboard key `"a"` remains GREEN
+
+### Requirement: Submit Guarded By Full Row
+
+The submit handler SHALL return early without scoring or sound effects when any cell of the current row is empty. Java reference: `Chile.java:195–198`.
+
+#### Scenario: Submit with empty cell is a no-op
+
+- **GIVEN** `secret.length === 3` and the current row contains `["c","",""]`
+- **WHEN** the player taps submit
+- **THEN** no scoring runs, no sound plays, and `currentRow` does not advance
+
+### Requirement: Win Condition
+
+When `greenCount === secret.length` and the game was not previously finished, the game SHALL:
+
+- Set `finished = true`.
+- Play the correct sound.
+- Call `updatePointsAndTrackers(1)` (i.e. `shell.incrementPointsAndTracker(true)`).
+- Reveal the reset (repeat) button and hide the complete-word button.
+- Call `setAdvanceArrowToBlue()` and `setOptionsRowClickable()`.
+
+Java reference: `Chile.java:261–283`.
+
+#### Scenario: Winning guess scores
+
+- **GIVEN** `secret = ["ba","na","na"]` and the guess matches it exactly
+- **WHEN** the guess is submitted
+- **THEN** all 3 cells are GREEN, the correct sound plays, and `incrementPointsAndTracker(true)` is invoked once
+
+### Requirement: Lose Condition
+
+When the player submits the final available row without winning, the game SHALL:
+
+- Set `finished = true`.
+- Append `secret.length` extra reveal tiles with background GREEN and text color YELLOW (= `colorList[5]`) to the displayed tile list.
+- Scroll to the appended reveal row.
+- Play the incorrect sound.
+- NOT call `updatePointsAndTrackers`.
+- Reveal the reset button, hide the complete-word button, call `setAdvanceArrowToBlue()` and `setOptionsRowClickable()`.
+
+Java reference: `Chile.java:266–274`.
 
 #### Scenario: All rows used, no win
+
 - **GIVEN** the player has used all available guess rows without a full-GREEN row
 - **WHEN** the final guess is submitted
-- **THEN** the correct answer is shown in GREEN
+- **THEN** the secret tiles are appended with GREEN bg and YELLOW text and the incorrect sound plays
 - **AND** `updatePointsAndTrackers` is NOT called
 
-### R8. Precompute: Word List and Keyboard
+### Requirement: Backspace Clears Last Filled Cell In Current Row
 
-The game MUST register a precompute under key `'chile'` that:
-- Filters `wordList` to words with tile count between `minWordLength` (default 3) and `maxWordLength` (default 100).
-- Builds a keyboard of up to 50 unique tiles from valid words, sorted by `tileList` order.
+The backspace handler SHALL iterate the current row right-to-left and clear the rightmost non-empty cell. It SHALL be a no-op when `finished === true`. Java reference: `Chile.java:150–159`.
+
+#### Scenario: Backspace mid-row
+
+- **GIVEN** the current row contains `["a","b",""]`
+- **WHEN** the player taps backspace
+- **THEN** the row becomes `["a","",""]`
+
+#### Scenario: Backspace ignored after finish
+
+- **GIVEN** `finished === true`
+- **WHEN** the player taps backspace
+- **THEN** the row is unchanged
+
+### Requirement: Key Press Fills First Empty Cell
+
+The key press handler SHALL iterate the current row left-to-right and fill the first empty cell with the tapped tile's text, then break. Java reference: `Chile.java:286–301`.
+
+#### Scenario: Key fills next empty slot
+
+- **GIVEN** the current row contains `["a","",""]`
+- **WHEN** the player taps key `"b"`
+- **THEN** the row becomes `["a","b",""]`
+
+### Requirement: Reset Picks New Secret
+
+The reset handler SHALL be a no-op when `!finished`. When `finished`, it SHALL:
+
+- Reset every keyboard key's color to `KEY_COLOR` (= `colorList[0]`).
+- Reset `currentRow = 0` and `finished = false`.
+- Pop the next secret from the remaining word list.
+- Refill (deep-copy from `data.words`) and Fisher-Yates shuffle the remaining list when it is empty.
+- Re-init the guess tiles to `data.guesses × secret.length` empty cells.
+- Hide the repeat button, show the complete-word button, call `setAdvanceArrowToGray()`.
+
+Java reference: `Chile.java:160–187`.
+
+#### Scenario: Reset before finish is ignored
+
+- **GIVEN** `finished === false`
+- **WHEN** the player taps reset
+- **THEN** state is unchanged
+
+#### Scenario: Reset refills exhausted word list
+
+- **GIVEN** `finished === true` and the remaining-word list is empty
+- **WHEN** the player taps reset
+- **THEN** the remaining-word list is refilled from `data.words`, Fisher-Yates shuffled, and a new secret is popped
+
+### Requirement: Precompute Word List And Keyboard
+
+The mechanic SHALL register a precompute under key `'chile'` that, matching `Chile.java:302–369`:
+
+- Reads settings `Chile keyboard width` (default 7), `Chile base guess count` (default 8), `Chile minimum word length` (default 3), `Chile maximum word length` (default 100). Each parse failure falls back silently to the default.
+- Filters `Start.wordList` to words whose tile-parse length is in `[minWordLength, maxWordLength]`.
+- Builds a unique-tile keyboard with at most 50 entries, in word-list order. When a word would introduce a tile beyond the cap, that word MUST be removed from the filtered list.
+- Sorts the keyboard tiles by each tile's index in `Start.tileList`.
+- Computes `fontScale = Util.getMinFontSize(keys)`.
+- Returns `{ words, keys, keyboardWidth, fontScale }`. `guesses` is NOT precomputed.
 
 #### Scenario: Boot-time precomputation
+
 - **WHEN** the app boots
-- **THEN** `chilePreProcess` runs once and the word list and keyboard are cached
+- **THEN** `chilePreProcess` runs once and the result is cached under key `'chile'`
 
-### R9. Container / Presenter split
+#### Scenario: 50-tile keyboard cap drops over-budget words
 
-`<ChileContainer>` SHALL own all state and hook usage. `<ChileScreen>` SHALL be a pure props→JSX presenter.
+- **GIVEN** the filtered word list has 60 unique tiles across 100 words
+- **WHEN** `chilePreProcess` runs
+- **THEN** the keyboard contains exactly 50 tiles and any word that would have introduced tile 51+ is dropped from the returned `words`
+
+### Requirement: RTL Icon Flip
+
+When `scriptDirection === 'RTL'`, the backspace and repeat icons SHALL render mirrored (`scaleX = -1`). Java reference: `Chile.java:87–90`.
+
+#### Scenario: RTL flips icons
+
+- **GIVEN** `scriptDirection === 'RTL'`
+- **WHEN** `<ChileScreen>` renders
+- **THEN** backspace and repeat icons render mirrored
+
+### Requirement: Container / Presenter Split
+
+`<ChileContainer>` SHALL own all state and hook usage. `<ChileScreen>` SHALL be a pure props→JSX presenter with no `useGameShell`, no `usePrecompute`, and no `react-i18next` import.
 
 #### Scenario: Presenter audit
-- **WHEN** `ChileScreen.tsx` is inspected
-- **THEN** it contains no `useGameShell`, `usePrecompute`, or `useTranslation` calls
+
+- **WHEN** `ChileScreen.tsx` is statically analyzed
+- **THEN** it MUST NOT import `react-i18next`, `useGameShell`, or `usePrecompute`
