@@ -2,7 +2,7 @@
 
 Living doc. Updated after each game is archived. Read before proposing or implementing any `game-*` change.
 
-Latest entry: **game-brazil** (2026-04-25).
+Latest entry: **game-italy** (2026-04-25).
 
 ---
 
@@ -103,6 +103,7 @@ export function <Name>Screen(props: <Name>ScreenProps) {
 | Thailand | 3-digit code `XYZ` | X=difficulty, Y=refType, Z=choiceType |
 | Peru | 1-digit difficulty | `1`→first-tile trio, `2`→same-type random idx, `3`→trio random idx |
 | Brazil | 1-digit + `syllableGame` | CL1–3 vowel-blank, CL4–6 consonant-blank, CL7 tone-blank; `syllableGame === "S"` overrides → SL1/SL2 syllable variants regardless of CL |
+| Italy | none (variant only) | `challengeLevel` is ignored; `syllableGame` switches the source list (T → words, S → syllables) |
 
 Decode locally in the container via a constant map. Add new games here when their `challengeLevel` is decoded.
 
@@ -364,3 +365,69 @@ Canonical OpenSpec uses:
 
 Avoid the legacy `### R1.` / `### R2.` headings — the canonical-format requirements register correctly with `openspec validate --strict`. Reformat any pending change spec before applying.
 - [ ] Verify RTL layout with an RTL pack (or storybook decorator)
+
+---
+
+## Shell extensions for non-default scoring + repeat (from game-italy)
+
+Two additive, non-breaking extensions to `useGameShell()` that the Italy port introduced; reuse for any future game with the same needs.
+
+### `incrementPointsAndTracker(isCorrect, points?)`
+
+The original signature was `(isCorrect: boolean) => void` and hardcoded `+1` point per correct answer. Italy's lotería awards `+4` per win (Java `updatePointsAndTrackers(4)`), so the second arg is now an optional `points` (default `1`). Tracker still increments by 1 regardless of `points`.
+
+Existing call sites (`shell.incrementPointsAndTracker(true)`) are unchanged. New call sites pass the explicit count: `shell.incrementPointsAndTracker(true, 4)`.
+
+### `setOnRepeat(fn | null)`
+
+Mirror of `setOnAdvance`. The shell's default repeat button calls `replayWord()` which plays a word clip via `audio.playWord(refWord.wordInLWC)`. For syllable-mode games (Italy S, Thailand syllable refs, etc.) the current "call" is a syllable — `playWord` would silently no-op on a missing handle.
+
+```ts
+useEffect(() => {
+  shell.setOnRepeat(() => playCallAudio(currentCall));
+  return () => shell.setOnRepeat(null);
+}, [shell, currentCall, playCallAudio]);
+```
+
+If the mechanic registers an `onRepeat`, the shell calls it; otherwise it falls back to `replayWord()`. No existing game needs to change.
+
+---
+
+## Lotería / fixed-seed-board pattern (from game-italy)
+
+For board games where the deck is larger than the board (Italy: 16 board, 54 deck) — the canonical setup is **shuffle-and-split**:
+
+```ts
+const initial = shuffle(source).slice(0, deckSize);   // gameCards
+const board = initial.slice(0, boardSize);            // first 16 in shuffle order
+const deck = shuffle(initial);                        // re-shuffle for caller
+```
+
+The board cells stay in their initial shuffle order for the round; the deck is re-shuffled so the caller order is independent of board order. Every board cell is guaranteed to appear in the deck (board ⊆ initial = deck members).
+
+Win-detection over a 4×4 board uses 10 sequences (4 rows + 4 cols + 2 diagonals); store as `WIN_SEQUENCES: readonly (readonly number[])[]` with **0-based indices** (Java's source is 1-based — convert at port time, not at runtime).
+
+---
+
+## Auto-advance after correct (Italy non-winning case)
+
+When a correct tap doesn't end the round (Italy: covered but no lotería), the chime should play before advancing — otherwise the next call audio overlaps the chime. Pattern:
+
+```ts
+audio.playCorrect().then(() => {
+  if (isMountedRef.current) playCallAudio(currentCall);
+});
+advanceTimerRef.current = setTimeout(() => {
+  if (isMountedRef.current) advanceCaller();
+}, ADVANCE_DELAY_MS);  // 800 ms — long enough for the chime to land
+```
+
+Track the timer in a ref and clear it in `startRound()` and on unmount; otherwise a rapid second tap or a back-press leaves a stale timer firing into a torn-down container.
+
+---
+
+## Bean / overlay assets (from game-italy)
+
+When a game needs decorative overlays (Italy beans, future games' chips/marks), default to **styled View shapes** in the presenter — not pack-injected images. The presenter accepts an optional image-source prop (`beanImage`, `loteriaImage`) so an app may swap the styled circle for a real `zz_bean.png` later.
+
+Why: pack assets for these overlays are inconsistently shipped, and the presenter has zero asset dependencies otherwise. Image override is opt-in, not required.
