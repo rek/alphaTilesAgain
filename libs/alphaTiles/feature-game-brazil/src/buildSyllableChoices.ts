@@ -46,9 +46,14 @@ export function buildSyllableChoices({
   }
 
   // SL2: correct + 3 distractors; backfill from random syllables if dedup loses entries.
-  const set = new Set<string>([correct.syllable, ...correct.distractors]);
-  while (set.size < 4 && allSyllables.length > 0) {
-    set.add(allSyllables[Math.floor(rand() * allSyllables.length)].syllable);
+  const set = new Set<string>([correct.syllable, ...correct.distractors.filter(Boolean)]);
+  if (set.size < 4 && allSyllables.length > 0) {
+    const remaining = allSyllables.filter((s) => !set.has(s.syllable));
+    const shuffledRemaining = shuffle(remaining.slice(), rand);
+    for (const s of shuffledRemaining) {
+      if (set.size >= 4) break;
+      set.add(s.syllable);
+    }
   }
   const slice = shuffle(Array.from(set), rand).slice(0, 4);
   if (!slice.includes(correct.syllable) && slice.length > 0) {
