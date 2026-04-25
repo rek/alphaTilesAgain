@@ -22,6 +22,8 @@ export interface ResourceRow {
 }
 
 export interface ResourcesScreenProps {
+  /** Called when user taps the back button */
+  onBack: () => void;
   /** Whether the resources list is empty */
   isEmpty: boolean;
   /** Parsed resource rows (name + link; image stored but not rendered) */
@@ -35,17 +37,28 @@ export interface ResourcesScreenProps {
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
 
 export function ResourcesScreen(props: ResourcesScreenProps): React.JSX.Element {
-  const { isEmpty, resources, emptyMessage, onResourceTap } = props;
+  const { onBack, isEmpty, resources, emptyMessage, onResourceTap } = props;
+
+  const backButton = (
+    <Pressable onPress={onBack} accessibilityRole="button" style={styles.backButton}>
+      <Text style={styles.backArrow}>{'←'}</Text>
+    </Pressable>
+  );
 
   if (isEmpty) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.emptyMessage}>{emptyMessage}</Text>
+      <View style={styles.container}>
+        {backButton}
+        <View style={styles.centerContainer}>
+          <Text style={styles.emptyMessage}>{emptyMessage}</Text>
+        </View>
       </View>
     );
   }
 
   return (
+    <View style={styles.container}>
+      {backButton}
     <FlatList
       data={resources}
       keyExtractor={(item, index) => `${index}-${item.link}`}
@@ -62,10 +75,21 @@ export function ResourcesScreen(props: ResourcesScreenProps): React.JSX.Element 
         </Pressable>
       )}
     />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  backButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  backArrow: {
+    fontSize: 24,
+  },
   centerContainer: {
     flex: 1,
     alignItems: 'center',

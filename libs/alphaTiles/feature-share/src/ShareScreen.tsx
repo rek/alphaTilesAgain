@@ -22,6 +22,8 @@ import {
 import QRCode from 'react-native-qrcode-svg';
 
 export interface ShareScreenProps {
+  /** Called when user taps the back button */
+  onBack: () => void;
   /** Whether the share URL is available (false = render unavailable message) */
   available: boolean;
   /** The share URL to encode in QR code and pass to native share sheet */
@@ -42,6 +44,7 @@ const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
 
 export function ShareScreen(props: ShareScreenProps): React.JSX.Element {
   const {
+    onBack,
     available,
     url,
     instructions,
@@ -55,15 +58,26 @@ export function ShareScreen(props: ShareScreenProps): React.JSX.Element {
   // QR size: 2/3 of screen width, mirroring Java Share.java, clamped 192–320
   const qrSize = Math.min(320, Math.max(192, Math.floor((width * 2) / 3)));
 
+  const backButton = (
+    <Pressable onPress={onBack} accessibilityRole="button" style={styles.backButton}>
+      <Text style={styles.backArrow}>{'←'}</Text>
+    </Pressable>
+  );
+
   if (!available) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.unavailable}>{unavailableMessage}</Text>
+      <View style={styles.outerContainer}>
+        {backButton}
+        <View style={styles.centerContainer}>
+          <Text style={styles.unavailable}>{unavailableMessage}</Text>
+        </View>
       </View>
     );
   }
 
   return (
+    <View style={styles.outerContainer}>
+      {backButton}
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -88,10 +102,21 @@ export function ShareScreen(props: ShareScreenProps): React.JSX.Element {
         <Text style={styles.shareButtonText}>{shareButtonLabel}</Text>
       </Pressable>
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flex: 1,
+  },
+  backButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  backArrow: {
+    fontSize: 24,
+  },
   container: {
     flex: 1,
   },

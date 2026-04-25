@@ -15,6 +15,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { AboutScreen } from './AboutScreen';
 
 const BASE_PROPS = {
+  onBack: jest.fn(),
   versionLabel: 'Version 1.0.0',
   localName: 'English',
   langPlusCountry: 'English / English (USA)',

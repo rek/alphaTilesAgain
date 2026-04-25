@@ -22,6 +22,7 @@ jest.mock('react-native-qrcode-svg', () => {
 });
 
 const BASE_PROPS = {
+  onBack: jest.fn(),
   available: true,
   url: 'https://play.google.com/store/apps/details?id=org.alphatilesapps.alphatiles.blue.engEnglish4',
   instructions: 'Scan this QR code to share this app',

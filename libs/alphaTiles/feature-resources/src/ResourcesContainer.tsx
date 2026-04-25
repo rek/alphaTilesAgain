@@ -10,6 +10,7 @@
 
 import React from 'react';
 import * as WebBrowser from 'expo-web-browser';
+import { useRouter } from 'expo-router';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useTranslation } from '@shared/util-i18n';
 import { useTrackScreenMount } from '@shared/util-analytics';
@@ -18,6 +19,7 @@ import { ResourcesScreen } from './ResourcesScreen';
 export function ResourcesContainer(): React.JSX.Element {
   const assets = useLangAssets();
   const { t } = useTranslation();
+  const router = useRouter();
   useTrackScreenMount('/resources');
 
   // assets.resources is ParsedResources = { rows: Array<{ name, link, image }> }
@@ -30,6 +32,7 @@ export function ResourcesContainer(): React.JSX.Element {
 
   return (
     <ResourcesScreen
+      onBack={() => { router.back(); }}
       isEmpty={isEmpty}
       resources={rows}
       emptyMessage={t('chrome:resources.empty')}

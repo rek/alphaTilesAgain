@@ -21,6 +21,7 @@ describe('ResourcesScreen', () => {
         isEmpty
         resources={[]}
         emptyMessage="No resources available"
+        onBack={jest.fn()}
         onResourceTap={jest.fn()}
       />,
     );
@@ -33,6 +34,7 @@ describe('ResourcesScreen', () => {
         isEmpty={false}
         resources={SAMPLE_RESOURCES}
         emptyMessage="No resources available"
+        onBack={jest.fn()}
         onResourceTap={jest.fn()}
       />,
     );
@@ -47,6 +49,7 @@ describe('ResourcesScreen', () => {
         isEmpty={false}
         resources={SAMPLE_RESOURCES}
         emptyMessage="No resources available"
+        onBack={jest.fn()}
         onResourceTap={jest.fn()}
       />,
     );
@@ -65,6 +68,7 @@ describe('ResourcesScreen', () => {
         isEmpty={false}
         resources={SAMPLE_RESOURCES}
         emptyMessage="No resources available"
+        onBack={jest.fn()}
         onResourceTap={onResourceTap}
       />,
     );
@@ -78,6 +82,7 @@ describe('ResourcesScreen', () => {
         isEmpty
         resources={SAMPLE_RESOURCES}
         emptyMessage="No resources available"
+        onBack={jest.fn()}
         onResourceTap={jest.fn()}
       />,
     );

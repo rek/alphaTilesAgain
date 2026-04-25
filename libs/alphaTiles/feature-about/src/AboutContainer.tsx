@@ -12,6 +12,7 @@ import React from 'react';
 import * as Application from 'expo-application';
 import * as WebBrowser from 'expo-web-browser';
 import { Linking } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useTranslation } from '@shared/util-i18n';
 import { useTrackScreenMount } from '@shared/util-analytics';
@@ -24,6 +25,7 @@ function isAbsent(value: string | undefined): boolean {
 export function AboutContainer(): React.JSX.Element {
   const assets = useLangAssets();
   const { t } = useTranslation();
+  const router = useRouter();
   useTrackScreenMount('/about');
 
   const langInfo = assets.langInfo;
@@ -66,6 +68,7 @@ export function AboutContainer(): React.JSX.Element {
 
   return (
     <AboutScreen
+      onBack={() => { router.back(); }}
       versionLabel={versionLabel}
       localName={localLangName}
       langPlusCountry={langPlusCountry}

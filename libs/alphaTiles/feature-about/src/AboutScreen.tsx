@@ -8,9 +8,11 @@
  */
 
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export interface AboutScreenProps {
+  /** Called when user taps the back button */
+  onBack: () => void;
   /** Translated label: "Version {{version}}" (version already interpolated) */
   versionLabel: string;
   /** Local-language app name (aa_langinfo item 1) */
@@ -43,6 +45,7 @@ const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
 
 export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
   const {
+    onBack,
     versionLabel,
     localName,
     langPlusCountry,
@@ -59,8 +62,12 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
   } = props;
 
   return (
+    <View style={styles.container}>
+      <Pressable onPress={onBack} accessibilityRole="button" style={styles.backButton}>
+        <Text style={styles.backArrow}>{'←'}</Text>
+      </Pressable>
     <ScrollView
-      style={styles.container}
+      style={styles.scroll}
       contentContainerStyle={styles.content}
     >
       <Text style={styles.appName}>{localName}</Text>
@@ -106,11 +113,22 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
         </Pressable>
       ) : null}
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  backButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  backArrow: {
+    fontSize: 24,
+  },
+  scroll: {
     flex: 1,
   },
   content: {
