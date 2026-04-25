@@ -100,51 +100,53 @@ export function GameMenuScreen({
       </View>
 
       <View style={styles.utilityRow}>
-        {showAbout && (
-          <Pressable
-            onPress={onAbout}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.about}
-            style={styles.utilityButton}
-          >
-            <Text style={styles.utilityText}>{'ℹ'}</Text>
-          </Pressable>
-        )}
-        {showShare && (
-          <Pressable
-            onPress={onShare}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.share}
-            style={styles.utilityButton}
-          >
-            <Text style={styles.utilityText}>{'⤴'}</Text>
-          </Pressable>
-        )}
-        {showResources && (
-          <Pressable
-            onPress={onResources}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.resources}
-            style={styles.utilityButton}
-          >
-            <Text style={styles.utilityText}>{'📚'}</Text>
-          </Pressable>
-        )}
-        {showAudioInstructions && (
-          <Pressable
-            onPress={onAudioInstructions}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.audioInstructions}
-            style={styles.utilityButton}
-          >
-            <Text style={styles.utilityText}>{'🔊'}</Text>
-          </Pressable>
-        )}
+        <View style={styles.utilityCenter}>
+          {showAbout && (
+            <Pressable
+              onPress={onAbout}
+              accessibilityRole="button"
+              accessibilityLabel={a11y.about}
+              style={styles.utilityButton}
+            >
+              <Text style={styles.utilityText}>{'ℹ'}</Text>
+            </Pressable>
+          )}
+          {showShare && (
+            <Pressable
+              onPress={onShare}
+              accessibilityRole="button"
+              accessibilityLabel={a11y.share}
+              style={styles.utilityButton}
+            >
+              <Text style={styles.utilityText}>{'⤴'}</Text>
+            </Pressable>
+          )}
+          {showResources && (
+            <Pressable
+              onPress={onResources}
+              accessibilityRole="button"
+              accessibilityLabel={a11y.resources}
+              style={styles.utilityButton}
+            >
+              <Text style={styles.utilityText}>{'📚'}</Text>
+            </Pressable>
+          )}
+          {showAudioInstructions && (
+            <Pressable
+              onPress={onAudioInstructions}
+              accessibilityRole="button"
+              accessibilityLabel={a11y.audioInstructions}
+              style={styles.utilityButton}
+            >
+              <Text style={styles.utilityText}>{'🔊'}</Text>
+            </Pressable>
+          )}
+        </View>
         <Pressable
           onPress={onToggleLayout}
           accessibilityRole="button"
           accessibilityLabel={a11y.toggleLayout}
-          style={[styles.utilityButton, styles.toggleButton]}
+          style={styles.utilityButton}
         >
           <Text style={styles.utilityText}>{layout === 'classic' ? '⊞' : '▦'}</Text>
         </Pressable>
@@ -198,17 +200,19 @@ const styles = StyleSheet.create({
   },
   utilityRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    alignItems: 'center',
     paddingVertical: 8,
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
   },
+  utilityCenter: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   utilityButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-  },
-  toggleButton: {
-    marginStart: 'auto',
   },
   utilityText: {
     fontSize: 22,
