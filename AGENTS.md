@@ -65,6 +65,7 @@ game-engine-base                   ✓ archived 2026-04-24
 loading-screen                     ✓ archived 2026-04-24
 game-menu                          ✓ archived 2026-04-24
 game-china                         ✓ archived 2026-04-24
+game-peru                          ✓ archived 2026-04-25
 ```
 
 Next changes must be proposed with `/opsx:propose <name>`, then implemented via `/opsx:apply <name>`.

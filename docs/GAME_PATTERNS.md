@@ -2,7 +2,7 @@
 
 Living doc. Updated after each game is archived. Read before proposing or implementing any `game-*` change.
 
-Latest entry: **game-china** (2026-04-24).
+Latest entry: **game-peru** (2026-04-25).
 
 ---
 
@@ -101,6 +101,7 @@ export function <Name>Screen(props: <Name>ScreenProps) {
 |------|----------|--------|
 | China | 1-digit difficulty | `1`→5 moves, `2`→10 moves, `3`→15 moves |
 | Thailand | 3-digit code `XYZ` | X=difficulty, Y=refType, Z=choiceType |
+| Peru | 1-digit difficulty | `1`→first-tile trio, `2`→same-type random idx, `3`→trio random idx |
 
 Decode locally in the container via a constant map. Add new games here when their `challengeLevel` is decoded.
 
@@ -218,6 +219,59 @@ A game `design.md` must include:
 - **Unresolved Questions** — any behavior not confirmed from Java source.
 
 Shallow `design.md` = ambiguous implementation = drift. If a proposed spec is shallow, **enrich it before starting apply.**
+
+---
+
+## Distractor-trio pattern (from game-peru)
+
+Many games mutate words by tile substitution. Two reusable building blocks:
+
+1. **Distractor trio** of any tile = `tileMap.get(base).{alt1, alt2, alt3}` columns of `aa_gametiles.txt`. Filter empties + missing-from-tileMap entries before use.
+2. **Same-type pool** of any tile = pre-bucketed array of all tiles whose `type` matches `parsed[i].typeOfThisTileInstance` (`V`/`C`/`PC`→C/`T`/`AD`). Pre-shuffle once at mount when the game class shuffles them in `onCreate` (Java pattern).
+
+Both live as one-function-per-file pure helpers (`buildSameTypePools`, inline trio access). When the trio or pool is empty, return `null`/`{ error: 'degenerate' }` and let the container retry with another word.
+
+---
+
+## Java off-by-one quirks — preserve, don't fix
+
+Several Java games use `rand.nextInt(tileLength - 1)` where `tileLength` was clearly intended. This excludes the **last tile** from random replacement (e.g. Peru CL2/CL3). Match the Java behaviour exactly — ports are not the place to silently fix bugs in upstream. Document the quirk in `design.md`'s decision section so future readers know it's intentional.
+
+If a future change wants to fix the bug, it should be a separate, named OpenSpec change with explicit before/after scenarios.
+
+---
+
+## Audio sequencing on correct (Java `playCorrectSoundThenActiveWordClip`)
+
+```ts
+// Container, on correct:
+shell.setInteractionLocked(true);
+shell.incrementPointsAndTracker(true);
+audio.playCorrect().then(() => {
+  if (!isMountedRef.current) return;
+  shell.replayWord();
+});
+```
+
+Use `isMountedRef` to guard against unmount during the awaited `playCorrect`. Don't `await` in the handler — fire-and-forget the chain so React doesn't block.
+
+---
+
+## When NOT to use a precompute
+
+`game-peru` deliberately skips a `register<Name>Precompute` because:
+
+- Word selection is one random pick per round, not a filtered list (trivially fast).
+- Per-type tile pools are small enough to bucket+shuffle once at container mount via `useMemo`.
+- Distractor trios are looked up on demand from `tileMap`.
+
+Rule of thumb: only precompute when the operation iterates the full word/tile list **and** the result is identical across all rounds. Round-local pools and on-demand lookups belong in container `useMemo`.
+
+---
+
+## Forbidden-substring filter
+
+The `للہ` Arabic-ligature rejection is universal across mutation games. Each implementation gets its own `containsForbidden.ts` (one-line `s.includes('للہ')`) plus a unit test — don't share, don't deduplicate. The filter is applied to **every** generated candidate before the uniqueness/dedupe checks.
 
 ---
 
