@@ -36,7 +36,7 @@
 | `VOWELS`, `CONSONANTS`, `TONES`, `SYLLABLES` | precomputed pools, loaded via `usePrecompute('brazil')` | Shuffled at boot |
 | `MULTITYPE_TILES` | precompute field | Multi-type tile texts |
 | `chooseWord()` | `pickWord()` from shell utils | Retry until word has tile of required type |
-| `removeTile()` | `blankRandomTileOfType(parsedTiles, type)` pure fn | Never blank SAD tiles |
+| `removeTile()` | `blankRandomTileOfType(parsedTiles, type, scriptType, placeholder)` pure fn | Never blank SAD tiles; script-aware placeholder |
 | `setUpTiles()` | `buildChoices(level, correct, pool, distractors)` pure fn | Per-CL logic |
 | `setUpSyllables()` | `buildSyllableChoices(level, correct, syllablePool)` pure fn | |
 | `respondToTileSelection()` | `onTileChoice(text)` handler | |
@@ -71,8 +71,9 @@ CL3 / CL6: if `correct` not in the random sample of the pool, overwrite a random
 
 ### D4. Distractor Trio Source
 
-- CL2/CL5: `correct` + its 3 distractors from `tile.distractorTrio` (Java `tileHashMap`).
-- SL2: `correct` + its 3 syllable distractors from `syllableHashMap`.
+- CL2/CL5: `correct` + its 3 distractors from `tile.distractorTrio` (Java `tileHashMap`). Java samples uniformly from the 4-element pool with retry-on-duplicate; net = same 4, shuffled.
+- SL1: `SYLLABLES[0..3]` from the pre-shuffled pool; if `correct` not in the slice, overwrite a random visible slot.
+- SL2: `correct` + its 3 syllable distractors from `syllableHashMap`. If duplicates collapse the set below 4, fill remaining slots with random syllables.
 
 ### D5. Precompute: `brazilPreProcess`
 

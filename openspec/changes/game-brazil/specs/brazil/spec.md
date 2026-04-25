@@ -50,12 +50,17 @@ The selected word MUST contain at least one tile of the type required by the cha
 
 ### R3. Blank Tile Selection
 
-`removeTile` MUST blank exactly one tile in the parsed word array, picked at random from tiles whose type matches the challenge level (vowel/consonant/tone), and MUST never blank a SAD tile.
+`removeTile` MUST blank exactly one tile in the parsed word array, picked at random from tiles whose type matches the challenge level (vowel/consonant/tone), and MUST never blank a SAD tile. The replacement string is `"__"` for Roman scripts, `"​"` (zero-width space) when `scriptType === "Khmer"` and the next tile is `V|AV|BV|D`, and `placeholderCharacter` for Khmer (other contexts) and Thai/Lao when blanking a consonant.
 
 #### Scenario: SAD tiles are excluded from blanking
 - **GIVEN** a word whose first tile is SAD
 - **WHEN** `removeTile` runs
 - **THEN** the SAD tile is NOT replaced with `"__"`
+
+#### Scenario: Thai consonant blank uses placeholder character
+- **GIVEN** `scriptType === "Thai"` and the chosen blank tile is type `C`
+- **WHEN** `removeTile` runs
+- **THEN** the blank tile text is `placeholderCharacter`, not `"__"`
 
 ### R4. Correct Answer
 
@@ -68,7 +73,14 @@ When the player taps a choice whose text equals `correct.text`, the game MUST:
 
 ### R5. Wrong Answer
 
-When the player taps a choice whose text does not equal `correct.text`, the game MUST play the incorrect sound and track the wrong answer. The round is NOT ended; further taps remain possible.
+When the player taps a choice whose text does not equal `correct.text`, the game MUST play the incorrect sound, track the wrong answer (up to N-1 unique entries), and disable further tile picks. The advance arrow remains gray (locked); the next round begins on `playAgain()` (triggered by audio-completion or shell advance).
+
+#### Scenario: Wrong tap disables remaining choices
+- **GIVEN** a round in progress
+- **WHEN** the player taps an incorrect tile
+- **THEN** all tile choices become unclickable
+- **AND** the incorrect sound plays
+- **AND** the wrong answer is appended to the unique-tracker list
 
 ### R6. Syllable Variant
 
