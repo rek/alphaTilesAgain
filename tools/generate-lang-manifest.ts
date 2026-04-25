@@ -48,12 +48,12 @@ function escapeStr(s: string): string {
  * Compute the relative path from the generated file's directory to the
  * languages/<lang>/ tree, suitable for use in require() calls.
  *
- * Generated file: apps/alphaTiles/src/generated/langManifest.ts
+ * Generated file: libs/alphaTiles/data-language-assets/src/generated/langManifest.ts
  * Languages dir:  languages/<lang>/
- * -> ../../../../languages/<lang>/
+ * -> ../../../../../languages/<lang>/
  */
 function langRelPath(lang: string, ...parts: string[]): string {
-  return ['../../../../languages', lang, ...parts].join('/');
+  return ['../../../../../languages', lang, ...parts].join('/');
 }
 
 // ---------------------------------------------------------------------------
@@ -91,7 +91,7 @@ function requireLiteral(lang: string, ...pathParts: string[]): string {
 }
 
 function requireAppAsset(...pathParts: string[]): string {
-  return `require('../../../../apps/alphaTiles/assets/${pathParts.join('/')}')`;
+  return `require('../../../../../apps/alphaTiles/assets/${pathParts.join('/')}')`;
 }
 
 // ---------------------------------------------------------------------------

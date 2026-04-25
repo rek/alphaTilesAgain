@@ -188,10 +188,7 @@ export function useAudio() {
       }
     }
 
-    track({
-      type: 'audio_unlock_web',
-      props: { millisecondsSinceBoot: Date.now() },
-    });
+    track('audio_unlock_web', { millisecondsSinceBoot: Date.now() });
 
     setIsAudioUnlocked(true);
   };
