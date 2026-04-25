@@ -1,0 +1,20 @@
+name: game-myanmar
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/myanmar:
+    status: done
+    path: specs/myanmar/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/myanmar]
+  status: pending

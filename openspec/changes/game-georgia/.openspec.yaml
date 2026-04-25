@@ -1,0 +1,20 @@
+name: game-georgia
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/georgia:
+    status: done
+    path: specs/georgia/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/georgia]
+  status: pending

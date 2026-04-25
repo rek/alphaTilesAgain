@@ -1,0 +1,20 @@
+name: game-malaysia
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/malaysia:
+    status: done
+    path: specs/malaysia/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/malaysia]
+  status: pending

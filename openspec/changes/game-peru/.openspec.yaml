@@ -1,0 +1,20 @@
+name: game-peru
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/peru:
+    status: done
+    path: specs/peru/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/peru]
+  status: pending
