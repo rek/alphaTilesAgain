@@ -55,7 +55,9 @@ jobs:
 
       # ─── Build each language (sequential — each overwrites dist/web/alpha-tiles) ───
       - name: Build eng
-        run: npx nx run alphaTiles:web-export
+        run: |
+          npx tsx tools/generate-lang-manifest.ts
+          npx nx run alphaTiles:web-export
         env:
           APP_LANG: eng
           EXPO_BASE_URL: /alphaTilesAgain/engEnglish4
@@ -67,7 +69,9 @@ jobs:
           echo "/*  /index.html  200" > dist/site/engEnglish4/_redirects
 
       - name: Build yue
-        run: npx nx run alphaTiles:web-export --skip-nx-cache
+        run: |
+          npx tsx tools/generate-lang-manifest.ts
+          npx nx run alphaTiles:web-export --skip-nx-cache
         env:
           APP_LANG: yue
           EXPO_BASE_URL: /alphaTilesAgain/yueCantonese
