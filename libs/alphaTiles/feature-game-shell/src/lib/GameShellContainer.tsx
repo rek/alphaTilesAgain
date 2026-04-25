@@ -264,7 +264,7 @@ export function GameShellContainer({
 
   // ── incrementPointsAndTracker — exposed to mechanics via context ──────────
   const incrementPointsAndTracker = useCallback(
-    (isCorrect: boolean, points: number = 1) => {
+    (isCorrect: boolean, points = 1) => {
       if (isCorrect) {
         incrementPoints(gameUniqueId, points);
 
