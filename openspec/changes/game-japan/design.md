@@ -1,6 +1,8 @@
 ## Context
 
-Japan.java is a syllable-segmentation game. The word is parsed into tiles displayed in a horizontal row with "link buttons" (dots/separators) between adjacent tiles. The player taps link buttons to join tiles into groups and taps joined tiles to separate them. The goal is to match the word's correct syllable structure.
+Japan.java (561 lines) is a syllable-segmentation game. The word is parsed into tiles displayed in a horizontal row with "link buttons" (dots/separators) between adjacent tiles. The player taps link buttons to join tiles into groups and taps joined tiles to separate them. The goal is to match the word's correct syllable structure.
+
+Java line landmarks: `onCreate` 71-115; `play` 117-189; `displayRefWord` 191-197; `displayTileChoices` 199-217; `onClickLinkButton` 233-236; `onClickTile` 238-241; `separateTiles` 253-444; `removeSADFromWordInLOP` 446-452; `evaluateCombination` 454-526; `joinTiles` 529-560.
 
 ### Required reading for implementers
 
@@ -30,17 +32,19 @@ Japan.java is a syllable-segmentation game. The word is parsed into tiles displa
 
 ### D1. Java surface → TS artifact mapping
 
-| Java symbol | TS destination | Notes |
+| Java symbol (line) | TS destination | Notes |
 |---|---|---|
-| `public class Japan extends GameActivity` | `JapanContainer.tsx` | |
-| `parsedRefWordTileArray` (after SAD removal) | `tiles: string[]` state | Tile texts in order |
-| `parsedRefWordSyllableArray` | `correctSyllables: string[][]` state | Each syllable = array of tile texts |
-| `finalCorrectLinkButtonIDs` | `correctBoundaries: number[]` state | Indices after which a syllable boundary falls |
-| `currentViews` (joined/separated state) | `groups: TileGroup[]` state | Current grouping of tiles |
-| `joinTiles(linkButton)` | `onJoin(boundaryIndex)` handler | Merges tiles across a boundary |
-| `separateTiles(tile)` | `onSeparate(tileIndex)` handler | Splits a tile from its group |
-| `evaluateCombination()` | `evaluateGroupings()` — called after every join/separate | Returns set of correct boundary indices |
-| `updatePointsAndTrackers(1)` | `shell.incrementPointsAndTracker(1)` on full win | |
+| `class Japan extends GameActivity` (24) | `JapanContainer.tsx` | |
+| `parsedRefWordTileArray` after `removeAll(SAD)` (122-123) | `tiles: string[]` state | Tile texts in order, SAD stripped |
+| `parsedRefWordSyllableArray` (124-129) | `correctSyllables: string[][]` state | Each syllable = array of tile texts; SAD-string syllables removed |
+| `finalCorrectLinkButtonIDs` (175-181) | `correctBoundaries: number[]` state | Boundary indices computed by accumulating tile-counts per re-parsed syllable |
+| `currentViews` joined/separated state (132) | `groups: TileGroup[]` state | Interleaved tile/link-button list mirrors Java |
+| `joinTiles(linkButton)` (529-560) | `onJoin(boundaryIndex)` handler | Hides link button, merges adjacent tiles |
+| `separateTiles(tile)` (253-444) | `onSeparate(tileIndex)` handler | Restores link buttons on one or both sides of clicked tile (peel, not full split) |
+| `evaluateCombination()` (454-526) | `evaluateGroupings()` after every join/separate | Win check + partial green-locking |
+| `removeSADFromWordInLOP` (446-452) | `stripSAD(word)` helper | Strip SAD chars before comparison |
+| `playCorrectSoundThenActiveWordClip(false)` (468) | `shell.playCorrectThenWord()` on win | Correct chime first, then word audio |
+| `updatePointsAndTrackers(1)` (469) | `shell.incrementPointsAndTracker(1)` on win | Called after correct sound trigger |
 
 ### D2. State Model
 
@@ -60,30 +64,41 @@ type JapanState = {
 
 ### D3. Join / Separate Logic
 
-**Join** (`onJoin(boundaryIndex)`): merge `groups[boundaryIndex]` and `groups[boundaryIndex + 1]` into one group; remove the boundary between them.
+**Join** (`onJoin(boundaryIndex)`, Java `joinTiles` 529-560): hide that link button, mark left+right tiles clickable, remove the link button from `currentViews`. Tiles to either side become tappable (so they can be separated later).
 
-**Separate** (`onSeparate(groupIndex)`): split a non-locked group back into individual tiles (restoring all internal boundaries). Java separates on tile-click, restoring link buttons on both sides.
+**Separate** (`onSeparate(tileIndex)`, Java `separateTiles` 253-444): "peel" the clicked tile out by restoring the link button(s) adjacent to it, NOT splitting the entire group into individuals. Three branches:
+- First tile (idx 0): restore right-side link button only.
+- Last tile: restore left-side link button only.
+- Middle tile: restore left link button; if the right neighbour is also a tile (i.e., joined on both sides), restore the right link button too.
+After restoring, neighbours' background colors are randomised from `colorList[i % 5]`, and the clicked tile becomes unclickable.
 
-### D4. Evaluation
+### D4. Evaluation (`evaluateCombination`, Java 454-526)
 
-After every join or separate, call `evaluateGroupings()`:
-1. For each group, join its tile texts into a string.
-2. Compare against each correct syllable in order.
-3. Any group that exactly matches its correct syllable AND sits at the right position in sequence → mark `isLocked = true`, color GREEN.
-4. If all groups are locked → full win.
+Called after every join or separate.
 
-### D5. Challenge Level → Layout
+**Full-win path** (lines 463-482): concatenate text of all `currentViews` (tiles AND remaining link-button "." chars); compare against `removeSADFromWordInLOP(refWord.wordInLOP)`. If equal:
+1. `repeatLocked = false`; advance arrow blue.
+2. `playCorrectSoundThenActiveWordClip(false)` — correct chime then word audio.
+3. `updatePointsAndTrackers(1)`.
+4. Set every tile (even-index view) green + white text + unclickable; every link-button view unclickable.
+5. `setOptionsRowClickable()`.
 
-| `challengeLevel` | Layout | Max tiles |
-|---|---|---|
-| 1 | `japan_7` | 7 |
-| 2 | `japan_12` | 12 |
+**Partial-credit path** (lines 484-525): walk `currentViews`. Track a `firstLinkButton` cursor and an `intermediateTiles` accumulator. When a link button matches one in `finalCorrectLinkButtonIDs` AND the immediately-prior correct boundary equals `firstLinkButton`'s id (i.e., a *consecutive pair* of correct boundaries surrounds the accumulated tiles), AND the accumulator size != total tile count, color those intermediate tiles green/white and disable the bookend link buttons + tiles. Encountering a non-correct link button clears the accumulator and pauses building. The unit of partial credit is therefore "tiles between two adjacent correct-boundary link buttons" (the first/last syllable case uses tile index 0 / final position as a sentinel — see `firstLinkButton = currentViews.get(0)` initialiser at 499).
 
-Words with more tiles than `MAX_TILES` are redrawn (`chooseWord` retries until tile count ≤ MAX_TILES).
+**Important**: Java does not require that the player has *joined* tiles to credit a syllable — having both adjacent boundary link-buttons present (un-joined) and the tiles between them in place is sufficient for the partial-green path to fire. The TS port MUST mirror this.
 
-### D6. Orientation
+### D5. Challenge Level → Layout (Java `onCreate` 76-92)
 
-Japan forces landscape orientation. The container MUST set `ScreenOrientation.LANDSCAPE` on mount and restore on unmount.
+| `challengeLevel` | Layout | Max tiles | `ALL_GAME_VIEW_IDS` length |
+|---|---|---|---|
+| 1 | `japan_7` | 7 | 13 (7 tiles + 6 link buttons) |
+| 2 | `japan_12` | 12 | 23 (12 tiles + 11 link buttons) |
+
+Words exceeding `MAX_TILES` are redrawn (`while (parsedSize > MAX_TILES) chooseWord();` at lines 119-121).
+
+### D6. Orientation (Java line 94)
+
+`setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)`. Container MUST set `ScreenOrientation.LANDSCAPE` on mount and restore on unmount. RTL scripts mirror instruction + repeat icons (Java 96-104).
 
 ### D7. Container / Presenter Split
 
