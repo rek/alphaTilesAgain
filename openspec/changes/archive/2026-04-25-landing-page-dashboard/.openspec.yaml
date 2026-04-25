@@ -21,4 +21,5 @@ artifacts:
     dependencies: [design]
 apply:
   requires: [tasks, specs/gh-pages-deploy, specs/lang-build-dashboard]
-  status: pending
+  status: done
+  note: retrograded — simplified scope delivered; multi-language loop and config-driven UI deferred

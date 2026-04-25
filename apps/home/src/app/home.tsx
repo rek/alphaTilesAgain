@@ -89,9 +89,9 @@ export function Home() {
                   {lang.description}
                 </p>
                 <div className="mt-auto w-full">
-                  <button type="button" className="w-full bg-slate-50 text-slate-700 font-semibold py-3 rounded-xl border border-slate-100 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors">
+                  <a href={`/${lang.fixture}/`} className="block w-full bg-slate-50 text-slate-700 font-semibold py-3 rounded-xl border border-slate-100 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors text-center">
                     Launch Build
-                  </button>
+                  </a>
                 </div>
               </div>
             ))}
