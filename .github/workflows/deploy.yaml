@@ -58,7 +58,7 @@ jobs:
         run: npx nx run alphaTiles:web-export
         env:
           APP_LANG: eng
-          EXPO_BASE_URL: /engEnglish4
+          EXPO_BASE_URL: /alphaTilesAgain/engEnglish4
 
       - name: Stage eng output
         run: |
@@ -70,7 +70,7 @@ jobs:
         run: npx nx run alphaTiles:web-export --skip-nx-cache
         env:
           APP_LANG: yue
-          EXPO_BASE_URL: /yueCantonese
+          EXPO_BASE_URL: /alphaTilesAgain/yueCantonese
 
       - name: Stage yue output
         run: |

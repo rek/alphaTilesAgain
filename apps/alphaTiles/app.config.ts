@@ -159,6 +159,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     experiments: {
       typedRoutes: true,
       reactCompiler: true,
+      // Required for correct HTML asset paths on sub-path deploys (e.g. GitHub Pages).
+      // EXPO_BASE_URL must include the full path: /repoName/appSlug.
+      // Without this, getBaseUrlFromExpoConfig() returns '' and all <script src>/<link href>
+      // are root-absolute, making them 404 on GitHub Pages.
+      baseUrl: process.env.EXPO_BASE_URL ?? '',
     },
     extra: {
       appLang: lang,
