@@ -98,8 +98,6 @@ function MyanmarGame({
   const [completionGoal, setCompletionGoal] = useState(0);
   const isMountedRef = useRef(true);
 
-  const wordsCompleted = foundFlags.filter(Boolean).length;
-
   const startRound = useCallback(() => {
     shell.setInteractionLocked(false);
 
@@ -160,6 +158,7 @@ function MyanmarGame({
     challengeLevel,
   ]);
 
+  // Mount-only kickoff (useMountEffect pattern — empty deps, one-shot).
   useEffect(() => {
     isMountedRef.current = true;
     startRound();
@@ -177,36 +176,27 @@ function MyanmarGame({
       const usedColors = foundColorBySlot.filter((c) => c !== null).length;
       const color = palette[usedColors % palette.length];
       const word = placedWords[placedIdx].word;
+      const nextFoundCount = foundFlags.filter(Boolean).length + 1;
       setFoundFlags((prev) => prev.map((v, i) => (i === placedIdx ? true : v)));
       setFoundColorBySlot((prev) =>
         prev.map((v, i) => (i === placedIdx ? color : v)),
       );
       setActiveWord(word.wordInLOP);
       shell.setRefWord({ wordInLOP: word.wordInLOP, wordInLWC: word.wordInLWC });
-      audio.playCorrect();
+      // Completion fires here (event-driven), not in a derived effect.
+      // Java parity: playCorrectThenWord(true) on the final found word.
+      if (completionGoal > 0 && nextFoundCount === completionGoal) {
+        shell.incrementPointsAndTracker(true);
+        audio.playCorrect().then(() => {
+          if (!isMountedRef.current) return;
+          shell.replayWord();
+        });
+      } else {
+        audio.playCorrect();
+      }
     },
-    [foundColorBySlot, palette, placedWords, shell, audio],
+    [foundColorBySlot, palette, placedWords, foundFlags, completionGoal, shell, audio],
   );
-
-  // Detect completion via derived state.
-  const onCompletionFire = useRef(false);
-  useEffect(() => {
-    if (
-      completionGoal > 0 &&
-      wordsCompleted === completionGoal &&
-      !onCompletionFire.current
-    ) {
-      onCompletionFire.current = true;
-      shell.incrementPointsAndTracker(true);
-      audio.playCorrect().then(() => {
-        if (!isMountedRef.current) return;
-        shell.replayWord();
-      });
-    }
-    if (wordsCompleted < completionGoal) {
-      onCompletionFire.current = false;
-    }
-  }, [wordsCompleted, completionGoal, shell, audio]);
 
   const handleClassicTap = useCallback(
     (i: number) => {
