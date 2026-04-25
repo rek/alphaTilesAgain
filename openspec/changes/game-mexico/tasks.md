@@ -46,5 +46,5 @@ Implement the 'Mexico' game (Matching/Memory).
 
 - [x] Type-check: `npx tsc --noEmit -p libs/alphaTiles/feature-game-mexico/tsconfig.lib.json`.
 - [x] Lint: `nx lint alphaTiles-feature-game-mexico`.
-- [ ] Manual smoke test (Web): `APP_LANG=eng nx serve alphaTiles`.
+- [x] Manual smoke test (Web): `APP_LANG=eng nx serve alphaTiles`.
 - [ ] Verify RTL: Test with a RTL language pack if available (or simulated).
