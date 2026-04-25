@@ -1,0 +1,10 @@
+Setting	Value
+1. Game 001 Scan Setting	1
+2. Has tile audio	TRUE
+3. After 12 checked trackers	1
+4. Has syllable audio	TRUE
+5. Number of avatars	12
+6. Differentiates types of multitype symbols	FALSE
+7. Stage correspondence ratio	0.75
+8. First letter stage correspondence	FALSE
+9. Stage 1-2 max word length	10
