@@ -47,13 +47,11 @@ Slash-commands (from `.claude/commands/opsx/`):
 **Active changes** (spec merged, apply pending unless noted):
 
 ```
-✓ home-landing-page       — Vite home app, Tailwind language grid (APPLIED — ready to archive)
-~ qa-remaining-flows      — score label, audio unlock, menu interpolation (IN PROGRESS: 10/18 tasks)
 · game-mexico             — Matching/Memory game (spec proposed, apply pending)
-· game-thailand           — Multiple-choice (3-digit CL: prompt×choice×difficulty) (spec proposed, apply pending)
-· game-united-states      — Pairing + Spelling game (spec proposed, apply pending)
-· game-chile              — Image-to-Word identification, 4 choices (spec proposed, apply pending)
-· game-japan              — Missing-Tile fill-in, CL scales choices 2/4/6 (spec proposed, apply pending)
+· game-thailand           — Always 4-choice identification; 3-digit CL: distractor-strategy×refType×choiceType (8 TYPES enum) (spec proposed, apply pending)
+· game-united-states      — Pairing + Spelling; select correct tile from N pairs to build word (spec proposed, apply pending)
+· game-chile              — Phonemic Wordle; guess secret word using tile keyboard; GREEN/BLUE/GRAY feedback (spec proposed, apply pending)
+· game-japan              — Syllable-segmentation; tap link buttons between tiles to group into syllables; partial credit; landscape-only (spec proposed, apply pending)
 · game-romania            — Scanning / focus-tile word sequence, NO_TRACKER (spec proposed, apply pending)
 · deploy-gh-pages         — GH Pages CI/CD (spec proposed, apply pending)
 · landing-page-dashboard  — lang-pack build dashboard (spec proposed, apply pending)

@@ -1,55 +1,60 @@
-# Tasks
+# Tasks: Game Thailand
 
 ## 0. Preflight
 
-- [ ] Confirm `game-engine-base` and its upstreams are merged.
-- [ ] Read `Thailand.java` (Android source) to confirm distractor logic and layout constraints.
+- [ ] Read `proposal.md`, `design.md`, and `specs/thailand/spec.md`.
+- [ ] Read `Thailand.java` (Android source) to confirm TYPES enum order and distractor selection methods.
+- [ ] Confirm `game-engine-base` and `game-china` are archived (upstream merged).
+- [ ] Read `docs/GAME_PATTERNS.md` for shell API and container/presenter conventions.
 
 ## 1. Library Scaffold
 
-- [ ] Create `libs/alphaTiles/feature-game-thailand` via NX generator.
-- [ ] Add `type:feature` and `scope:alphaTiles` tags.
-- [ ] Configure `tsconfig.base.json` path alias.
+- [ ] Generate library: `nx g @nx/react-native:lib feature-game-thailand --directory=libs/alphaTiles/feature-game-thailand --tags='type:feature,scope:alphaTiles'`.
+- [ ] Add path alias to `tsconfig.base.json`: `"@alphaTiles/feature-game-thailand": ["libs/alphaTiles/feature-game-thailand/src/index.ts"]`.
+- [ ] Create route: `apps/alphaTiles/app/games/thailand.tsx`. Renders `<ThailandContainer />`.
 
 ## 2. Pure Logic & Utilities
 
-- [ ] Implement `decodeThailandChallengeLevel(cl: number)` in `libs/alphaTiles/feature-game-thailand/src/lib/decodeChallengeLevel.ts`.
-- [ ] Implement `pickDistractors({ correct, pool, count })` helper.
-- [ ] Add Jest unit tests for decoding and distractor selection.
+- [ ] Implement `src/decodeThailandChallengeLevel.ts`:
+  - `TYPES` constant: `['TILE_LOWER','TILE_UPPER','TILE_AUDIO','WORD_TEXT','WORD_IMAGE','WORD_AUDIO','SYLLABLE_TEXT','SYLLABLE_AUDIO']`.
+  - Decode hundreds → `distractorStrategy: 1 | 2 | 3`.
+  - Decode tens → `refType: ThailandType` (1-indexed into TYPES).
+  - Decode units → `choiceType: ThailandType` (1-indexed into TYPES).
+- [ ] Unit tests for `decodeThailandChallengeLevel`: verify CL 235, 111, 544, boundary cases.
 
 ## 3. Presenter: `<ThailandScreen>`
 
-- [ ] Create `ThailandScreen.tsx`.
-- [ ] Implement Prompt display (Audio/Image/Word branches).
-- [ ] Implement Choice grid (using `ui-game-board` and `ui-tile`).
-- [ ] Add Storybook stories for key variants:
-    - 2-choice Image-to-Word
-    - 4-choice Audio-to-Tile
-    - 6-choice Word-to-Word
+- [ ] Define `ThailandScreenProps`:
+  - `refDisplay: { type: ThailandType; text?: string; imageSource?: ImageSource }`.
+  - `choices: Array<{ type: ThailandType; text?: string; imageSource?: ImageSource; isCorrect: boolean }>`.
+  - `onChoicePress: (i: number) => void`, `onRefPress: () => void`.
+- [ ] Implement `<ThailandScreen>`:
+  - `RefDisplay` sub-component: text box, image, or audio icon depending on `refDisplay.type`.
+  - 2×2 grid of 4 `<Tile>` choice buttons (always exactly 4).
+- [ ] Storybook stories:
+  - TILE_LOWER ref → TILE_LOWER choices.
+  - WORD_IMAGE ref → WORD_TEXT choices.
+  - TILE_AUDIO ref (audio icon) → TILE_LOWER choices.
 
 ## 4. Container: `<ThailandContainer>`
 
-- [ ] Create `ThailandContainer.tsx`.
+- [ ] Implement `<ThailandContainer>`:
+  - `useGameShell()`, `useLangAssets()`.
+  - Decode `challengeLevel` via `decodeThailandChallengeLevel`.
+  - `startRound()`:
+    - Select ref item based on `refType` (tile from `tileListNoSAD`, word from `wordList`, syllable from `syllableList`).
+    - Fetch 4 choices via the appropriate list method (`returnFourTileChoices`, `returnFourWords`, `returnFourSyllableChoices`, `returnFourWordChoices`), passing `distractorStrategy`.
+    - Play ref audio on round start.
+  - `onChoicePress(i)`:
+    - Correct → `updatePointsAndTrackers(1)` (integer), highlight correct button, play correct sound then ref audio.
+    - Incorrect → play incorrect sound.
+  - `onRefPress()`: replay ref audio.
 - [ ] Wrap with `<GameShellContainer>`.
-- [ ] Implement `startRound()`:
-    - Resolve `challengeLevel` params.
-    - Pick `refWord` via `util-stages`.
-    - Pick distractors.
-    - Shuffle correct answer into choices.
-- [ ] Implement `onChoicePress(i)`:
-    - Check if `choices[i]` is correct.
-    - Trigger `shell.incrementPointsAndTracker(true)` on success.
-    - Play success/fail sounds.
-    - Transition to next round after delay.
 
-## 5. Route & Integration
+## 5. Verification
 
-- [ ] Create `apps/alphaTiles/app/games/thailand.tsx`.
-- [ ] Manual smoke test with `engEnglish4` pack.
+- [ ] Type-check: `npx tsc --noEmit -p libs/alphaTiles/feature-game-thailand/tsconfig.lib.json`.
+- [ ] Lint: `nx lint alphaTiles-feature-game-thailand`.
+- [ ] Test: `nx test alphaTiles-feature-game-thailand`.
+- [ ] Manual smoke test: `APP_LANG=eng nx serve alphaTiles` — verify all choice buttons always show (4 total), correct/incorrect feedback, ref audio replay on tap.
 - [ ] Verify RTL behavior.
-
-## 6. Cleanup
-
-- [ ] Run `npx tsc --noEmit`.
-- [ ] Run `nx lint alphaTiles-feature-game-thailand`.
-- [ ] Run `nx test alphaTiles-feature-game-thailand`.

@@ -17,3 +17,4 @@ artifacts:
     dependencies: [design]
 apply:
   requires: [tasks, specs/thailand]
+  status: pending

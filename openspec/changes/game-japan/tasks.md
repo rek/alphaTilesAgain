@@ -1,10 +1,10 @@
-# Tasks: Game Japan
+# Tasks: Game Japan (Syllable Segmentation)
 
 ## 0. Preflight
 
 - [ ] Read `proposal.md`, `design.md`, and `specs/japan/spec.md`.
-- [ ] Read `Japan.java` (Android source) to confirm missing-tile selection and distractor logic.
-- [ ] Confirm `game-engine-base` and `game-china` are archived (upstream merged).
+- [ ] Read `Japan.java` (Android source) to confirm join/separate logic and evaluation algorithm.
+- [ ] Confirm `game-engine-base` is archived (upstream merged).
 
 ## 1. Library Scaffold
 
@@ -12,24 +12,40 @@
 - [ ] Add path alias to `tsconfig.base.json`: `"@alphaTiles/feature-game-japan": ["libs/alphaTiles/feature-game-japan/src/index.ts"]`.
 - [ ] Create route: `apps/alphaTiles/app/games/japan.tsx`. Renders `<JapanContainer />`.
 
-## 2. Pure Logic & Helpers
+## 2. Pure Logic
 
-- [ ] Implement `src/decodeJapanChallengeLevel.ts`: maps `challengeLevel` to choice count (1→2, 2→4, 3→6).
-- [ ] Implement `src/pickJapanRound.ts`: selects `refWord` via `util-stages`, parses into tiles via `util-phoneme`, picks a random `missingTileIndex`, picks N-1 distractor tiles (distinct from correct tile) from cumulative stage tile list, shuffles all N into `choices`.
-- [ ] Unit tests for `pickJapanRound`: verify correct tile always in choices, distractors are distinct, `missingTileIndex` is valid.
+- [ ] Implement `src/evaluateGroupings.ts`: given `groups: TileGroup[]` and `correctSyllables: string[][]`, return set of locked group indices.
+- [ ] Implement `src/joinTiles.ts`: merge two adjacent groups (remove boundary between them).
+- [ ] Implement `src/separateTiles.ts`: split a group back into individual tiles.
+- [ ] Unit tests for `evaluateGroupings`: partial match, full match, no match, reordered groups.
+- [ ] Unit tests for join/separate: verify group count and tile contents.
 
 ## 3. Presenter: `<JapanScreen>`
 
-- [ ] Define `JapanScreenProps`: `wordTiles: Array<{ text: string; isMissing: boolean }>`, `choices: Array<{ tile: Tile }>`, `onChoicePress: (i: number) => void`, optional `refImage?: ImageSource`.
-- [ ] Implement `<JapanScreen>`: renders word tiles row (missing tile as blank/`?` placeholder) + choice tile grid.
-- [ ] Storybook stories: 2-choice round, 4-choice round, 6-choice round.
+- [ ] Define `JapanScreenProps`:
+  - `groups: Array<{ tiles: string[]; isLocked: boolean }>`.
+  - `boundaries: Array<{ index: number; visible: boolean }>`.
+  - `onJoin: (boundaryIndex: number) => void`.
+  - `onSeparate: (groupIndex: number) => void`.
+  - `wordText: string`, `wordImage?: ImageSource`.
+- [ ] Implement `<JapanScreen>`:
+  - Horizontal row of tile groups interleaved with link buttons.
+  - Locked groups styled GREEN; others default color.
+  - Link buttons hidden between locked/adjacent-locked groups.
+  - Word text and image displayed above.
+- [ ] Storybook stories: 3-tile word (initial), 7-tile word (initial), partial GREEN, fully won.
 
 ## 4. Container: `<JapanContainer>`
 
 - [ ] Implement `<JapanContainer>`:
   - `useGameShell()`, `useLangAssets()`.
-  - `startRound()`: calls `pickJapanRound`, sets state.
-  - `onChoicePress(i)`: correct → `shell.incrementPointsAndTracker(1)` + next round; incorrect → `shell.playIncorrect()`.
+  - State: `tiles`, `groups`, `correctSyllables`, `isWon`.
+  - On mount / new round: `chooseWord` retrying until tile count ≤ MAX_TILES for the level.
+  - Remove SAD tiles from `parsedRefWordTileArray`.
+  - Compute `correctSyllables` from `parsedRefWordSyllableArray`.
+  - `onJoin(boundaryIndex)` and `onSeparate(groupIndex)`: update `groups`, call `evaluateGroupings`, check win.
+  - Win: `updatePointsAndTrackers(1)` + `playCorrectSoundThenActiveWordClip`.
+  - Force landscape orientation on mount (restore on unmount).
 - [ ] Wrap with `<GameShellContainer>`.
 
 ## 5. Verification
@@ -37,4 +53,4 @@
 - [ ] Type-check: `npx tsc --noEmit -p libs/alphaTiles/feature-game-japan/tsconfig.lib.json`.
 - [ ] Lint: `nx lint alphaTiles-feature-game-japan`.
 - [ ] Test: `nx test alphaTiles-feature-game-japan`.
-- [ ] Manual smoke test: `APP_LANG=eng nx serve alphaTiles`.
+- [ ] Manual smoke test: `APP_LANG=eng nx serve alphaTiles` — verify partial green credit, full win, landscape orientation, RTL layout.
