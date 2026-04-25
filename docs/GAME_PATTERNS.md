@@ -2,7 +2,7 @@
 
 Living doc. Updated after each game is archived. Read before proposing or implementing any `game-*` change.
 
-Latest entry: **game-china** (2026-04-24).
+Latest entry: **game-brazil** (2026-04-25).
 
 ---
 
@@ -101,6 +101,7 @@ export function <Name>Screen(props: <Name>ScreenProps) {
 |------|----------|--------|
 | China | 1-digit difficulty | `1`→5 moves, `2`→10 moves, `3`→15 moves |
 | Thailand | 3-digit code `XYZ` | X=difficulty, Y=refType, Z=choiceType |
+| Brazil | 1-digit + `syllableGame` | CL1–3 vowel-blank, CL4–6 consonant-blank, CL7 tone-blank; `syllableGame === "S"` overrides → SL1/SL2 syllable variants regardless of CL |
 
 Decode locally in the container via a constant map. Add new games here when their `challengeLevel` is decoded.
 
@@ -229,4 +230,83 @@ Shallow `design.md` = ambiguous implementation = drift. If a proposed spec is sh
 - [ ] Verify all `challengeLevel` values behave distinctly
 - [ ] Verify 12 correct completions trigger `<Celebration>`
 - [ ] Verify hardware-back returns to Earth
+
+---
+
+## Script-aware blank placeholders (from game-brazil)
+
+For "find the missing tile" mechanics that render a partial word, the placeholder string for the blanked slot is **script-dependent**. The Java code in `Brazil.java::removeTile()` (lines ~290-308) embeds this matrix:
+
+| `scriptType` | Blanked tile type | Placeholder |
+|---|---|---|
+| Roman / default | any | `"__"` |
+| Khmer | `C` with next tile of type `V`/`AV`/`BV`/`D` | `"​"` (zero-width space) |
+| Khmer | `C` (other contexts) | `placeholderCharacter` from `aa_langinfo.txt` |
+| Thai / Lao | `C` | `placeholderCharacter` from `aa_langinfo.txt` |
+
+`placeholderCharacter` is a per-pack setting (commonly `◌` U+25CC). The pure helper `blankRandomTileOfType(parsed, type, scriptType, placeholderCharacter, rng)` in feature-game-brazil owns this branching — reuse the pattern for any future game that blanks tiles.
+
+---
+
+## Wrong-answer round termination (from game-brazil)
+
+Java `respondToTileSelection()` calls `setAllGameButtonsUnclickable()` at entry and **does not** re-enable on the wrong path. Net behavior:
+
+- **Correct tap** → reveal, score, schedule next round (advance arrow turns blue).
+- **Wrong tap** → flash the picked tile red, lock all buttons, advance arrow stays gray. The player must tap the (gray-but-tappable) advance arrow to proceed; `playAgain()` resets state for the next round.
+
+Specs that say "wrong answer leaves choices clickable / round continues" are **wrong**; check the Java `respondToTileSelection` against `playAgain` to confirm round-termination semantics before writing the spec.
+
+---
+
+## Word selection: stage-aware vs. simple shuffle
+
+Java `GameActivity.chooseWord()` is stage-aware (uses `selectWordForStage` in `util-stages` — correspondence ratio + recently-shown buffer). Some game ports (china, brazil) intentionally simplified to **shuffle-and-pop** for v1, which is acceptable for early ports but loses stage filtering.
+
+If your game depends on stage-controlled vocabulary scaling, wire `selectWordForStage` directly. Otherwise note the simplification in `design.md` Open Questions and keep simple shuffle.
+
+---
+
+## Deterministic-RNG infinite-loop trap
+
+When backfilling a Set from a pool, **never use `while (set.size < N)` with `set.add(pool[Math.floor(rand() * pool.length)])`** — if `rand` is a deterministic stub returning a fixed value (common in tests with `() => 0`), you can pick the same already-present element forever.
+
+Safer pattern:
+
+```ts
+const remaining = pool.filter((p) => !set.has(p));
+for (const p of shuffle(remaining, rand)) {
+  if (set.size >= N) break;
+  set.add(p);
+}
+```
+
+Hit this in `feature-game-brazil/buildSyllableChoices.ts` — fixture had `correct.distractors === ['ka', 'ka', 'ka']` and `rand = () => 0`, hung jest worker at 100% CPU for 9 minutes. Fix is to enumerate the remaining pool, not sample.
+
+---
+
+## OpenSpec capability folder naming
+
+Capability folders under `openspec/changes/<change-name>/specs/` and `openspec/specs/` SHALL be named with the `game-` prefix to match the change name (e.g. `game-brazil/spec.md`, not `brazil/spec.md`). This matches china/mexico precedent. The thin "spec template" generated for batch-2 changes used the unprefixed name; rename before promoting to `openspec/specs/`.
+
+---
+
+## OpenSpec spec.md format
+
+Canonical OpenSpec uses:
+
+```md
+## ADDED Requirements
+
+### Requirement: <Title in capability voice>
+
+<Body — SHALL/SHOULD statements, tables, prose>
+
+#### Scenario: <name>
+- **GIVEN** ...
+- **WHEN** ...
+- **THEN** ...
+```
+
+Avoid the legacy `### R1.` / `### R2.` headings — the canonical-format requirements register correctly with `openspec validate --strict`. Reformat any pending change spec before applying.
 - [ ] Verify RTL layout with an RTL pack (or storybook decorator)

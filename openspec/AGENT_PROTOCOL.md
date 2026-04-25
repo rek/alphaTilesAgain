@@ -23,7 +23,7 @@ Slash-commands (from `.claude/commands/opsx/`):
 
 ## Dependency chart (snapshot, maintain in `AGENTS.md`)
 
-16 foundational changes **merged + implemented** as of 2026-04-24.
+16 foundational changes + 2 concrete games **merged + implemented** as of 2026-04-25.
 
 ```
 ✓ port-foundations        — build pipeline, docs, util-precompute skeleton
@@ -42,6 +42,7 @@ Slash-commands (from `.claude/commands/opsx/`):
 ✓ loading-screen          — boot orchestration
 ✓ game-menu               — Earth.java door grid
 ✓ game-china              — exemplar concrete game (sliding-tile puzzle)
+✓ game-brazil             — find-the-missing-tile (vowels/consonants/tones/syllables)
 ```
 
 **Active changes** (spec merged, apply pending unless noted):
