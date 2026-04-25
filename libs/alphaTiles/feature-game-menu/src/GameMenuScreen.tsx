@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   backButton: {
-    marginRight: 8,
+    marginEnd: 8,
   },
   backArrow: {
     fontSize: 24,
@@ -154,14 +154,14 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    marginRight: 8,
+    marginEnd: 8,
   },
   avatarPlaceholder: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: '#E0E0E0',
-    marginRight: 8,
+    marginEnd: 8,
   },
   playerName: {
     flex: 1,
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   score: {
     fontSize: 16,
     fontWeight: '700',
-    marginLeft: 8,
+    marginStart: 8,
   },
   gridContainer: {
     flex: 1,

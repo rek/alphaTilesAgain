@@ -40,7 +40,7 @@ export function LoadingContainer(): React.JSX.Element {
 
   // One-shot mount effect — permitted per CODE_STYLE.md for boot-time kickoffs.
   useEffect(() => {
-    SplashScreen.hideAsync().catch(() => {});
+    SplashScreen.hideAsync().catch((_: unknown) => void 0);
 
     const audioConfig: AudioConfig = {
       hasTileAudio: assets.settings.findBoolean('Has tile audio', false),

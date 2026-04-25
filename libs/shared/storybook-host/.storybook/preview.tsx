@@ -17,6 +17,7 @@ void initI18n({ deviceLocale: 'en' });
 
 const initialMetrics = {
   frame: { x: 0, y: 0, width: 430, height: 932 },
+  // eslint-disable-next-line theme-hygiene/no-raw-margin-left-right
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 

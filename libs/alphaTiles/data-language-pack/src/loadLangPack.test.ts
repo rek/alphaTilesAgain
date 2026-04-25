@@ -10,6 +10,7 @@ import { loadLangPack } from './loadLangPack';
 import { LangAssetsBindError } from './LangAssetsBindError';
 import { LangPackParseError } from '@shared/util-lang-pack-parser';
 import { registerPrecompute } from '@shared/util-precompute';
+import type { LangAssets } from './LangAssets';
 
 // ---------------------------------------------------------------------------
 // Pull registry + cache so we can reset between tests
@@ -150,7 +151,7 @@ describe('loadLangPack', () => {
   });
 
   it('precompute registered before load appears in assets.precomputes', () => {
-    registerPrecompute('testPc', (a) => ({ tileCount: a.tiles.rows.length }));
+    registerPrecompute<{ tileCount: number }, LangAssets>('testPc', (a) => ({ tileCount: a.tiles.rows.length }));
     const assets = loadLangPack(baseManifest);
     expect(assets.precomputes.get('testPc')).toEqual({ tileCount: 1 });
   });

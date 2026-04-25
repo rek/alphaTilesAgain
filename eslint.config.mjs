@@ -1,4 +1,5 @@
 import nx from '@nx/eslint-plugin';
+import reactHooks from 'eslint-plugin-react-hooks';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -39,30 +40,40 @@ export default [
               sourceTag: '*',
               onlyDependOnLibsWithTags: ['*'],
             },
+            // Layer hierarchy: app → feature → ui/data-access/util → util → nothing
+            {
+              sourceTag: 'type:app',
+              onlyDependOnLibsWithTags: ['type:feature'],
+            },
+            {
+              sourceTag: 'type:feature',
+              onlyDependOnLibsWithTags: ['type:ui', 'type:data-access', 'type:util'],
+              // Only util-i18n may import i18next/react-i18next as a source lib.
+              // All other libs must import from @shared/util-i18n instead.
+              bannedExternalImports: ['i18next'],
+            },
+            // type:ui libs may compose other type:ui libs but must not pull in data-access or feature logic.
+            // They accept pre-translated strings as props (design.md §D6, ARCHITECTURE.md §10).
+            {
+              sourceTag: 'type:ui',
+              onlyDependOnLibsWithTags: ['type:ui', 'type:util'],
+              bannedExternalImports: ['react-i18next', 'i18next'],
+            },
+            {
+              sourceTag: 'type:data-access',
+              onlyDependOnLibsWithTags: ['type:util'],
+              bannedExternalImports: ['i18next'],
+            },
+            {
+              sourceTag: 'type:util',
+              onlyDependOnLibsWithTags: ['type:util'],
+            },
             // type:tooling libs (e.g. storybook-host) are config-only; they export nothing.
-            // The constraint below ensures they can only depend on each other (type:tooling).
-            // Since no lib should import @shared/storybook-host, this acts as the firewall:
-            // tooling → tooling OK; tooling → everything OK (Storybook config imports anything).
+            // Storybook config imports components to render them, so ui/util deps are allowed.
             // Other layers are prevented at review/convention level (no runtime import path exists).
             {
               sourceTag: 'type:tooling',
               onlyDependOnLibsWithTags: ['type:tooling', 'type:ui', 'type:util'],
-            },
-            // type:ui libs must not import react-i18next or i18next directly.
-            // They accept pre-translated strings as props (design.md §D6, ARCHITECTURE.md §10).
-            {
-              sourceTag: 'type:ui',
-              bannedExternalImports: ['react-i18next', 'i18next'],
-            },
-            // Only util-i18n may import i18next/react-i18next as a source lib.
-            // All other libs must import from @shared/util-i18n instead.
-            {
-              sourceTag: 'type:feature',
-              bannedExternalImports: ['i18next'],
-            },
-            {
-              sourceTag: 'type:data-access',
-              bannedExternalImports: ['i18next'],
             },
           ],
         },
@@ -80,8 +91,27 @@ export default [
       '**/*.cjs',
       '**/*.mjs',
     ],
-    // Override or add rules here
-    rules: {},
+    rules: {
+      // react-native index.js uses Flow syntax; import/namespace can't parse it.
+      'import/namespace': 'off',
+    },
+  },
+  // react-hooks: register plugin so eslint-disable comments for exhaustive-deps resolve.
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    plugins: {
+      'react-hooks': reactHooks,
+    },
+    rules: {
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  // tools/ scripts use relative lib imports — exempt from NX module boundaries.
+  {
+    files: ['tools/**/*.ts', 'tools/**/*.js'],
+    rules: {
+      '@nx/enforce-module-boundaries': 'off',
+    },
   },
   // theme-hygiene: enforce logical props over physical direction keys.
   // See ARCHITECTURE.md §16 and openspec/changes/theme-fonts/design.md §D6.
