@@ -10,8 +10,12 @@ import React, { createContext, useContext } from 'react';
 import type { ProgressEntry } from '@alphaTiles/data-progress';
 
 export type GameShellContextValue = {
-  /** Call when the player answers correctly or the mechanic records a point. */
-  incrementPointsAndTracker: (isCorrect: boolean) => void;
+  /**
+   * Call when the player answers correctly or the mechanic records a point.
+   * `points` defaults to 1; pass a higher value for games that award more
+   * (e.g. Italy lotería awards 4). Tracker still increments by 1 per call.
+   */
+  incrementPointsAndTracker: (isCorrect: boolean, points?: number) => void;
   /** Replay the current reference word audio. */
   replayWord: () => void;
   /** True while audio is playing or another lock is held. */
@@ -27,6 +31,8 @@ export type GameShellContextValue = {
   gameUniqueId: string;
   /** Register a callback to fire when the shell's advance arrow is pressed. Pass null to unregister. */
   setOnAdvance: (fn: (() => void) | null) => void;
+  /** Register a callback to fire when the shell's repeat button is pressed. Pass null to fall back to replayWord. */
+  setOnRepeat: (fn: (() => void) | null) => void;
 };
 
 export const GameShellContext = createContext<GameShellContextValue | null>(null);
