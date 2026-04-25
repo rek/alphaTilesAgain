@@ -1,8 +1,7 @@
-import { registerScriptParser, getParser } from '../scriptRegistry';
+import { registerScriptParser } from '../scriptRegistry';
 import type { ScriptParser } from '../scriptRegistry';
 import { combineTilesToMakeWord } from '../combineTilesToMakeWord';
 import { standardizeWordSequence } from '../standardizeWordSequence';
-import { buildTileHashMap } from '../buildTileHashMap';
 import type { TileEntry, ParsedTile } from '../TileEntry';
 
 // --- minimal fixtures ---

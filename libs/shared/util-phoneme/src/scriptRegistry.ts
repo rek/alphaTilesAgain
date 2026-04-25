@@ -1,4 +1,4 @@
-import type { TileEntry, ParsedTile } from './TileEntry';
+import type { ParsedTile } from './TileEntry';
 import type { ParseWordOptions } from './parseWordIntoTiles';
 import { parseWordIntoTiles as parseDefault } from './parseWordIntoTiles';
 
@@ -26,7 +26,9 @@ export function getParser(scriptType: string): ScriptParser {
         `util-phoneme: no parser registered for scriptType '${scriptType}', falling back to 'default'`,
       );
     }
-    return registry.get('default')!;
+    const fallback = registry.get('default');
+    if (!fallback) throw new Error("util-phoneme: 'default' parser not registered");
+    return fallback;
   }
   return parser;
 }

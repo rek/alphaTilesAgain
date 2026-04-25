@@ -92,7 +92,6 @@ export const useProgressStore = create<ProgressState & ProgressActions>()(
 
       resetGame(key) {
         set((state) => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [key]: _removed, ...rest } = state.progress;
           return { progress: rest };
         });

@@ -15,11 +15,7 @@ const FOUR = ['fish', 'bird', 'frog', 'duck', 'wolf'].map(makeWord);
 
 describe('chooseWords', () => {
   it('returns one 3-tile word and three distinct 4-tile words', () => {
-    let rngCalls = 0;
-    const seededRng = () => {
-      rngCalls++;
-      return 0; // always pick index 0
-    };
+    const seededRng = () => 0; // always pick index 0
     const result = chooseWords({ threeTileWords: THREE, fourTileWords: FOUR, rng: seededRng });
     expect('error' in result).toBe(false);
     if ('error' in result) return;

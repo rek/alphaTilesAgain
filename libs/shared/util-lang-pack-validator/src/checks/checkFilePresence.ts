@@ -55,7 +55,7 @@ export function checkFilePresence(
   const ttfFonts = inventory.fonts.filter((f) =>
     /\.(ttf|otf)$/i.test(f) || !f.includes('.'),
   );
-  if (inventory.fonts.length === 0) {
+  if (ttfFonts.length === 0) {
     issues.push({
       severity: 'error',
       code: ISSUE_CODES.MISSING_FONT,

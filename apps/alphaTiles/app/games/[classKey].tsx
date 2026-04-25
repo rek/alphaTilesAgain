@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Pressable } from 'react-native';
 
 export default function GamePlaceholderRoute() {
   const { classKey, doorIndex, challengeLevel } = useLocalSearchParams<{

@@ -5,7 +5,7 @@ const expoConfig = require('eslint-config-expo/flat');
 module.exports = defineConfig([
   expoConfig,
   {
-    ignores: ['dist/*', 'app-example/*', 'src/generated/*', 'jest.config.js', 'jest.resolver.js'],
+    ignores: ['dist/*', 'app-example/*', 'src/generated/*', 'jest.config.js', 'jest.resolver.js', '.expo/*'],
   },
   {
     // NX path aliases are not resolvable by eslint-plugin-import without

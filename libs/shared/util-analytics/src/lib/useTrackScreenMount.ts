@@ -16,7 +16,6 @@ import { screen } from './screen';
  * targets state-sync effects, not intentional one-shot side effects.
  */
 export function useTrackScreenMount(name: string): void {
-  useEffect(() => {
-    screen(name);
-  }, []); // empty deps: fire once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { screen(name); }, []); // intentional mount-only
 }

@@ -91,7 +91,6 @@ function combineComplexScript(
 
     // Find the next consonant after current
     foundNextConsonant = false;
-    const savedScan = consonantScanIndex;
     while (!foundNextConsonant && consonantScanIndex < preliminary.length) {
       const tile = preliminary[consonantScanIndex];
       if (tile.typeOfThisTileInstance === 'C' || tile.typeOfThisTileInstance === 'PC') {
@@ -145,7 +144,7 @@ function combineComplexScript(
         if (vowelStringSoFar === currentStr) {
           vowelTypeSoFar = tType;
         } else if (tileMap.has(vowelStringSoFar)) {
-          vowelTypeSoFar = tileMap.get(vowelStringSoFar)!.type;
+          vowelTypeSoFar = tileMap.get(vowelStringSoFar)?.type ?? vowelTypeSoFar;
         }
       } else if (tType === 'AD' || tType === 'D') {
         if (diacriticStringSoFar !== '' && !diacriticStringSoFar.includes(placeholderCharacter)) {
@@ -168,8 +167,10 @@ function combineComplexScript(
     if (currentConsonant !== null) {
       // Combine diacritics with consonant if possible
       let resolvedConsonant = currentConsonant;
-      if (diacriticStringSoFar !== '' && tileMap.has(currentConsonant.base + diacriticStringSoFar.replace(placeholderCharacter, ''))) {
-        const combined = tileMap.get(currentConsonant.base + diacriticStringSoFar.replace(placeholderCharacter, ''))!;
+      const diacriticKey = currentConsonant.base + diacriticStringSoFar.replace(placeholderCharacter, '');
+      if (diacriticStringSoFar !== '' && tileMap.has(diacriticKey)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const combined = tileMap.get(diacriticKey)!; // guarded by has() above
         resolvedConsonant = {
           base: combined.base,
           typeOfThisTileInstance: combined.type,

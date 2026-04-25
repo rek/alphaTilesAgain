@@ -50,7 +50,7 @@ export function checkKeyboardCoherence(parsed: ParsedPack): Issue[] {
         }
       }
       if (!charIsPartOfLongerKey) {
-        const hex = ch.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0');
+        const hex = (ch.codePointAt(0) ?? 0).toString(16).toUpperCase().padStart(4, '0');
         const unicodeStr = `(U+${hex})`;
         issues.push({
           severity: 'error',
@@ -79,7 +79,7 @@ export function checkKeyboardCoherence(parsed: ParsedPack): Issue[] {
   for (const [keyStr, count] of keyUsage) {
     if (count < NUM_TIMES_KEYS_WANTED) {
       const hex = keyStr.length > 0
-        ? keyStr.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')
+        ? (keyStr.codePointAt(0) ?? 0).toString(16).toUpperCase().padStart(4, '0')
         : '';
       const unicodeStr = hex ? ` (U+${hex})` : '';
       issues.push({

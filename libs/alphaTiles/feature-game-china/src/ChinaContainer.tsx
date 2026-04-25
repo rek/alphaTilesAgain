@@ -19,7 +19,6 @@ import {
   getMultitypeTiles,
   parseWordIntoTilesPreliminary,
 } from '@shared/util-phoneme';
-import type { TileEntry } from '@shared/util-phoneme';
 import { ChinaScreen } from './ChinaScreen';
 import { chooseWords } from './chooseWords';
 import { setUpTiles } from './setUpTiles';

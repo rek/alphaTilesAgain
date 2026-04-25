@@ -218,7 +218,6 @@ describe('loadLangPack', () => {
   });
 
   it('missing rawFiles key propagates as LangPackParseError', () => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { aa_wordlist: _removed, ...rest } = rawFiles;
     const manifest = { ...baseManifest, rawFiles: rest };
     expect(() => loadLangPack(manifest)).toThrow(LangPackParseError);

@@ -27,8 +27,6 @@ const MAX_LEVENSHTEIN_RATIO = 0.4; // Java: error / file.name.length < 0.4
 
 const TILE_AUDIO_MAX_BYTES = 50_000;
 const WORD_AUDIO_MAX_BYTES = 50_000;
-const SYLLABLE_AUDIO_MAX_BYTES = 50_000;
-const INSTRUCTION_AUDIO_MAX_BYTES = 300_000;
 
 function findTypoSuggestion(
   missing: string,
@@ -62,7 +60,6 @@ export function checkAudioReferences(
   const referencedTileAudio = new Set<string>();
   const referencedWordAudio = new Set<string>();
   const referencedSyllableAudio = new Set<string>();
-  const referencedInstructionAudio = new Set<string>();
 
   // Tile audio checks
   for (let i = 0; i < tiles.rows.length; i++) {

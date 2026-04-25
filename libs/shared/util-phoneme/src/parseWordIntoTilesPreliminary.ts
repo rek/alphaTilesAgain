@@ -34,8 +34,8 @@ function getMultitypeTiles(tiles: TileEntry[]): Set<string> {
 function resolveMultitypeInstance(
   tile: TileEntry,
   mixedDefs: string,
-  tileIndexInWord: number,
-  totalTilesInWord: number,
+  _tileIndexInWord: number,
+  _totalTilesInWord: number,
 ): { type: string; stage: number; audio: string } {
   const simpleTypes = ['C', 'PC', 'V', 'X', 'T', '-', 'SAD', 'LV', 'AV', 'BV', 'FV', 'D', 'AD'];
 

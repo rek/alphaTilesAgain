@@ -35,7 +35,8 @@ export function GameMenuContainer(): React.JSX.Element {
     : null;
 
   function onDoorPress(doorIndex: number): void {
-    const door = pageDoors.find((d) => d.index === doorIndex)!;
+    const door = pageDoors.find((d) => d.index === doorIndex);
+    if (!door) return;
     track({
       type: 'screen_viewed',
       props: { screenName: `game/${door.classKey}` },
