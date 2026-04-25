@@ -85,15 +85,15 @@ Thailand always presents exactly 4 choices (1 correct + 3 distractors). Distract
 
 ### D4. Correct Answer Feedback
 
-On correct selection: `updatePointsAndTrackers(1)` (integer 1, not boolean), highlight correct button with `refColor`, play correct sound then reference audio.
+On correct selection: `shell.incrementPointsAndTracker(true)` (signature is `(isCorrect: boolean)`), highlight correct button with `refColor`, play correct sound then reference audio.
 On incorrect selection: play incorrect sound; button remains selectable.
 
 ### D5. Reference Item Audio Replay
 
 Tapping the reference item (`onRefClick`) replays its audio:
-- TILE_AUDIO / TILE_LOWER / TILE_UPPER → `playActiveTileClip`
-- WORD_TEXT / WORD_IMAGE / WORD_AUDIO → `playActiveWordClip`
-- SYLLABLE_TEXT / SYLLABLE_AUDIO → `playActiveSyllableClip`
+- TILE_AUDIO / TILE_LOWER / TILE_UPPER → `audio.playTile(tileRow.audioName)`
+- WORD_TEXT / WORD_IMAGE / WORD_AUDIO → `audio.playWord(wordRow.wordInLWC)`
+- SYLLABLE_TEXT / SYLLABLE_AUDIO → `audio.playSyllable(syllableRow.audioName)`
 
 ### D6. Container / Presenter split
 
