@@ -93,6 +93,9 @@
       ],
       "@alphaTiles/feature-game-romania": [
         "libs/alphaTiles/feature-game-romania/src/index.ts"
+      ],
+      "@alphaTiles/feature-game-thailand": [
+        "libs/alphaTiles/feature-game-thailand/src/index.ts"
       ]
     }
   }

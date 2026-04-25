@@ -53,23 +53,36 @@ jobs:
       - name: Build home
         run: npx nx build home
 
-      # ─── Build affected game apps only ───────────────────────────────
-      - name: Build affected apps
+      # ─── Build each language (sequential — each overwrites dist/web/alpha-tiles) ───
+      - name: Build eng
         run: npx nx run alphaTiles:web-export
         env:
           APP_LANG: eng
           EXPO_BASE_URL: /engEnglish4
 
-      # ─── Assemble into one site tree ─────────────────────────────────
+      - name: Stage eng output
+        run: |
+          mkdir -p dist/site/engEnglish4
+          cp -r dist/web/alpha-tiles/. dist/site/engEnglish4/
+          echo "/*  /index.html  200" > dist/site/engEnglish4/_redirects
+
+      - name: Build yue
+        run: npx nx run alphaTiles:web-export --skip-nx-cache
+        env:
+          APP_LANG: yue
+          EXPO_BASE_URL: /yueCantonese
+
+      - name: Stage yue output
+        run: |
+          mkdir -p dist/site/yueCantonese
+          cp -r dist/web/alpha-tiles/. dist/site/yueCantonese/
+          echo "/*  /index.html  200" > dist/site/yueCantonese/_redirects
+
+      # ─── Assemble landing page ────────────────────────────────────────
       - name: Assemble site
         run: |
           mkdir -p dist/site
           cp -r dist/apps/home/. dist/site/
-          if [ -d "dist/web/alpha-tiles" ]; then
-            mkdir -p "dist/site/engEnglish4"
-            cp -r "dist/web/alpha-tiles/." "dist/site/engEnglish4/"
-            echo "/*  /index.html  200" > "dist/site/engEnglish4/_redirects"
-          fi
 
       # ─── Deploy ──────────────────────────────────────────────────────
       - name: Setup Pages
