@@ -37,7 +37,7 @@ export function buildDoors({
   trackerCounts,
   playerId,
   page,
-}: BuildDoorsOpts): { pageDoors: DoorData[]; totalPages: number; doorsPerPage: number } {
+}: BuildDoorsOpts): { pageDoors: DoorData[]; allDoors: DoorData[]; totalPages: number; doorsPerPage: number } {
   const doorsPerPage = Math.min(MAX_DOORS_PER_PAGE, Math.max(MIN_DOORS_PER_PAGE, doorsPerPageSetting));
 
   const allDoors: DoorData[] = gameRows.map((game, i) => {
@@ -71,13 +71,13 @@ export function buildDoors({
   const start = safePage * doorsPerPage;
   const pageDoors = allDoors.slice(start, start + doorsPerPage);
 
-  return { pageDoors, totalPages, doorsPerPage };
+  return { pageDoors, allDoors, totalPages, doorsPerPage };
 }
 
 export function useDoors(
   playerId: string | null,
   page: number,
-): { pageDoors: DoorData[]; totalPages: number; doorsPerPage: number } {
+): { pageDoors: DoorData[]; allDoors: DoorData[]; totalPages: number; doorsPerPage: number } {
   const assets = useLangAssets();
   const trackerCounts = useTrackerCounts(playerId);
 

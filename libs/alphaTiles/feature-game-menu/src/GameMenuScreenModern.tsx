@@ -1,13 +1,18 @@
 import React from 'react';
-import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  Pressable,
+  FlatList,
+  StyleSheet,
+  useWindowDimensions,
+} from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import { UiDoorGrid } from '@shared/ui-door-grid';
-import type { DoorItem } from '@shared/ui-door-grid';
+import type { DoorData } from './useDoors';
 
-export type GameMenuScreenProps = {
-  doors: DoorItem[];
-  page: number;
-  totalPages: number;
+export type GameMenuScreenModernProps = {
+  allDoors: DoorData[];
   playerName: string;
   playerAvatarSrc: ImageSourcePropType | null;
   score: number;
@@ -16,11 +21,7 @@ export type GameMenuScreenProps = {
   showAbout: boolean;
   showAudioInstructions: boolean;
   layout: 'classic' | 'modern';
-  doorWidth?: number;
-  doorHeight?: number;
   onDoorPress: (index: number) => void;
-  onPrev: () => void;
-  onNext: () => void;
   onBack: () => void;
   onAbout: () => void;
   onShare: () => void;
@@ -28,8 +29,6 @@ export type GameMenuScreenProps = {
   onAudioInstructions: () => void;
   onToggleLayout: () => void;
   a11y: {
-    prev: string;
-    next: string;
     back: string;
     about: string;
     share: string;
@@ -40,10 +39,74 @@ export type GameMenuScreenProps = {
   };
 };
 
-export function GameMenuScreen({
-  doors,
-  page,
-  totalPages,
+const GRID_PADDING = 12;
+const CARD_GAP = 10;
+const OUTER_RADIUS = 16;
+
+// Fewer columns = bigger targets — important for non-literate audience
+function getColumns(width: number): number {
+  if (width >= 900) return 5;
+  if (width >= 600) return 4;
+  return 3;
+}
+
+type CardProps = {
+  door: DoorData;
+  size: number;
+  onPress: () => void;
+};
+
+function ModernDoorCard({ door, size, onPress }: CardProps): React.JSX.Element {
+  const fontSize = Math.floor(size * 0.38);
+
+  const cardBg = door.visual === 'not-started'
+    ? '#FFFFFF'
+    : door.visual === 'in-process'
+      ? door.colorHex
+      : '#F0F0F0';
+
+  const borderProps = door.visual !== 'in-process'
+    ? { borderWidth: 3, borderColor: door.colorHex }
+    : {};
+
+  const numberColor = door.visual === 'in-process'
+    ? (door.textColorHex ?? '#FFFFFF')
+    : door.colorHex;
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={({ pressed }) => [
+        styles.card,
+        borderProps,
+        {
+          width: size,
+          height: size,
+          backgroundColor: cardBg,
+          borderRadius: OUTER_RADIUS,
+          opacity: pressed ? 0.82 : 1,
+          transform: [{ scale: pressed ? 0.96 : 1 }],
+        },
+      ]}
+    >
+      <Text
+        style={[
+          styles.doorNumber,
+          { fontSize, color: numberColor },
+        ]}
+      >
+        {door.index}
+      </Text>
+      {door.visual === 'mastery' && (
+        <Text style={[styles.masteryBadge, { color: door.colorHex }]}>{'✓'}</Text>
+      )}
+    </Pressable>
+  );
+}
+
+export function GameMenuScreenModern({
+  allDoors,
   playerName,
   playerAvatarSrc,
   score,
@@ -52,11 +115,7 @@ export function GameMenuScreen({
   showAbout,
   showAudioInstructions,
   layout,
-  doorWidth,
-  doorHeight,
   onDoorPress,
-  onPrev,
-  onNext,
   onBack,
   onAbout,
   onShare,
@@ -64,7 +123,12 @@ export function GameMenuScreen({
   onAudioInstructions,
   onToggleLayout,
   a11y,
-}: GameMenuScreenProps): React.JSX.Element {
+}: GameMenuScreenModernProps): React.JSX.Element {
+  const { width } = useWindowDimensions();
+  const numColumns = getColumns(width);
+  const totalGap = CARD_GAP * (numColumns - 1);
+  const cardSize = Math.floor((width - GRID_PADDING * 2 - totalGap) / numColumns);
+
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
@@ -85,19 +149,22 @@ export function GameMenuScreen({
         <Text accessibilityLabel={a11y.score} style={styles.score}>{score}</Text>
       </View>
 
-      <View style={styles.gridContainer}>
-        <UiDoorGrid
-          doors={doors}
-          page={page}
-          totalPages={totalPages}
-          onDoorPress={onDoorPress}
-          onPrev={onPrev}
-          onNext={onNext}
-          a11y={{ prev: a11y.prev, next: a11y.next }}
-          doorWidth={doorWidth}
-          doorHeight={doorHeight}
-        />
-      </View>
+      <FlatList
+        key={numColumns}
+        data={allDoors}
+        numColumns={numColumns}
+        keyExtractor={(item) => String(item.index)}
+        contentContainerStyle={[styles.grid, { padding: GRID_PADDING }]}
+        columnWrapperStyle={numColumns > 1 ? { gap: CARD_GAP } : undefined}
+        ItemSeparatorComponent={() => <View style={{ height: CARD_GAP }} />}
+        renderItem={({ item }) => (
+          <ModernDoorCard
+            door={item}
+            size={cardSize}
+            onPress={() => { onDoorPress(item.index); }}
+          />
+        )}
+      />
 
       <View style={styles.utilityRow}>
         {showAbout && (
@@ -146,7 +213,7 @@ export function GameMenuScreen({
           accessibilityLabel={a11y.toggleLayout}
           style={[styles.utilityButton, styles.toggleButton]}
         >
-          <Text style={styles.utilityText}>{layout === 'classic' ? '⊞' : '▦'}</Text>
+          <Text style={styles.utilityText}>{layout === 'modern' ? '▦' : '⊞'}</Text>
         </Pressable>
       </View>
     </View>
@@ -191,10 +258,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     marginStart: 8,
+    fontVariant: ['tabular-nums'],
   },
-  gridContainer: {
-    flex: 1,
-    padding: 8,
+  grid: {
+    flexGrow: 1,
+  },
+  card: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    // DESIGN_V2: layered shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  doorNumber: {
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
+  },
+  masteryBadge: {
+    position: 'absolute',
+    top: 6,
+    end: 8,
+    fontSize: 14,
+    fontWeight: '700',
   },
   utilityRow: {
     flexDirection: 'row',

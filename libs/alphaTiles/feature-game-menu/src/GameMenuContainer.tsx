@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Redirect } from 'expo-router';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
+import { useWindowDimensions } from 'react-native';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useActivePlayer, usePlayersStore } from '@alphaTiles/data-players';
@@ -8,7 +8,11 @@ import { useTotalPoints } from '@alphaTiles/data-progress';
 import { useAudio } from '@alphaTiles/data-audio';
 import { track } from '@shared/util-analytics';
 import { useDoors } from './useDoors';
+import type { DoorItem } from '@shared/ui-door-grid';
 import { GameMenuScreen } from './GameMenuScreen';
+import { GameMenuScreenModern } from './GameMenuScreenModern';
+
+const DOOR_ASPECT = 88 / 64;
 
 export function GameMenuContainer(): React.JSX.Element {
   const player = useActivePlayer();
@@ -17,9 +21,16 @@ export function GameMenuContainer(): React.JSX.Element {
   const assets = useLangAssets();
   const { playInstruction } = useAudio();
   const [page, setPage] = useState(0);
+  const [layout, setLayout] = useState<'classic' | 'modern'>('classic');
+  const { width } = useWindowDimensions();
 
-  const { pageDoors, totalPages } = useDoors(player?.id ?? null, page);
+  const { pageDoors, allDoors, totalPages } = useDoors(player?.id ?? null, page);
   const score = useTotalPoints(player?.id ?? '');
+  const tMenu = (key: string, opts?: Record<string, unknown>) => t(`menu.${key}`, opts);
+
+  // Scale doors up on wider screens; mobile keeps default 64px
+  const doorWidth = Math.min(120, Math.max(64, Math.floor(width / 8)));
+  const doorHeight = Math.round(doorWidth * DOOR_ASPECT);
 
   if (player === null) {
     return <Redirect href="/choose-player" />;
@@ -34,8 +45,16 @@ export function GameMenuContainer(): React.JSX.Element {
     ? (avatarSrc as number)
     : null;
 
+  const classicDoors: DoorItem[] = pageDoors.map((door) => ({
+    index: door.index,
+    colorHex: door.colorHex,
+    visual: door.visual,
+    textColorHex: door.textColorHex,
+    a11yLabel: tMenu('a11y.door', { index: door.index, state: door.visual }),
+  }));
+
   function onDoorPress(doorIndex: number): void {
-    const door = pageDoors.find((d) => d.index === doorIndex);
+    const door = allDoors.find((d) => d.index === doorIndex);
     if (!door) return;
     track({
       type: 'screen_viewed',
@@ -64,6 +83,10 @@ export function GameMenuContainer(): React.JSX.Element {
     setPage((p) => Math.min(totalPages - 1, p + 1));
   }
 
+  function onToggleLayout(): void {
+    setLayout((l) => l === 'classic' ? 'modern' : 'classic');
+  }
+
   function onAbout(): void {
     router.push('/about');
   }
@@ -80,35 +103,51 @@ export function GameMenuContainer(): React.JSX.Element {
     playInstruction('zzz_earth');
   }
 
+  const commonProps = {
+    playerName: player.name,
+    playerAvatarSrc,
+    score,
+    showShare: hasShare,
+    showResources: hasResources,
+    showAbout: true,
+    showAudioInstructions: hasEarthInstructions,
+    layout,
+    onDoorPress,
+    onBack,
+    onAbout,
+    onShare,
+    onResources,
+    onAudioInstructions,
+    onToggleLayout,
+    a11y: {
+      back: t('menu.a11y.back_to_players'),
+      about: t('menu.a11y.about'),
+      share: t('menu.a11y.share'),
+      resources: t('menu.a11y.resources'),
+      audioInstructions: t('menu.a11y.audio_instructions'),
+      score: t('menu.score', { points: score }),
+      toggleLayout: t('menu.a11y.toggle_layout'),
+    },
+  };
+
+  if (layout === 'modern') {
+    return <GameMenuScreenModern {...commonProps} allDoors={allDoors} />;
+  }
+
   return (
     <GameMenuScreen
-      doors={pageDoors}
+      {...commonProps}
+      doors={classicDoors}
       page={page}
       totalPages={totalPages}
-      playerName={player.name}
-      playerAvatarSrc={playerAvatarSrc}
-      score={score}
-      showShare={hasShare}
-      showResources={hasResources}
-      showAbout={true}
-      showAudioInstructions={hasEarthInstructions}
-      onDoorPress={onDoorPress}
+      doorWidth={doorWidth}
+      doorHeight={doorHeight}
       onPrev={onPrev}
       onNext={onNext}
-      onBack={onBack}
-      onAbout={onAbout}
-      onShare={onShare}
-      onResources={onResources}
-      onAudioInstructions={onAudioInstructions}
       a11y={{
+        ...commonProps.a11y,
         prev: t('menu.a11y.prev'),
         next: t('menu.a11y.next'),
-        back: t('menu.a11y.back_to_players'),
-        about: t('menu.a11y.about'),
-        share: t('menu.a11y.share'),
-        resources: t('menu.a11y.resources'),
-        audioInstructions: t('menu.a11y.audio_instructions'),
-        score: t('menu.score', { points: score }),
       }}
     />
   );

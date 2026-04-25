@@ -68,7 +68,8 @@
         "about": "About",
         "share": "Share",
         "resources": "Resources",
-        "audio_instructions": "Play audio instructions"
+        "audio_instructions": "Play audio instructions",
+        "toggle_layout": "Toggle layout"
       }
     },
     "a11y": {
