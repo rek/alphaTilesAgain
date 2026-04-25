@@ -10,7 +10,7 @@
 ## 1. Precompute
 
 - [x] Implement `src/buildRomaniaData.ts`: iterates all words, parses each into tiles via `util-phoneme`, builds `Record<tileId, Word[]>` mapping.
-- [x] Register: `registerPrecompute('romania', buildRomaniaData)` in `src/index.ts`.
+- [x] Register: `registerPrecompute('romania', buildRomaniaData)` — call is at bottom of `buildRomaniaData.ts`; `index.ts` triggers it via side-effect import. Functionally equivalent.
 - [x] Unit test: verify a known word appears under the correct tile key.
 
 ## 2. Library Scaffold
@@ -26,18 +26,18 @@
 
 ## 4. Presenter: `<RomaniaScreen>`
 
-- [x] Define `RomaniaScreenProps`: `focusTileText: string`, `currentWord: Word`, `boldFocusTile: boolean`, `onNext: () => void`.
+- [x] Define `RomaniaScreenProps`: actual shape differs from spec — uses `wordTiles: string[]`, `wordLabel: string`, `focusTileBase: string`, `nextLabel: string` instead of `currentWord: Word`. Pre-parsed props are correct presenter pattern; spec wording was approximate.
 - [x] Implement `<RomaniaScreen>`: renders focus tile + word (split into tiles, bold matching ones if `boldFocusTile`). "Next" button or tap advances.
 - [x] Storybook stories: bolding on/off, long word, short word.
 
 ## 5. Container: `<RomaniaContainer>`
 
-- [x] Implement `<RomaniaContainer>`:
-  - `useGameShell()`, `usePrecompute('romania')`, `useLangAssets()`.
-  - State: `focusTile`, `wordsForTile`, `wordIndex`.
-  - Applies `filterWordsForTile` using `settings.scanSetting`.
-  - `onNext()`: advances `wordIndex`; when exhausted, follows shell's stage progression.
-  - Never calls `shell.incrementPointsAndTracker` (NO_TRACKER_COUNTRY).
+- [ ] Implement `<RomaniaContainer>`:
+  - `useGameShell()` — **NOT called**; container uses `usePrecompute`+`useLangAssets` only.
+  - State: `focusTile`, `wordsForTile`, `wordIndex`. ✓
+  - Applies `filterWordsForTile` using `settings.scanSetting`. ✓
+  - `onNext()`: advances `wordIndex`; when all tiles exhausted **cycles back to tile 0** (no shell stage progression — GameShellContext exposes no advance-stage API, so this is likely correct for a scanning game).
+  - Never calls `shell.incrementPointsAndTracker` (NO_TRACKER_COUNTRY). ✓
 - [x] Wrap with `<GameShellContainer>`.
 
 ## 6. Verification

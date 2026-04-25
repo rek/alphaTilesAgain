@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
-import { GameShellContainer } from '@alphaTiles/feature-game-shell';
+import { GameShellContainer, useGameShell } from '@alphaTiles/feature-game-shell';
 import {
   parseWordIntoTilesPreliminary,
   buildTileHashMap,
@@ -16,6 +16,7 @@ type Word = LangAssets['words']['rows'][number];
 type RouteParams = Record<string, string | string[] | undefined>;
 
 function RomaniaGame(): React.JSX.Element {
+  const shell = useGameShell();
   const assets = useLangAssets();
   const romaniaData = usePrecompute<RomaniaData>('romania');
   const { t } = useTranslation('chrome');
@@ -74,12 +75,19 @@ function RomaniaGame(): React.JSX.Element {
 
   const currentWord = filteredWords[wordIndex] ?? null;
 
+  useEffect(() => {
+    if (currentWord) {
+      shell.setRefWord({ wordInLOP: currentWord.wordInLOP, wordInLWC: currentWord.wordInLWC });
+    }
+  }, [currentWord, shell]);
+
   const wordTiles = useMemo(
     () => (currentWord ? parseWord(currentWord) : []),
     [currentWord, parseWord],
   );
 
   const onNext = useCallback(() => {
+    if (shell.interactionLocked) return;
     if (wordIndex < filteredWords.length - 1) {
       setWordIndex((i) => i + 1);
     } else if (tileIndex < tilesWithWords.length - 1) {

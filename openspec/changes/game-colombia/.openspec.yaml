@@ -1,0 +1,20 @@
+name: game-colombia
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/colombia:
+    status: done
+    path: specs/colombia/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/colombia]
+  status: pending

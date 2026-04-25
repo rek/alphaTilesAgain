@@ -36,7 +36,7 @@ import {
 } from '@alphaTiles/util-scoring';
 import { GameShellContextProvider } from './GameShellContext';
 import { GameShellScreen } from './GameShellScreen';
-import type { GameShellScreenProps } from './GameShellScreen';
+import type { GameShellScreenProps, GameShellIcons } from './GameShellScreen';
 import { findNextUncompletedGame } from './findNextUncompletedGame';
 
 // Java timing constants — preserved verbatim (GameActivity.java:342, 412)
@@ -57,6 +57,8 @@ type GameShellContainerProps = {
    * Example: require('../../assets/lottie/celebration.json')
    */
   celebrationSource?: import('@shared/ui-celebration').CelebrationProps['animationSource'];
+  /** Chrome + tracker icon images — must be static requires from the app layer. */
+  icons?: GameShellIcons;
 };
 
 export function GameShellContainer({
@@ -65,6 +67,7 @@ export function GameShellContainer({
   showInstructionsButton = true,
   instructionAudioId,
   celebrationSource,
+  icons,
 }: GameShellContainerProps): React.JSX.Element {
   const router = useRouter();
   const { t } = useTranslation('chrome');
@@ -327,6 +330,7 @@ export function GameShellContainer({
     onAdvancePress: handleAdvancePress,
     onCelebrationBack: handleCelebrationBack,
     celebrationSource,
+    icons,
     children,
   };
 

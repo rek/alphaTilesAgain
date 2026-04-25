@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
 
 function contrastColor(hex: string): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -17,6 +17,7 @@ export type ScoreBarProps = {
   trackerStates: TrackerState[]; // always length 12
   score: number;
   scoreLabel: string; // pre-translated
+  trackerIcons?: { complete: ImageSourcePropType; incomplete: ImageSourcePropType };
 };
 
 export function ScoreBar({
@@ -26,6 +27,7 @@ export function ScoreBar({
   trackerStates,
   score,
   scoreLabel,
+  trackerIcons,
 }: ScoreBarProps): React.JSX.Element {
   const textColor = contrastColor(gameColor);
   return (
@@ -46,14 +48,30 @@ export function ScoreBar({
 
       {/* 12 tracker dots */}
       <View style={styles.trackers}>
-        {trackerStates.map((state, i) => (
-          <View
-            key={i}
-            style={[styles.dot, state === 'complete' ? styles.dotComplete : styles.dotIncomplete]}
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-          />
-        ))}
+        {trackerStates.map((state, i) => {
+          const n = i + 1;
+          const total = trackerStates.length;
+          const label = `Tracker ${n} of ${total}, ${state}`;
+          if (trackerIcons) {
+            return (
+              <Image
+                key={i}
+                source={state === 'complete' ? trackerIcons.complete : trackerIcons.incomplete}
+                style={styles.dot}
+                accessible
+                accessibilityLabel={label}
+              />
+            );
+          }
+          return (
+            <View
+              key={i}
+              style={[styles.dot, state === 'complete' ? styles.dotComplete : styles.dotIncomplete]}
+              accessible
+              accessibilityLabel={label}
+            />
+          );
+        })}
       </View>
 
       {/* Score */}

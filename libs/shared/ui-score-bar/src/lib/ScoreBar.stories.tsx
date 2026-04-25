@@ -36,3 +36,13 @@ export const TwelveTrackers: Story = {
 export const Mastered: Story = {
   args: { trackerStates: all('complete'), score: 48, challengeLevel: 3 },
 };
+
+// Placeholder URIs stand in for the real static requires in Storybook context.
+const mockTrackerIcons = {
+  complete: { uri: 'https://via.placeholder.com/14x14/4CAF50/ffffff?text=+' },
+  incomplete: { uri: 'https://via.placeholder.com/14x14/BDBDBD/ffffff?text=+' },
+} as const;
+
+export const WithTrackerIcons: Story = {
+  args: { trackerStates: partial(7), score: 14, trackerIcons: mockTrackerIcons },
+};

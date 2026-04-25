@@ -13,6 +13,8 @@
 
 import React from 'react';
 import {
+  Image,
+  ImageSourcePropType,
   Pressable,
   SafeAreaView,
   StyleSheet,
@@ -22,6 +24,15 @@ import {
 import { ScoreBar } from '@shared/ui-score-bar';
 import { Celebration } from '@shared/ui-celebration';
 import type { CelebrationProps } from '@shared/ui-celebration';
+
+export type GameShellIcons = {
+  back?: ImageSourcePropType;
+  instructions?: ImageSourcePropType;
+  advance?: ImageSourcePropType;
+  advanceInactive?: ImageSourcePropType;
+  trackerComplete?: ImageSourcePropType;
+  trackerIncomplete?: ImageSourcePropType;
+};
 
 export type GameShellScreenProps = {
   score: number;
@@ -50,6 +61,8 @@ export type GameShellScreenProps = {
   children: React.ReactNode;
   /** Lottie animation source for the celebration screen — injected from app (Metro static require). */
   celebrationSource?: CelebrationProps['animationSource'];
+  /** Chrome + tracker icon images — injected from app (Metro static require). */
+  icons?: GameShellIcons;
 };
 
 export function GameShellScreen({
@@ -74,7 +87,17 @@ export function GameShellScreen({
   onCelebrationBack,
   children,
   celebrationSource = { uri: 'https://assets10.lottiefiles.com/packages/lf20_jR229r.json' },
+  icons,
 }: GameShellScreenProps): React.JSX.Element {
+  const trackerIcons =
+    icons?.trackerComplete && icons?.trackerIncomplete
+      ? { complete: icons.trackerComplete, incomplete: icons.trackerIncomplete }
+      : undefined;
+
+  const advanceIconSrc = advanceArrow === 'gray'
+    ? (icons?.advanceInactive ?? icons?.advance)
+    : (icons?.advance ?? icons?.advanceInactive);
+
   return (
     <SafeAreaView style={styles.screen}>
       {/* Score bar (GameActivity.java:251-314 updatePointsAndTrackers UI) */}
@@ -85,6 +108,7 @@ export function GameShellScreen({
         trackerStates={trackerStates}
         score={score}
         scoreLabel={scoreLabel}
+        trackerIcons={trackerIcons}
       />
 
       {/* Mechanic-specific board slot */}
@@ -102,7 +126,11 @@ export function GameShellScreen({
           accessibilityRole="button"
           disabled={interactionLocked}
         >
-          <Text style={styles.chromeLabel}>{backLabel}</Text>
+          {icons?.back ? (
+            <Image source={icons.back} style={styles.chromeIcon} />
+          ) : (
+            <Text style={styles.chromeLabel}>{backLabel}</Text>
+          )}
         </Pressable>
 
         {/* Instructions button — hidden when showInstructionsButton is false */}
@@ -114,7 +142,11 @@ export function GameShellScreen({
             accessibilityRole="button"
             disabled={interactionLocked}
           >
-            <Text style={styles.chromeLabel}>{instructionsLabel}</Text>
+            {icons?.instructions ? (
+              <Image source={icons.instructions} style={styles.chromeIcon} />
+            ) : (
+              <Text style={styles.chromeLabel}>{instructionsLabel}</Text>
+            )}
           </Pressable>
         )}
 
@@ -142,9 +174,13 @@ export function GameShellScreen({
             accessibilityRole="button"
             disabled={advanceArrow === 'gray'}
           >
-            <Text style={[styles.chromeLabel, advanceArrow === 'gray' && styles.chromeLabelGray]}>
-              →
-            </Text>
+            {advanceIconSrc ? (
+              <Image source={advanceIconSrc} style={styles.chromeIcon} />
+            ) : (
+              <Text style={[styles.chromeLabel, advanceArrow === 'gray' && styles.chromeLabelGray]}>
+                →
+              </Text>
+            )}
           </Pressable>
         )}
       </View>
@@ -201,5 +237,10 @@ const styles = StyleSheet.create({
   },
   chromeLabelGray: {
     color: '#e0e0e0',
+  },
+  chromeIcon: {
+    width: 32,
+    height: 32,
+    resizeMode: 'contain',
   },
 });

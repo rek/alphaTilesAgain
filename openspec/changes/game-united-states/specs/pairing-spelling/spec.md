@@ -1,5 +1,7 @@
 ## United States Game (Pairing/Spelling) Spec
 
+## ADDED Requirements
+
 ### Requirement: Board setup with tile pairs and distractors
 
 The United States mechanic SHALL render a grid of N pairs of tiles (where N is the target word's tile length). Each pair consists of a "top" tile and a "bottom" tile. One tile in each pair is the correct tile from the target word at that position; the other is a distractor randomly selected from that tile's alternatives in the language pack. This ports `UnitedStates.java:132–175 onCreate`.

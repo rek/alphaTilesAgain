@@ -96,7 +96,12 @@
       ],
       "@alphaTiles/feature-game-thailand": [
         "libs/alphaTiles/feature-game-thailand/src/index.ts"
-      ]
+      ],
+      "@alphaTiles/feature-game-united-states": [
+        "libs/alphaTiles/feature-game-united-states/src/index.ts"
+      ],
+      "@alphaTiles/feature-game-japan": ["libs/alphaTiles/feature-game-japan/src/index.ts"],
+      "@alphaTiles/feature-game-chile": ["libs/alphaTiles/feature-game-chile/src/index.ts"]
     }
   }
 }

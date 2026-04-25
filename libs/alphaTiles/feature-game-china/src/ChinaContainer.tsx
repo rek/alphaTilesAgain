@@ -14,6 +14,7 @@ import {
   GameShellContainer,
   useGameShell,
 } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import {
   buildTileHashMap,
   getMultitypeTiles,
@@ -37,7 +38,7 @@ type CurrentWords = {
 
 const MOVES_BY_CHALLENGE: Record<number, number> = { 1: 5, 2: 10, 3: 15 };
 
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | undefined> & { icons?: GameShellIcons };
 
 function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
@@ -250,6 +251,7 @@ export function ChinaContainer(props: RouteParams): React.JSX.Element {
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <ChinaGame challengeLevel={challengeLevel} />
     </GameShellContainer>
