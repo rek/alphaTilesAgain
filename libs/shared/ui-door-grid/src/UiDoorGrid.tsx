@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { UiDoor } from '@shared/ui-door';
 
 export type DoorItem = {
@@ -35,8 +35,8 @@ export function UiDoorGrid({
   doorHeight = 88,
 }: UiDoorGridProps): React.JSX.Element {
   return (
-    <View>
-      <View style={styles.grid}>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.grid}>
         {doors.map((door) => (
           <UiDoor
             key={door.index}
@@ -50,33 +50,38 @@ export function UiDoorGrid({
             height={doorHeight}
           />
         ))}
-      </View>
-      <View style={styles.pagination}>
-        {page > 0 && (
-          <Pressable
-            onPress={onPrev}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.prev}
-          >
-            <Text style={styles.arrow}>{'←'}</Text>
-          </Pressable>
-        )}
-        <Text style={styles.pageIndicator}>{`${page + 1} / ${totalPages}`}</Text>
-        {page < totalPages - 1 && (
-          <Pressable
-            onPress={onNext}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.next}
-          >
-            <Text style={styles.arrow}>{'→'}</Text>
-          </Pressable>
-        )}
-      </View>
+      </ScrollView>
+      {totalPages > 1 && (
+        <View style={styles.pagination}>
+          {page > 0 && (
+            <Pressable
+              onPress={onPrev}
+              accessibilityRole="button"
+              accessibilityLabel={a11y.prev}
+            >
+              <Text style={styles.arrow}>{'←'}</Text>
+            </Pressable>
+          )}
+          <Text style={styles.pageIndicator}>{`${page + 1} / ${totalPages}`}</Text>
+          {page < totalPages - 1 && (
+            <Pressable
+              onPress={onNext}
+              accessibilityRole="button"
+              accessibilityLabel={a11y.next}
+            >
+              <Text style={styles.arrow}>{'→'}</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

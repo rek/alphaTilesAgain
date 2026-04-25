@@ -7,8 +7,8 @@ import type { LangAssets } from '@alphaTiles/data-language-assets';
 
 const NO_RIGHT_WRONG_FALLBACK = ['romania', 'sudan', 'malaysia', 'iraq'];
 const MIN_DOORS_PER_PAGE = 6;
-const MAX_DOORS_PER_PAGE = 40;
-const DEFAULT_DOORS_PER_PAGE = 20;
+const MAX_DOORS_PER_PAGE = 999;
+const DEFAULT_DOORS_PER_PAGE = 999;
 
 export type DoorData = {
   index: number;
