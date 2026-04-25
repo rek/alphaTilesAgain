@@ -53,7 +53,7 @@ This change follows the pattern established by `game-china`, utilizing `feature-
 | `respondToCardSelection()` | `onCardPress(index)` handler | |
 | `respondToTwoActiveCards()` | logic inside `onCardPress` or `useEffect` (on `secondCardIndex`) | |
 | `resetAfterIncorrectGuess()` | Timeout to clear `firstCardIndex`/`secondCardIndex` and flip cards back | |
-| `updatePointsAndTrackers(pairCount)` | `shell.incrementPointsAndTracker(pairCount)` on win | |
+| `updatePointsAndTrackers(pairCount)` | `shell.incrementPointsAndTracker(true)` on win | signature is `(isCorrect: boolean)` |
 
 ### D2. Challenge-level decoding
 
