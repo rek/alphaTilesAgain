@@ -1,2 +1,24 @@
-schema: spec-driven
-created: 2026-04-24
+name: qa-remaining-flows
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+    dependencies: [proposal]
+  tasks:
+    status: done
+    path: tasks.md
+    dependencies: [design]
+  specs/loading-flow:
+    status: done
+    path: specs/loading-flow/spec.md
+    dependencies: [design]
+  specs/score-display-verification:
+    status: done
+    path: specs/score-display-verification/spec.md
+    dependencies: [design]
+apply:
+  requires: [tasks, specs/loading-flow, specs/score-display-verification]
+  status: in_progress
