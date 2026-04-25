@@ -13,6 +13,7 @@
     "expo-application": "*",
     "expo-web-browser": "*",
     "react": "*",
-    "react-native": "*"
+    "react-native": "*",
+    "expo-router": "~55.0.12"
   }
 }

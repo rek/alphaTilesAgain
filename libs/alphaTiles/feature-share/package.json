@@ -12,6 +12,7 @@
     "@shared/util-i18n": "*",
     "react": "*",
     "react-native": "*",
-    "react-native-qrcode-svg": "*"
+    "react-native-qrcode-svg": "*",
+    "expo-router": "~55.0.12"
   }
 }
