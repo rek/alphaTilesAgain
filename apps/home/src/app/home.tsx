@@ -5,7 +5,7 @@ const LANGUAGES = [
     fixture: 'engEnglish4',
     icon: 'A',
     color: 'bg-blue-100 text-blue-600',
-    description: 'Explore the foundations of AlphaTiles with our comprehensive English build.',
+    description: 'Explore the foundations of AlphaTilesAgain with our comprehensive English build.',
   },
   {
     id: 'yue',
@@ -26,7 +26,7 @@ const ABOUT_POINTS = [
 
 const HOW_IT_WORKS = [
   { step: '01', title: 'Gather Assets', desc: 'Provide word lists, phoneme data, audio recordings, and images in a simple folder structure.' },
-  { step: '02', title: 'Generate App', desc: 'The AlphaTiles engine validates your assets and generates a customized game shell for your language.' },
+  { step: '02', title: 'Generate App', desc: 'The AlphaTilesAgain engine validates your assets and generates a customized game shell for your language.' },
   { step: '03', title: 'Publish & Play', desc: 'Deploy your app to the web or mobile stores and start building literacy in your community.' },
 ] as const;
 
@@ -37,7 +37,7 @@ export function Home() {
       <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">A</div>
-          <span className="text-xl font-bold text-slate-800 tracking-tight">AlphaTiles</span>
+          <span className="text-xl font-bold text-slate-800 tracking-tight">AlphaTilesAgain</span>
         </div>
         <div className="hidden md:flex space-x-8 text-sm font-medium text-slate-600">
           <a href="#languages" className="hover:text-primary transition-colors">Languages</a>
@@ -58,7 +58,7 @@ export function Home() {
               Literacy games for <span className="text-primary underline decoration-blue-200 underline-offset-8">every</span> language.
             </h1>
             <p className="text-xl text-slate-600 mb-10 leading-relaxed max-w-2xl mx-auto">
-              AlphaTiles is a game generator that turns word lists and assets into educational apps for minority language communities.
+              AlphaTilesAgain is a community-extended fork of AlphaTiles — adding new languages, new games, and web + iOS support.
             </p>
             <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <a href="#languages" className="bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-all transform hover:-translate-y-1 shadow-md">
@@ -75,7 +75,7 @@ export function Home() {
         <section id="languages" className="px-6 py-24 max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Interactive Language Builds</h2>
-            <p className="text-slate-600">Choose a language build to explore the AlphaTiles experience.</p>
+            <p className="text-slate-600">Choose a language build to explore the AlphaTilesAgain experience.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
@@ -104,7 +104,7 @@ export function Home() {
             <div>
               <h2 className="text-4xl font-bold mb-8">Preserving language through play.</h2>
               <p className="text-slate-400 text-lg mb-6 leading-relaxed">
-                Minority language communities often lack educational resources. AlphaTiles bridges this gap by providing a platform to create high-quality, culturally relevant literacy games.
+                Minority language communities often lack educational resources. AlphaTilesAgain bridges this gap by providing a platform to create high-quality, culturally relevant literacy games — built on the foundation of the original <a href="https://alphatilesapps.org" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">AlphaTiles</a> project.
               </p>
               <ul className="space-y-4">
                 {ABOUT_POINTS.map((item) => (
@@ -151,10 +151,10 @@ export function Home() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
             <div className="w-6 h-6 bg-primary rounded flex items-center justify-center text-white font-bold text-xs">A</div>
-            <span className="font-bold text-slate-800">AlphaTiles</span>
+            <span className="font-bold text-slate-800">AlphaTilesAgain</span>
           </div>
-          <div className="text-slate-500 text-sm">
-            © 2026 AlphaTiles Project. Built with React and Expo.
+          <div className="text-slate-500 text-sm text-center md:text-right">
+            © 2026 AlphaTilesAgain. Built on <a href="https://alphatilesapps.org" target="_blank" rel="noopener noreferrer" className="hover:text-slate-700 underline">AlphaTiles</a>.
           </div>
         </div>
       </footer>
