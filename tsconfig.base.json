@@ -101,7 +101,8 @@
         "libs/alphaTiles/feature-game-united-states/src/index.ts"
       ],
       "@alphaTiles/feature-game-japan": ["libs/alphaTiles/feature-game-japan/src/index.ts"],
-      "@alphaTiles/feature-game-chile": ["libs/alphaTiles/feature-game-chile/src/index.ts"]
+      "@alphaTiles/feature-game-chile": ["libs/alphaTiles/feature-game-chile/src/index.ts"],
+      "@alphaTiles/feature-game-peru": ["libs/alphaTiles/feature-game-peru/src/index.ts"]
     }
   }
 }
