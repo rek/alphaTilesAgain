@@ -87,6 +87,12 @@
       ],
       "@alphaTiles/feature-game-china": [
         "libs/alphaTiles/feature-game-china/src/index.ts"
+      ],
+      "@alphaTiles/feature-game-mexico": [
+        "libs/alphaTiles/feature-game-mexico/src/index.ts"
+      ],
+      "@alphaTiles/feature-game-romania": [
+        "libs/alphaTiles/feature-game-romania/src/index.ts"
       ]
     }
   }

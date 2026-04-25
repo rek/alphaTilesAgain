@@ -1,0 +1,8 @@
+{
+  "name": "feature-game-romania",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/feature-game-romania/src",
+  "projectType": "library",
+  "tags": ["type:feature", "scope:alphaTiles"],
+  "targets": {}
+}
