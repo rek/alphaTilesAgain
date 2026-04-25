@@ -46,8 +46,10 @@ yarn-error.*
 coverage/
 dist/storybook/
 
-# Language packs — rsync'd from PublicLanguageAssets, never committed
-languages/
+# Language packs — text files committed; binary assets gitignored (too large)
+languages/**/audio/
+languages/**/images/
+languages/**/fonts/
 
 # Generated prebuild artifacts — recreated by generate-lang-manifest
 apps/alphaTiles/src/generated/

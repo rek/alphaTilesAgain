@@ -1,0 +1,18 @@
+Setting	Value
+1. Game 001 Scan Setting	1
+2. Show filter options for Game 001	FALSE
+3. Has tile audio	TRUE
+4. After 12 checked trackers	3
+5. Has syllable audio	FALSE
+6. Number of avatars	12
+7. Differentiates types of multitype symbols	FALSE
+8. Stage correspondence ratio	0.75
+9. First letter stage correspondence	FALSE
+10. Stage 1-2 max word length	99
+11. Days until expiration	9999
+12. Chile keyboard width	7
+13. Chile base guess count	7
+14. Chile minimum word length	4
+15. Chile maximum word length	6
+16. In Game 001 (Romania) bold non-initial tiles when in focus? (boldNonInitialFocusTiles)	TRUE
+17. In Game 001 (Romania) bold initial tiles when in focus? (boldInitialFocusTiles)	TRUE
