@@ -91,8 +91,8 @@ function requireLiteral(lang: string, ...pathParts: string[]): string {
 }
 
 function requireAppAsset(...pathParts: string[]): string {
-  // Relative from libs/alphaTiles/data-language-assets/src/generated/ → apps/alphaTiles/assets/
-  return `require('../../../../../apps/alphaTiles/assets/${pathParts.join('/')}')`;
+  // Relative from libs/alphaTiles/data-language-assets/src/generated/ → data-language-assets/assets/
+  return `require('../../assets/${pathParts.join('/')}')`;
 }
 
 // ---------------------------------------------------------------------------
