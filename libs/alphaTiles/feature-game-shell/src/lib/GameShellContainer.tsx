@@ -173,7 +173,11 @@ export function GameShellContainer({
       if (confirmOnBack) {
         // Future: show confirm dialog. For v1 none needed — fall through.
       }
-      router.back();
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/menu');
+      }
       return true;
     });
     return () => sub.remove();
@@ -278,7 +282,11 @@ export function GameShellContainer({
 
   const handleBackPress = useCallback(() => {
     if (showCelebration) return;
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/menu');
+    }
   }, [router, showCelebration]);
 
   const handleReplayPress = useCallback(() => {

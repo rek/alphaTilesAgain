@@ -1,25 +1,18 @@
 # Home — Documentation
 
-Central landing page for the different language builds
+Central landing page linking to all language builds.
 
 ---
 
-## Development Deployment
-
-..
-
 ## URL Structure
 
-All apps share a single deployment under the same domain:
+| App         | Path                    |
+| ----------- | ----------------------- |
+| Home (this) | `/`                     |
+| Eng build   | `/engEnglish4/`         |
+| Yue build   | `/yueCantonese/`        |
 
-| App              | Path                                      |
-| ---------------- | ----------------------------------------- |
-| Hub (this app)   | `/Daily-Provisions-App/`                  |
-| Daily Provisions | `/Daily-Provisions-App/daily-provisions/` |
-| Treasure Chest   | `/Daily-Provisions-App/treasure-chest/`   |
-| Way of Salvation | `/Daily-Provisions-App/way-of-salvation/` |
-
-Because paths are known ahead of time, the hub's links are hardcoded in `src/app/app.tsx` (`BASE` constant + each app's `slug`).
+Links are hardcoded in `src/app/home.tsx` (`LANGUAGES` array, `fixture` field → path).
 
 ---
 
@@ -29,4 +22,8 @@ Because paths are known ahead of time, the hub's links are hardcoded in `src/app
 nx serve home
 ```
 
-...
+## Build
+
+```bash
+nx build home
+```
