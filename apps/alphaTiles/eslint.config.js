@@ -23,6 +23,9 @@ module.exports = defineConfig([
       'import/no-unresolved': ['error', {
         ignore: ['^@shared/', '^@alphaTiles/', '^@generated/'],
       }],
+      // react-native uses Flow syntax; eslint-plugin-import can't parse it.
+      // eslint-config-expo/flat re-enables this rule, so we must override here.
+      'import/namespace': 'off',
     },
   },
 ]);
