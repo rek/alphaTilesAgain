@@ -91,7 +91,7 @@ function requireLiteral(lang: string, ...pathParts: string[]): string {
 }
 
 function requireAppAsset(...pathParts: string[]): string {
-  return `require('../../../../../apps/alphaTiles/assets/${pathParts.join('/')}')`;
+  return `require('../../assets/${pathParts.join('/')}')`;
 }
 
 // ---------------------------------------------------------------------------

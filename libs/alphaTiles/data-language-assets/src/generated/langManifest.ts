@@ -714,8 +714,8 @@ export const langManifest = {
       "yes": require('../../../../../languages/eng/images/words/yes2.png'),
       "zip": require('../../../../../languages/eng/images/words/zip2.png'),
     },
-    icon: require('../../../../../apps/alphaTiles/assets/images/icon.png'),
-    splash: require('../../../../../apps/alphaTiles/assets/images/splash-icon.png'),
+    icon: require('../../assets/icon.png'),
+    splash: require('../../assets/splash-icon.png'),
   },
   audio: {
     tiles: {

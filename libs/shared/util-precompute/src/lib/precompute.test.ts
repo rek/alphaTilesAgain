@@ -4,14 +4,11 @@
  *
  * Note: usePrecompute moved to @alphaTiles/data-language-assets (design §D7).
  * Tests here cover registerPrecompute + runPrecomputes only.
- *
- * LangAssets is now a real type; test fixtures cast partial objects via `as`.
  */
 
 import { registerPrecompute } from './registerPrecompute';
 import { runPrecomputes } from './runPrecomputes';
 import { registry, precomputeCache } from './precomputeRegistry';
-import type { LangAssets } from './precomputeRegistry';
 
 // ---------------------------------------------------------------------------
 // Reset shared state between tests
@@ -22,9 +19,9 @@ beforeEach(() => {
   precomputeCache.clear();
 });
 
-// Helper: cast a partial fixture to LangAssets for test purposes
-function mockAssets(partial: Record<string, unknown> = {}): LangAssets {
-  return partial as unknown as LangAssets;
+// Helper: cast a partial fixture for test purposes
+function mockAssets(partial: Record<string, unknown> = {}): unknown {
+  return partial;
 }
 
 // ---------------------------------------------------------------------------
@@ -120,11 +117,9 @@ describe('runPrecomputes', () => {
 // ---------------------------------------------------------------------------
 
 describe('typed registerPrecompute', () => {
-  it('callback receives LangAssets-typed parameter (compile-time; cast in test)', () => {
+  it('type parameter flows correctly at compile time', () => {
     type ChileShape = { total: number };
-    // This tests that the type parameter flows correctly at compile time:
-    // registerPrecompute<ChileShape>('chile', (assets: LangAssets) => { ... })
-    registerPrecompute<ChileShape>('chile', () => ({ total: 42 }));
+    registerPrecompute<ChileShape, unknown>('chile', () => ({ total: 42 }));
     const cache = runPrecomputes(mockAssets());
     const result = cache.get('chile') as ChileShape;
     expect(result.total).toBe(42);
