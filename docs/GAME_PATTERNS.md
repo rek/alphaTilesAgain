@@ -336,6 +336,72 @@ Keep it pure — no React, no grid bounds (caller enforces). Test cap behaviour 
 
 ---
 
+## `useMountEffect` is a pattern, not a hook (from game-myanmar)
+
+Docs and examples reference `useMountEffect(() => …)` as if it's a real hook. **No such hook exists in the workspace.** The actual convention every container follows:
+
+```tsx
+// Mount-only kickoff (useMountEffect pattern — empty deps, one-shot).
+useEffect(() => {
+  initThing();
+  shell.setOnAdvance(initThing);
+  return () => shell.setOnAdvance(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+```
+
+Match this exactly: empty `[]` deps + the standard `// useMountEffect pattern` comment + the exhaustive-deps disable line. Containers that use raw `useEffect` without the comment trip the project's "no direct useEffect" rule on review. China, Italy, Japan, Loading, util-analytics, Myanmar all follow this.
+
+If you're tempted to create a real `useMountEffect` hook, that's a separate change touching every container — propose it explicitly first.
+
+---
+
+## Completion fires from event handler, not derived effect (from game-myanmar)
+
+When a game has a discrete "is the round complete?" check, fire completion logic from the event handler that just changed the state (the cell-tap, choice-tap, etc.), not from a `useEffect` that watches `(progress, goal)`. Example:
+
+```tsx
+// ❌ Bad — derived effect needs a one-shot ref to avoid double-fire
+useEffect(() => {
+  if (wordsCompleted === completionGoal && !firedRef.current) {
+    firedRef.current = true;
+    shell.incrementPointsAndTracker(true);
+    audio.playCorrect().then(shell.replayWord);
+  }
+}, [wordsCompleted, completionGoal, shell, audio]);
+
+// ✅ Good — fire directly when the event makes it true
+function recordFound(idx: number) {
+  const nextCount = foundFlags.filter(Boolean).length + 1;
+  setFoundFlags(/* mark idx found */);
+  if (nextCount === completionGoal) {
+    shell.incrementPointsAndTracker(true);
+    audio.playCorrect().then(shell.replayWord);
+  } else {
+    audio.playCorrect();
+  }
+}
+```
+
+This eliminates the one-shot ref, the dependency-list bookkeeping, and the second render. Matches CODE_STYLE.md "Event handlers, not effects".
+
+---
+
+## Storybook host needs explicit lib registration (from game-myanmar)
+
+`libs/shared/storybook-host/.storybook/main.ts` lists each lib whose stories should appear, by directory:
+
+```ts
+{
+  directory: '../../../alphaTiles/feature-game-myanmar/src',
+  files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+},
+```
+
+**Stories in unregistered libs are silently invisible.** Adding a `*.stories.tsx` file is not enough — also append the lib to the `stories` array. Today most `feature-game-*` libs have stories but only a few are registered; flag the cleanup separately when noticed.
+
+---
+
 ## QA checklist (game-specific additions to AI_WORKFLOW.md baseline)
 
 - [ ] Navigate to the game's door number, play a round to completion
