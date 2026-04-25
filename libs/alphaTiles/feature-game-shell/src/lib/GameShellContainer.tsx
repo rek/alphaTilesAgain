@@ -153,6 +153,14 @@ export function GameShellContainer({
     onAdvanceRef.current = fn;
   }, []);
 
+  // Optional mechanic-registered callback for the repeat button
+  // (overrides the default replayWord — needed for syllable games where the
+  // current call audio is a syllable clip, not a word clip).
+  const onRepeatRef = useRef<(() => void) | null>(null);
+  const setOnRepeat = useCallback((fn: (() => void) | null) => {
+    onRepeatRef.current = fn;
+  }, []);
+
   // AppState subscription — pause audio on background (GameActivity.java Android lifecycle)
   // One-shot subscription pattern per CODE_STYLE.md §Hooks.
   useEffect(() => {
@@ -256,9 +264,9 @@ export function GameShellContainer({
 
   // ── incrementPointsAndTracker — exposed to mechanics via context ──────────
   const incrementPointsAndTracker = useCallback(
-    (isCorrect: boolean) => {
+    (isCorrect: boolean, points: number = 1) => {
       if (isCorrect) {
-        incrementPoints(gameUniqueId, 1);
+        incrementPoints(gameUniqueId, points);
 
         // Only increment tracker for non-exempt countries (design.md §D3)
         if (shouldIncrementTracker(country)) {
@@ -291,7 +299,11 @@ export function GameShellContainer({
   }, [router, showCelebration]);
 
   const handleReplayPress = useCallback(() => {
-    replayWord();
+    if (onRepeatRef.current) {
+      onRepeatRef.current();
+    } else {
+      replayWord();
+    }
   }, [replayWord]);
 
   const handleInstructionsPress = useCallback(() => {
@@ -360,6 +372,7 @@ export function GameShellContainer({
     progressEntry,
     gameUniqueId,
     setOnAdvance,
+    setOnRepeat,
   };
 
   return (
