@@ -1,2 +1,5 @@
 # Ignore agent worktrees — they contain copies of projects that conflict with NX project graph
 .claude/worktrees/
+
+# Language pack assets — large binary files, not source code; NX need not hash them
+languages/
