@@ -67,7 +67,7 @@
     "rsync-lang-pack": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bun tools/rsync-lang-packs.ts",
+        "command": "npx tsx tools/rsync-lang-packs.ts",
         "cwd": "{workspaceRoot}"
       }
     },
@@ -75,7 +75,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["rsync-lang-pack"],
       "options": {
-        "command": "bun tools/validate-lang-pack.ts",
+        "command": "npx tsx tools/validate-lang-pack.ts",
         "cwd": "{workspaceRoot}"
       }
     },
@@ -83,7 +83,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["validate-lang-pack"],
       "options": {
-        "command": "bun tools/generate-lang-manifest.ts",
+        "command": "npx tsx tools/generate-lang-manifest.ts",
         "cwd": "{workspaceRoot}"
       }
     },
