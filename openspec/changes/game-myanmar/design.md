@@ -54,33 +54,56 @@ const STACK_LIMIT = 8;
 
 ### D3. Direction Tiers per Challenge Level
 
+Mirror the Java `directions[]` array literally — including the idx-4 bug where keypad code `9` (up-right) carries `dx=1, dy=0` (right). Ports do not silently fix upstream bugs (see `docs/GAME_PATTERNS.md` "Java off-by-one quirks — preserve, don't fix").
+
 ```ts
-type Dir = 'right' | 'down' | 'down-right' | 'up-right' | 'left' | 'up' | 'up-left' | 'down-left';
-const DIRS_CL1: Dir[] = ['right', 'down'];
-const DIRS_CL2: Dir[] = [...DIRS_CL1, 'down-right', 'up-right'];
-const DIRS_CL3: Dir[] = [...DIRS_CL2, 'left', 'up', 'up-left', 'down-left'];
-function dirsFor(level: 1|2|3): Dir[] { return [DIRS_CL1, DIRS_CL2, DIRS_CL3][level-1]; }
+// (dx, dy). dy>0 = down, dx<0 = left.
+const DIRECTIONS: readonly [number, number][] = [
+  [ 0,  1], // 0: right (keypad 2)
+  [ 1,  0], // 1: down  (keypad 6)
+  [-1,  1], // 2: down-left  (keypad 1)
+  [ 1,  1], // 3: down-right (keypad 3)
+  [ 1,  0], // 4: right — Java BUG: keypad 9 with dx=1,dy=0; duplicate of idx 1's movement
+  [-1,  0], // 5: left  (keypad 4)
+  [-1, -1], // 6: up-left (keypad 7)
+  [ 0, -1], // 7: up    (keypad 8)
+] as const;
+
+const MAX_DIRECTIONS_BY_CL = { 1: 1, 2: 4, 3: 7 } as const;
+
+function rollDirection(level: 1 | 2 | 3, rng: () => number): readonly [number, number] {
+  const max = MAX_DIRECTIONS_BY_CL[level];
+  const i = Math.floor(rng() * (max + 1)); // [0, max] inclusive
+  return DIRECTIONS[i];
+}
 ```
+
+Resulting unique direction sets:
+- **CL1**: `right`, `down` (2)
+- **CL2**: `right`, `down`, `down-left`, `down-right` (4 — idx 4 dup of idx 1 ignored for set-uniqueness)
+- **CL3**: above + `left`, `up-left`, `up` (7 — **`up-right` NEVER picked** due to idx-4 bug)
 
 ### D4. Placement Algorithm
 
 ```ts
-function placeWords(words: Word[], allowedDirs: Dir[], rng): { grid: string[]; placed: PlacedWord[] } {
-  const grid = new Array(CELLS).fill(null);
+function placeWords(words: Word[], level: 1|2|3, rng): { grid: (Tile|null)[]; placed: PlacedWord[] } {
+  const grid: (Tile | null)[] = new Array(CELLS).fill(null);
   const placed: PlacedWord[] = [];
   for (const w of words.slice(0, WORDS_PER_BOARD * 2 /* buffer */)) {
     if (placed.length === WORDS_PER_BOARD) break;
     const tiles = parseTilesOf(w);
     if (tiles.length < MIN_TILES || tiles.length > MAX_TILES) continue;
-    const path = tryPlace(grid, tiles, allowedDirs, rng, PLACEMENT_ATTEMPTS_PER_WORD);
+    const path = tryPlace(grid, tiles, level, rng, PLACEMENT_ATTEMPTS_PER_WORD);
     if (path) { writePath(grid, tiles, path); placed.push({ word: w, path, color: null }); }
   }
-  fillRandomNonVowels(grid, rng);
+  fillRandomNonVowels(grid, rng); // exclude only typeOfThisTileInstance === "V"
   return { grid, placed };
 }
 ```
 
 Words that cannot be placed within 100 attempts are skipped; `completionGoal = placed.length`.
+
+**Non-vowel filler.** Mirror Java `Myanmar.java`: only tiles whose `typeOfThisTileInstance === "V"` are excluded. `LV`/`AV`/`BV`/`FV` are NOT excluded. Source tile pool is `tileListNoSAD` (= tile list minus space/auto/dummy types — already filtered upstream).
 
 ### D5. Selection Methods
 
@@ -90,11 +113,15 @@ Words that cannot be placed within 100 attempts are skipped; `completionGoal = p
   - If `first == null`: `first = i`.
   - Else: `second = i`. Compute span between them; if span matches a placed word path → mark found. Reset both regardless.
 
-**Method 2 (stack):**
-- State: `stack: number[]` (max length `STACK_LIMIT`).
-- On cell tap: append `i` (or pop if `i === last`).
-- After each append: check if the stack ordered cells equal any placed word path → mark found.
-- On found or full stack (length 8) → reset stack (cleared after completion check).
+**Method 2 (stack) — directional continuity required (Java `respondToTileSelection2`):**
+- State: `stack: number[]` (max length `STACK_LIMIT`), `direction: [number, number] | null`.
+- Pop rule: if `i === last(stack)` → pop (un-select last cell); if stack now has < 2 cells, clear `direction`.
+- Append rules:
+  - **1st tap** (`stack.length === 0`): always append; `direction = null`.
+  - **2nd tap** (`stack.length === 1`): MUST be 8-neighbour-adjacent to the 1st. Set `direction = (i.x - prev.x, i.y - prev.y)` normalized to ±1/0. Else ignore.
+  - **3rd+ tap**: MUST be 8-neighbour-adjacent to last AND `(i.x - last.x, i.y - last.y) === direction`. Else ignore.
+- After every append: check if `stack` (ordered) equals any `placedWord.path` → mark found and reset.
+- On found or `stack.length === STACK_LIMIT` → reset stack + direction.
 
 ### D6. Found-Word Highlight
 
