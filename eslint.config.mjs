@@ -47,7 +47,7 @@ export default [
             },
             {
               sourceTag: 'type:feature',
-              onlyDependOnLibsWithTags: ['type:ui', 'type:data-access', 'type:util'],
+              onlyDependOnLibsWithTags: ['type:feature', 'type:ui', 'type:data-access', 'type:util'],
               // Only util-i18n may import i18next/react-i18next as a source lib.
               // All other libs must import from @shared/util-i18n instead.
               bannedExternalImports: ['i18next'],
@@ -61,7 +61,7 @@ export default [
             },
             {
               sourceTag: 'type:data-access',
-              onlyDependOnLibsWithTags: ['type:util'],
+              onlyDependOnLibsWithTags: ['type:data-access', 'type:util'],
               bannedExternalImports: ['i18next'],
             },
             {
