@@ -46,7 +46,7 @@ At runtime, packs land under `languages/<code>/` (gitignored — never commit a 
 
 ## Port status
 
-**All 16 foundational changes are implemented and archived** (as of 2026-04-24). Run `openspec status --all` — no active changes remain. The app boots end-to-end on web and native, the game menu renders, and the China sliding-tile game plays.
+**16 foundational changes + 3 games implemented and archived** (as of 2026-04-25). Run `openspec status --all` — game-brazil is the most recent landed concrete game.
 
 ```
 port-foundations                   ✓ archived 2026-04-23
@@ -65,6 +65,8 @@ game-engine-base                   ✓ archived 2026-04-24
 loading-screen                     ✓ archived 2026-04-24
 game-menu                          ✓ archived 2026-04-24
 game-china                         ✓ archived 2026-04-24
+game-peru                          ✓ archived 2026-04-25
+game-brazil                        ✓ archived 2026-04-25
 ```
 
 Next changes must be proposed with `/opsx:propose <name>`, then implemented via `/opsx:apply <name>`.
