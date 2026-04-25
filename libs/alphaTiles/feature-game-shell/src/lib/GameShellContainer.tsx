@@ -20,7 +20,7 @@
  */
 
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { AppState, BackHandler } from 'react-native';
+import { AppState, BackHandler, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
@@ -168,6 +168,7 @@ export function GameShellContainer({
 
   // Android hardware-back (GameActivity.java:156-161 OnBackPressedCallback)
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       if (showCelebration) return true; // swallow during celebration
       if (confirmOnBack) {

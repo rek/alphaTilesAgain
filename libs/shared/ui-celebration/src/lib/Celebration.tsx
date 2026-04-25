@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { BackHandler, Pressable, StyleSheet, Text, View } from 'react-native';
+import { BackHandler, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import LottieView from 'lottie-react-native';
 import type { AnimationObject } from 'lottie-react-native';
 
@@ -27,6 +27,7 @@ export function Celebration({
 
   // Suppress Android hardware-back during celebration (mirrors Celebration.java:25-30).
   useEffect(() => {
+    if (Platform.OS === 'web') return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
     return () => sub.remove();
   }, []);
