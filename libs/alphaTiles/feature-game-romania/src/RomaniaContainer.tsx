@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import { GameShellContainer } from '@alphaTiles/feature-game-shell';
@@ -79,26 +79,19 @@ function RomaniaGame(): React.JSX.Element {
     [currentWord, parseWord],
   );
 
-  // Reset wordIndex when tile changes
-  useEffect(() => {
-    setWordIndex(0);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tileIndex]);
-
   const onNext = useCallback(() => {
     if (wordIndex < filteredWords.length - 1) {
       setWordIndex((i) => i + 1);
+    } else if (tileIndex < tilesWithWords.length - 1) {
+      // All words for this tile seen — advance to next tile, reset word position
+      setTileIndex((i) => i + 1);
+      setWordIndex(0);
     } else {
-      // All words for this tile seen — advance to next tile
-      if (tileIndex < tilesWithWords.length - 1) {
-        setTileIndex((i) => i + 1);
-      } else {
-        // All tiles exhausted — let the shell handle navigation via back/advance
-        setTileIndex(0);
-        setWordIndex(0);
-      }
+      // All tiles exhausted — cycle back to start
+      // Romania is NO_TRACKER_COUNTRY — never call shell.incrementPointsAndTracker
+      setTileIndex(0);
+      setWordIndex(0);
     }
-    // Romania is NO_TRACKER_COUNTRY — never call shell.incrementPointsAndTracker
   }, [wordIndex, filteredWords.length, tileIndex, tilesWithWords.length]);
 
   if (tilesWithWords.length === 0 || !focusTile || !currentWord) {
