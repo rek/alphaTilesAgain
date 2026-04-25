@@ -55,7 +55,7 @@ jobs:
 
       # ─── Build affected game apps only ───────────────────────────────
       - name: Build affected apps
-        run: npx nx affected -t web-export
+        run: npx nx run alphaTiles:web-export
         env:
           APP_LANG: eng
           EXPO_BASE_URL: /engEnglish4
