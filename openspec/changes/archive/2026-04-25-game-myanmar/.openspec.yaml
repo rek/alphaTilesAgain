@@ -11,10 +11,10 @@ artifacts:
     status: done
     path: tasks.md
     dependencies: [design]
-  specs/myanmar:
+  specs/game-myanmar:
     status: done
-    path: specs/myanmar/spec.md
+    path: specs/game-myanmar/spec.md
     dependencies: [design]
 apply:
-  requires: [tasks, specs/myanmar]
-  status: pending
+  requires: [tasks, specs/game-myanmar]
+  status: complete

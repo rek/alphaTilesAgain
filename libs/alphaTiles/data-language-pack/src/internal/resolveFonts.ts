@@ -12,7 +12,8 @@ import { LangAssetsBindError } from '../LangAssetsBindError';
 
 type ManifestFonts = {
   primary?: number;
-  primaryBold?: number;
+  // Generator emits `null` when no bold font exists; treat null as absent.
+  primaryBold?: number | null;
 };
 
 export function resolveFonts(manifestFonts: ManifestFonts): LangAssets['fonts'] {
@@ -24,7 +25,7 @@ export function resolveFonts(manifestFonts: ManifestFonts): LangAssets['fonts'] 
     });
   }
   const result: LangAssets['fonts'] = { primary: manifestFonts.primary };
-  if (manifestFonts.primaryBold !== undefined) {
+  if (manifestFonts.primaryBold != null) {
     result.primaryBold = manifestFonts.primaryBold;
   }
   return result;

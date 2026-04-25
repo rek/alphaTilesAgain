@@ -55,6 +55,10 @@ const config: StorybookConfig = {
       directory: '../../../alphaTiles/feature-game-china/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
+    {
+      directory: '../../../alphaTiles/feature-game-myanmar/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
   ],
   addons: [],
   typescript: { reactDocgen: false },

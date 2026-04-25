@@ -46,7 +46,7 @@ At runtime, packs land under `languages/<code>/` (gitignored — never commit a 
 
 ## Port status
 
-**16 foundational changes + 3 games implemented and archived** (as of 2026-04-25). Run `openspec status --all` — game-brazil is the most recent landed concrete game.
+**16 foundational changes + 5 games implemented and archived** (as of 2026-04-25). Run `openspec status --all` — game-myanmar is the most recent landed concrete game.
 
 ```
 port-foundations                   ✓ archived 2026-04-23
@@ -67,6 +67,8 @@ game-menu                          ✓ archived 2026-04-24
 game-china                         ✓ archived 2026-04-24
 game-peru                          ✓ archived 2026-04-25
 game-brazil                        ✓ archived 2026-04-25
+game-italy                         ✓ archived 2026-04-25
+game-myanmar                       ✓ archived 2026-04-25
 ```
 
 Next changes must be proposed with `/opsx:propose <name>`, then implemented via `/opsx:apply <name>`.
