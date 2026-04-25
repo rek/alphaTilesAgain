@@ -1,0 +1,8 @@
+{
+  "name": "feature-game-myanmar",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/feature-game-myanmar/src",
+  "projectType": "library",
+  "tags": ["type:feature", "scope:alphaTiles"],
+  "targets": {}
+}
