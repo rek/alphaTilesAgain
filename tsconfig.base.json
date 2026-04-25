@@ -91,6 +91,9 @@
       "@alphaTiles/feature-game-mexico": [
         "libs/alphaTiles/feature-game-mexico/src/index.ts"
       ],
+      "@alphaTiles/feature-game-myanmar": [
+        "libs/alphaTiles/feature-game-myanmar/src/index.ts"
+      ],
       "@alphaTiles/feature-game-romania": [
         "libs/alphaTiles/feature-game-romania/src/index.ts"
       ],

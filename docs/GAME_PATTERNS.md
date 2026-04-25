@@ -2,7 +2,7 @@
 
 Living doc. Updated after each game is archived. Read before proposing or implementing any `game-*` change.
 
-Latest entry: **game-brazil** (2026-04-25).
+Latest entry: **game-myanmar** (2026-04-25; Brazil archived same day).
 
 ---
 
@@ -273,6 +273,65 @@ Rule of thumb: only precompute when the operation iterates the full word/tile li
 ## Forbidden-substring filter
 
 The `للہ` Arabic-ligature rejection is universal across mutation games. Each implementation gets its own `containsForbidden.ts` (one-line `s.includes('للہ')`) plus a unit test — don't share, don't deduplicate. The filter is applied to **every** generated candidate before the uniqueness/dedupe checks.
+
+---
+
+## Cross-reference upstream Java BEFORE implementing (from game-myanmar)
+
+The Myanmar proposal had three plausible-but-wrong rules that only surfaced once we read raw `Myanmar.java`. Sequence to follow for any new `game-*`:
+
+1. Open the Java file and quote (`grep`/raw fetch) the exact code for: direction tables, boundary checks, settings keys, and tile-type filters.
+2. Compare against the proposed `spec.md` line-by-line. Discrepancies fall into 3 buckets — preserve, narrow, or expand the spec to match Java.
+3. Document Java line numbers in `tasks.md § Preflight` so the next reader doesn't have to re-derive.
+
+Three concrete Myanmar discrepancies surfaced this way (all amended pre-impl):
+- Direction set differed (spec listed up-right; Java omits it because of an idx-4 bug).
+- Tile-type filter was overly broad (spec excluded `V/LV/AV/BV/FV`; Java only excludes `"V"`).
+- Method 2 was missing the directional-continuity rule from `respondToTileSelection2`.
+
+---
+
+## Keypad-encoded direction tables (from game-myanmar)
+
+Several Java games store directions as `int[][]` triples `{keypadCode, dx, dy}` and select via `rand.nextInt((maxDirections - min) + 1) + min`. Boundary checks then branch on the **keypad code**, not on dx/dy. Two non-obvious consequences:
+
+1. **The roll bound is INCLUSIVE.** `rand.nextInt(N+1)` covers `[0, N]`. `maxDirections=7` means 8 choices (indices 0..7) are valid — even if the comment says "7 directions".
+2. **Boundary checks branch on keypad code.** Code 9 ("up-right") triggers north-bound checks even if its dx/dy moves due-east (Java idx-4 bug). Port mirrors this verbatim — boundary checks use `[1,2,3].includes(keypadCode)` etc., NOT `dy>0`.
+
+Preserve the literal array. Use `as const readonly` so the type system keeps the keypad codes alongside dx/dy.
+
+---
+
+## Settings-keyed game variants (from game-myanmar)
+
+Some games dispatch on an `aa_settings.txt` row read at container mount, NOT on `challengeLevel`:
+
+```ts
+const settingValue = assets.settings.findInt('Selection Method for Word Search', 1);
+const selectionMethod = (settingValue === 2 ? 2 : 1) as 1 | 2;
+```
+
+Pass these settings down to the inner game component as a typed prop alongside `challengeLevel`. Treat unknown values as the default — never throw.
+
+---
+
+## Sequence-selection reducer pattern (from game-myanmar)
+
+Word-search-style games that build up an ordered tile sequence (Method 2 in Myanmar; future variants TBD) benefit from a pure reducer:
+
+```ts
+type StackState = { stack: number[]; direction: readonly [number, number] | null };
+function stackAppend({ state, tap }): StackState
+```
+
+Rules to encode:
+- 1st tap: free.
+- 2nd tap: must be 8-neighbour-adjacent — establishes `direction`.
+- 3rd+ tap: adjacent AND same direction.
+- Re-tap of last cell pops; popping below 2 cells clears direction.
+- Invalid taps return the unchanged state object (cheap-equality detection in tests).
+
+Keep it pure — no React, no grid bounds (caller enforces). Test cap behaviour by injecting state directly rather than chaining 8 valid taps (a 7×7 grid can't hold 8 in a line).
 
 ---
 

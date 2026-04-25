@@ -3,8 +3,13 @@
 ## 0. Preflight
 
 - [ ] Read `proposal.md`, `design.md`, and `specs/myanmar/spec.md`.
-- [ ] Read `Myanmar.java` to confirm direction tiers, placement attempts, and selection-method branches.
-- [ ] Confirm `game-engine-base` is archived.
+- [ ] Read `Myanmar.java`. Key callouts:
+  - `directions[]` literal — preserve idx-4 bug (keypad-9 with dx=1,dy=0; effectively a duplicate of idx-1 right).
+  - `maxDirections` switch (CL1=1, CL2=4, CL3=7); `wordD = rand.nextInt((maxDirections - min) + 1) + min` is INCLUSIVE upper bound.
+  - Boundary checks branch on `wordDirection` (the keypad code), not on dx/dy — so idx 4's "code 9" still triggers north + east boundary checks even though it moves due-east.
+  - Non-vowel filler: only `typeOfThisTileInstance.equals("V")` is excluded.
+  - Method 2 (`respondToTileSelection2`) requires adjacency AND same-direction continuity from the 3rd tap onward.
+- [ ] Confirm `game-engine-base` is archived (`openspec/changes/archive/2026-04-24-game-engine-base/`).
 
 ## 1. Library Scaffold
 
@@ -14,11 +19,16 @@
 
 ## 2. Pure Logic
 
-- [ ] `src/dirsFor.ts`: CL→direction list per D3.
-- [ ] `src/placeWords.ts`: 7×7 placement with retry-100 + non-vowel filler.
+- [ ] `src/directions.ts`: export `DIRECTIONS` (8-entry literal) + `MAX_DIRECTIONS_BY_CL` per D3. Preserve idx-4 quirk.
+- [ ] `src/rollDirection.ts`: pure roller that takes `level` + `rng` → `(dx, dy)`.
+- [ ] `src/placeWords.ts`: 7×7 placement with retry-100 + non-vowel filler. Boundary checks must mirror Java's keypad-code-based logic (NOT dx/dy-based).
+- [ ] `src/fillRandomNonVowels.ts`: only excludes type `"V"`.
 - [ ] `src/spanBetween.ts`: classic-method span resolver, returns `number[]` cells or `null`.
-- [ ] `src/matchPath.ts`: stack/classic match against `placedWords[*].path`.
-- [ ] Unit tests for each helper.
+- [ ] `src/matchPath.ts`: ordered-equality match of cell sequence against `placedWords[*].path`.
+- [ ] `src/stackAppend.ts`: pure reducer for Method 2 — `(stack, direction, tap, gridDims) => { stack, direction }`. Encapsulates pop/adjacency/continuity rules.
+- [ ] Unit tests for each helper, including:
+  - CL3 placement over 1000 seeded runs MUST never produce an up-right path (idx-4 bug regression test).
+  - Method 2 continuity: ignored taps don't mutate stack; pop on re-tap last; stack cap = 8.
 
 ## 3. Presenter: `<MyanmarScreen>`
 
