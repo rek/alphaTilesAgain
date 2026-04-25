@@ -88,8 +88,7 @@
       }
     },
     "prebuild-lang": {
-      "executor": "nx:noop",
-      "dependsOn": ["generate-lang-manifest"]
+      "executor": "nx:noop"
     }
   }
 }
