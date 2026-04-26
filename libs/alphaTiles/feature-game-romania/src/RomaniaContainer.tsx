@@ -86,8 +86,9 @@ function RomaniaGame(): React.JSX.Element {
     [currentWord, parseWord],
   );
 
+  const interactionLocked = shell.interactionLocked;
   const onNext = useCallback(() => {
-    if (shell.interactionLocked) return;
+    if (interactionLocked) return;
     if (wordIndex < filteredWords.length - 1) {
       setWordIndex((i) => i + 1);
     } else if (tileIndex < tilesWithWords.length - 1) {
@@ -100,7 +101,7 @@ function RomaniaGame(): React.JSX.Element {
       setTileIndex(0);
       setWordIndex(0);
     }
-  }, [wordIndex, filteredWords.length, tileIndex, tilesWithWords.length]);
+  }, [interactionLocked, wordIndex, filteredWords.length, tileIndex, tilesWithWords.length]);
 
   if (tilesWithWords.length === 0 || !focusTile || !currentWord) {
     return (
