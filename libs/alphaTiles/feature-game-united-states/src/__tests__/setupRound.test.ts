@@ -92,6 +92,8 @@ describe('setupRound', () => {
   });
 
   it('each pair contains exactly one distractor different from the correct tile', () => {
+    // Using fixed alts that are all distinct from the correct tile, so a raw
+    // index-based pick (Java rand.nextInt(ALT_COUNT)) still yields a different value.
     const result = setupRound({
       unitedStatesData: makeData(),
       challengeLevel: 1,
@@ -103,6 +105,77 @@ describe('setupRound', () => {
       const distractorText = pair.correct === 'top' ? pair.bottom : pair.top;
       expect(distractorText).not.toBe(correctText);
     }
+  });
+
+  it('picks distractor by raw index into [alt1, alt2, alt3] without filtering (Java parity)', () => {
+    // Build a tile where alt2 === correct base, alt3 is empty, alt1 is unique.
+    // Java's rand.nextInt(ALT_COUNT) makes no attempt to skip these, so with a
+    // deterministic rng forcing index 1 we EXPECT the distractor to equal the
+    // correct base (alt2), proving no defensive filter is in place.
+    const tileRows = [
+      // 'c' tile: alt1='k', alt2='c' (== base), alt3=''
+      makeTileRow('c', 'k', 'c', ''),
+      makeTileRow('a', 'e', 'i', 'o'),
+      makeTileRow('t', 'd', 'p', 'b'),
+    ];
+    const assets = {
+      tiles: { rows: tileRows },
+      words: { rows: [{ wordInLOP: 'c', wordInLWC: 'c', mixedDefs: '' }] },
+      langInfo: { find: () => null },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any = {
+      level1Words: [{ wordInLOP: 'c', wordInLWC: 'c', mixedDefs: '' }],
+      level2Words: [],
+      level3Words: [],
+    };
+    // rng sequence: pickWord (idx0), pickDistractor (idx1 → alt2='c'), correctIsTop (top)
+    const seq = [0, 0.5, 0]; // floor(0*3)=0 word, floor(0.5*3)=1 distractor → 'c', 0 → top
+    let i = 0;
+    const rng = () => seq[i++ % seq.length];
+    const result = setupRound({
+      unitedStatesData: data,
+      challengeLevel: 1,
+      assets,
+      rng,
+    });
+    if ('error' in result) throw new Error('expected pairs');
+    const pair = result.pairs[0];
+    const distractor = pair.correct === 'top' ? pair.bottom : pair.top;
+    // With raw indexing, distractor === 'c' (== correct) — Java would do the same.
+    expect(distractor).toBe('c');
+  });
+
+  it('returns empty distractor when the chosen alt slot is empty (Java parity)', () => {
+    // alt slots: ['k', '', 'g']. Forcing index 1 yields '' just like Java would.
+    const tileRows = [makeTileRow('c', 'k', '', 'g')];
+    const assets = {
+      tiles: { rows: tileRows },
+      words: { rows: [{ wordInLOP: 'c', wordInLWC: 'c', mixedDefs: '' }] },
+      langInfo: { find: () => null },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data: any = {
+      level1Words: [{ wordInLOP: 'c', wordInLWC: 'c', mixedDefs: '' }],
+      level2Words: [],
+      level3Words: [],
+    };
+    // floor(0.5*3)=1 → alt2 = ''
+    const seq = [0, 0.5, 0];
+    let i = 0;
+    const rng = () => seq[i++ % seq.length];
+    const result = setupRound({
+      unitedStatesData: data,
+      challengeLevel: 1,
+      assets,
+      rng,
+    });
+    if ('error' in result) throw new Error('expected pairs');
+    const pair = result.pairs[0];
+    const distractor = pair.correct === 'top' ? pair.bottom : pair.top;
+    expect(distractor).toBe('');
   });
 
   it('returns insufficient-content when word pool is empty', () => {

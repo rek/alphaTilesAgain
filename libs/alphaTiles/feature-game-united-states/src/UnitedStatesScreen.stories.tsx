@@ -37,6 +37,7 @@ type Story = StoryObj<typeof UnitedStatesScreen>;
 export const Level1Board: Story = {
   args: {
     pairs: LEVEL1_PAIRS,
+    slotCount: 5,
     selections: [null, null, null, null, null],
     constructedWord: '_ _ _ _ _',
     wordLabel: 'satis',
@@ -47,16 +48,21 @@ export const Level1Board: Story = {
 export const Level3Board: Story = {
   args: {
     pairs: LEVEL3_PAIRS,
+    slotCount: 9,
     selections: [null, null, null, null, null, null, null, null, null],
     constructedWord: '_ _ _ _ _ _ _ _ _',
     wordLabel: 'breadfrui',
   },
 };
 
-/** Partial selection — first two pairs selected. */
+/**
+ * Partial selection — first two pairs selected. Demonstrates the cl1 layout
+ * with a 3-tile word: 3 active pairs + 2 invisible placeholder slots.
+ */
 export const PartialSelection: Story = {
   args: {
     pairs: CAT_PAIRS,
+    slotCount: 5,
     selections: [0, 1, null],
     constructedWord: 'ca_',
     wordLabel: 'cat',
@@ -67,6 +73,7 @@ export const PartialSelection: Story = {
 export const AllSelectedCorrect: Story = {
   args: {
     pairs: CAT_PAIRS,
+    slotCount: 5,
     selections: [0, 1, 0],
     constructedWord: 'cat',
     wordLabel: 'cat',
@@ -80,7 +87,7 @@ export const RTLLayout: Story = {
     pairs: makePairs(['ب', 'ي', 'ت']),
     selections: [null, null, null],
     constructedWord: '_ _ _',
-    maxPairs: 5,
+    slotCount: 5,
     wordLabel: 'بيت',
   },
   parameters: {
@@ -94,7 +101,7 @@ export const EmptyBoard: Story = {
     pairs: [],
     selections: [],
     constructedWord: '',
-    maxPairs: 5,
+    slotCount: 5,
     wordLabel: '',
     interactionLocked: true,
   },
