@@ -2,7 +2,7 @@
 
 Living doc. Updated after each game is archived. Read before proposing or implementing any `game-*` change.
 
-Latest entry: **game-italy** (2026-04-25; Brazil + Myanmar archived same day).
+Latest entry: **6-game batch** (2026-04-25): colombia, ecuador, georgia, iraq, malaysia, sudan.
 
 ---
 
@@ -104,6 +104,12 @@ export function <Name>Screen(props: <Name>ScreenProps) {
 | Peru | 1-digit difficulty | `1`→first-tile trio, `2`→same-type random idx, `3`→trio random idx |
 | Brazil | 1-digit + `syllableGame` | CL1–3 vowel-blank, CL4–6 consonant-blank, CL7 tone-blank; `syllableGame === "S"` overrides → SL1/SL2 syllable variants regardless of CL |
 | Italy | none (variant only) | `challengeLevel` is ignored; `syllableGame` switches the source list (T → words, S → syllables) |
+| Iraq | 1-digit difficulty | CL1 = base tiles + sample word; CL2 = same + `iconicWord` override (rejects `"-"`/empty) |
+| Malaysia | none | CL ignored; non-scored browser. Pyramid color cycle `[0,1,2,3,4,7,4,3,2,1,0]`; colorless mode → `colorList[8]` |
+| Sudan | none + `syllableGame` | T variant: 63 tiles/page, type-colored; S variant: 35 syllables/page, color cycle `k % 5`. Non-scored. |
+| Ecuador | none | CL ignored; 8-tile scatter; `updatePointsAndTrackers(2)` on correct |
+| Georgia | 1-digit (`level % 3`) | `1` → 6 choices, `2` → 12 choices, `0` → 18 choices. T variant has random + hard branches; S variant has random (sequential after shuffle) + hard branches. T-hard uses `nextInt(CorV.size() - 1)` off-by-one (preserved) |
+| Colombia | 1-digit (1–4) + `syllableGame` | T-CL1 keeps duplicates; T-CL2 random distractor; T-CL3 uses `keyList`; T-CL4 deduped tileList type-colored; S variants similar but distractor logic differs; **S-CL4 unsupported** (returns to menu) |
 
 Decode locally in the container via a constant map. Add new games here when their `challengeLevel` is decoded.
 

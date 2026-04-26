@@ -23,7 +23,7 @@ Slash-commands (from `.claude/commands/opsx/`):
 
 ## Dependency chart (snapshot, maintain in `AGENTS.md`)
 
-16 foundational changes + 3 concrete games **merged + implemented** as of 2026-04-25.
+16 foundational changes + 11 concrete games **merged + implemented** as of 2026-04-25.
 
 ```
 ✓ port-foundations        — build pipeline, docs, util-precompute skeleton
@@ -41,9 +41,17 @@ Slash-commands (from `.claude/commands/opsx/`):
 ✓ game-engine-base        — GameActivity abstraction
 ✓ loading-screen          — boot orchestration
 ✓ game-menu               — Earth.java door grid
-✓ game-china              — exemplar concrete game (sliding-tile puzzle)
-✓ game-peru               — 4-choice word recognition (CL1/2/3 distractor strategies)
+✓ game-china              — sliding-tile puzzle (4×4 + image strip)
+✓ game-peru               — 4-choice word recognition
 ✓ game-brazil             — find-the-missing-tile (vowels/consonants/tones/syllables)
+✓ game-italy              — Lotería 4×4 bingo
+✓ game-myanmar            — 7×7 word search
+✓ game-colombia           — build-the-word with live yellow/orange/gray/green feedback
+✓ game-ecuador            — 8-tile scatter word matching
+✓ game-georgia            — first-sound identification (12 tile + 6 syllable CLs)
+✓ game-iraq               — non-scored 5×7 tile explorer
+✓ game-malaysia           — non-scored 11/page word browser
+✓ game-sudan              — non-scored tile/syllable audio browser
 ```
 
 **Active changes** (spec merged, apply pending unless noted):
