@@ -157,6 +157,11 @@ export function useGameState({ gameId }: { gameId: string }) {
 | Reset on prop change | `key` attribute |
 | Expensive computation | `useMemo` |
 | Data fetch | `useMountEffect` with cancellation |
+| Sync shell reference word | `useShellWord(currentWord)` |
+| Wire shell advance arrow | `useShellAdvance(fn)` |
+| Wire shell repeat button | `useShellRepeat(fn)` |
+
+**Never put `shell` (from `useGameShell()`) in a `useEffect` dep array.** Even with a memoized context, `shell` is an object — putting it in deps causes the effect to re-run when any context value changes. Use the `useShell*` hooks instead; they destructure stable setters internally.
 
 #### Rule 1: Derive state, don't sync it
 

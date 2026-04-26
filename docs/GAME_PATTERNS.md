@@ -33,24 +33,29 @@ export function <Name>Container() {
   const assets = useLangAssets();
   // game-specific state here
 
-  useMountEffect(() => startRound());   // NOT useEffect
+  // Wire shell integrations via hooks — never raw useEffect([..., shell])
+  useShellWord(currentWord);       // keeps refWord in sync; clears to null when word is null
+  useShellAdvance(startRound);     // registers advance-arrow handler; cleans up on unmount
+  useShellRepeat(fn);              // overrides repeat button; omit if default replayWord is fine
+
+  useEffect(() => { startRound(); }, []); // mount-only kickoff
 
   function startRound() { /* pick words, set state, play audio */ }
   function onCorrect() { shell.incrementPointsAndTracker(N); startRound(); }
-  function onIncorrect() { shell.playIncorrect(); /* visual feedback */ }
+  function onIncorrect() { /* visual feedback */ }
 
   return (
-    <GameShellContainer ...shell.shellProps>
+    <GameShellContainer ...>
       <NameScreen ... />
     </GameShellContainer>
   );
 }
 ```
 
-- No `useEffect` — use `useMountEffect` or event handlers.
+- `useShellWord` / `useShellAdvance` / `useShellRepeat` from `@alphaTiles/feature-game-shell` replace all manual `setRefWord` / `setOnAdvance` / `setOnRepeat` effects.
+- **Never put `shell` in a `useEffect` dep array.** `contextValue` is memoized but `shell` is still an object — use the hook abstraction or destructure the specific stable setter you need.
 - All i18n via `useTranslation` — pass translated strings down as props.
 - `<GameShellContainer>` is always the outer wrapper.
-- Play word audio on round start: `useMountEffect(() => shell.replayWord(refWord))` re-fires when `key` changes.
 
 ---
 
@@ -352,18 +357,18 @@ Keep it pure — no React, no grid bounds (caller enforces). Test cap behaviour 
 Docs and examples reference `useMountEffect(() => …)` as if it's a real hook. **No such hook exists in the workspace.** The actual convention every container follows:
 
 ```tsx
-// Mount-only kickoff (useMountEffect pattern — empty deps, one-shot).
+// Mount-only kickoff — empty deps, one-shot.
 useEffect(() => {
   initThing();
-  shell.setOnAdvance(initThing);
-  return () => shell.setOnAdvance(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
+
+// Advance/repeat wiring goes through dedicated hooks, NOT inside the mount effect:
+useShellAdvance(initThing);
+useShellRepeat(customRepeat);
 ```
 
-Match this exactly: empty `[]` deps + the standard `// useMountEffect pattern` comment + the exhaustive-deps disable line. Containers that use raw `useEffect` without the comment trip the project's "no direct useEffect" rule on review. China, Italy, Japan, Loading, util-analytics, Myanmar all follow this.
-
-If you're tempted to create a real `useMountEffect` hook, that's a separate change touching every container — propose it explicitly first.
+Keep advance/repeat wiring **outside** the mount effect — `useShellAdvance` and `useShellRepeat` re-register whenever their callback identity changes, which is the correct behaviour. Mixing them into the mount effect with `shell.setOnAdvance` was the historical pattern and caused the `Maximum update depth exceeded` bug (see refactor commit 7bef641).
 
 ---
 
@@ -514,15 +519,14 @@ The original signature was `(isCorrect: boolean) => void` and hardcoded `+1` poi
 
 Existing call sites (`shell.incrementPointsAndTracker(true)`) are unchanged. New call sites pass the explicit count: `shell.incrementPointsAndTracker(true, 4)`.
 
-### `setOnRepeat(fn | null)`
+### `setOnRepeat(fn | null)` → use `useShellRepeat`
 
 Mirror of `setOnAdvance`. The shell's default repeat button calls `replayWord()` which plays a word clip via `audio.playWord(refWord.wordInLWC)`. For syllable-mode games (Italy S, Thailand syllable refs, etc.) the current "call" is a syllable — `playWord` would silently no-op on a missing handle.
 
 ```ts
-useEffect(() => {
-  shell.setOnRepeat(() => playCallAudio(currentCall));
-  return () => shell.setOnRepeat(null);
-}, [shell, currentCall, playCallAudio]);
+// Use the hook — never manual useEffect([..., shell]):
+const onRepeat = useCallback(() => playCallAudio(currentCall), [currentCall, playCallAudio]);
+useShellRepeat(onRepeat);
 ```
 
 If the mechanic registers an `onRepeat`, the shell calls it; otherwise it falls back to `replayWord()`. No existing game needs to change.
