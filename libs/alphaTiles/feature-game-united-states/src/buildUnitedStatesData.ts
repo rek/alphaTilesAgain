@@ -13,11 +13,11 @@ import {
 import type { LangAssets } from '@alphaTiles/data-language-assets';
 
 export type UnitedStatesData = {
-  /** Words with 2–5 tiles (level 1). */
+  /** Words with <=5 tiles (level 1). Java line 130: upper bound only, no minimum. */
   level1Words: LangAssets['words']['rows'];
-  /** Words with 2–7 tiles (level 2). */
+  /** Words with <=7 tiles (level 2). */
   level2Words: LangAssets['words']['rows'];
-  /** Words with 2–9 tiles (level 3). */
+  /** Words with <=9 tiles (level 3). */
   level3Words: LangAssets['words']['rows'];
 };
 
@@ -42,13 +42,15 @@ export function buildUnitedStatesData(assets: LangAssets): UnitedStatesData {
     );
     if (parsed === null) continue;
     const len = parsed.length;
-    if (len >= 2 && len <= 9) level3Words.push(word);
-    if (len >= 2 && len <= 7) level2Words.push(word);
-    if (len >= 2 && len <= 5) level1Words.push(word);
+    // Java line 130: while (parsedLengthOfRefWord > wordLengthLimitInTiles) chooseWord();
+    // Upper bound only — any 1-tile word is acceptable (no minimum).
+    if (len >= 1 && len <= 9) level3Words.push(word);
+    if (len >= 1 && len <= 7) level2Words.push(word);
+    if (len >= 1 && len <= 5) level1Words.push(word);
   }
 
   if (level1Words.length === 0) {
-    console.warn('[feature-game-united-states] no words with 2–5 tiles for level 1');
+    console.warn('[feature-game-united-states] no words with <=5 tiles for level 1');
   }
 
   return { level1Words, level2Words, level3Words };
