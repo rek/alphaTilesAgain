@@ -49,17 +49,12 @@ function pickRandom<T>(arr: T[]): T | undefined {
 
 /**
  * Parse a word's LOP string into syllable groups (split on '.', strip '#').
- * Each part is a syllable text string.
- * e.g. "ba.na.na" → ["ba", "na", "na"]
  */
 function splitWordIntoSyllableTexts(wordInLOP: string): string[] {
   return wordInLOP.replace(/#/g, '').split('.').filter(Boolean);
 }
 
-/**
- * Parse a syllable text into its constituent tiles using the tile hash map.
- * Returns null if any character can't be matched.
- */
+/** Parse a syllable text into its constituent tiles using the tile hash map. */
 function parseSyllableIntoTiles(
   syllableText: string,
   tileMap: ReturnType<typeof buildTileHashMap>,
@@ -82,16 +77,59 @@ function buildInitialGroups(tiles: string[]): TileGroup[] {
   return tiles.map((t) => ({ tiles: [t], isLocked: false }));
 }
 
-/** Build the boundaries array from current groups (visible when both sides unlocked). */
-function buildBoundaries(groups: TileGroup[]): BoundaryInfo[] {
+/**
+ * Build BoundaryInfo for each gap between adjacent groups.
+ * Locked-boundary indices use ABSOLUTE-tile-index space (the boundary "after"
+ * tile k for k in 0..N-2). The boundary between groups[i] and groups[i+1]
+ * corresponds to the absolute-tile index of the LAST tile of groups[i].
+ */
+function buildBoundaries(
+  groups: TileGroup[],
+  lockedBoundaries: Set<number>,
+): BoundaryInfo[] {
   const result: BoundaryInfo[] = [];
+  let absTileEnd = -1;
   for (let i = 0; i < groups.length - 1; i++) {
+    absTileEnd += groups[i].tiles.length;
     result.push({
       index: i,
-      visible: !groups[i].isLocked && !groups[i + 1].isLocked,
+      visible: true,
+      clickable: !lockedBoundaries.has(absTileEnd),
     });
   }
   return result;
+}
+
+/**
+ * Mark a group as locked iff ALL its absolute-tile indices are in lockedTiles.
+ * Partial-credit and win logic both produce contiguous lock segments, so any
+ * group is either fully locked or fully unlocked.
+ */
+function applyTileLocks(
+  groups: TileGroup[],
+  lockedTiles: Set<number>,
+): TileGroup[] {
+  let absoluteTile = 0;
+  return groups.map((g) => {
+    const allLocked = g.tiles.length > 0 &&
+      g.tiles.every((_, j) => lockedTiles.has(absoluteTile + j));
+    absoluteTile += g.tiles.length;
+    return { ...g, isLocked: allLocked };
+  });
+}
+
+/**
+ * Concatenate currentViews text for win detection.
+ * Java evaluateCombination 457-461: tiles contribute syllable text; remaining
+ * link buttons contribute ".".
+ */
+function concatCurrentViewsText(groups: TileGroup[]): string {
+  return groups.map((g) => g.tiles.join('')).join('.');
+}
+
+/** Build the SAD-stripped wordInLOP target as syllables joined by '.'. */
+function buildExpectedConcat(correctSyllables: string[][]): string {
+  return correctSyllables.map((syll) => syll.join('')).join('.');
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -111,6 +149,10 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
 
   const placeholderChar = assets.langInfo.find('Placeholder character') ?? '◌';
   const tileRows = assets.tiles.rows;
+
+  const scriptDirection =
+    assets.langInfo.find('Script direction (LTR or RTL)') ?? 'LTR';
+  const isRTL = scriptDirection.toUpperCase() === 'RTL';
 
   const tileMap = useMemo(
     () => buildTileHashMap(tileRows, placeholderChar),
@@ -134,10 +176,7 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
     [tileMap, multitypeTiles, placeholderChar],
   );
 
-  /**
-   * Parse a word into its correct syllable groupings as arrays of tile bases.
-   * e.g. word "ba.na.na" → [["ba"], ["na", "na"]] (after tile parsing each syllable)
-   */
+  /** Parse a word into its correct syllable groupings (post-SAD). */
   const parseCorrectSyllables = useCallback(
     (word: Word): string[][] | null => {
       const syllableTexts = splitWordIntoSyllableTexts(word.wordInLOP);
@@ -145,7 +184,6 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
       for (const sText of syllableTexts) {
         const tiles = parseSyllableIntoTiles(sText, tileMap, multitypeTiles, placeholderChar);
         if (!tiles || tiles.length === 0) return null;
-        // Filter SAD tiles within a syllable
         const filtered = tiles.filter((_, i) => {
           const parsed = parseWordIntoTilesPreliminary(
             sText,
@@ -166,6 +204,9 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
 
   // Game state
   const [groups, setGroups] = useState<TileGroup[]>([]);
+  const [lockedBoundaries, setLockedBoundaries] = useState<Set<number>>(
+    () => new Set(),
+  );
   const [correctSyllables, setCorrectSyllables] = useState<string[][]>([]);
   const [wordText, setWordText] = useState('');
   const [wordImage, setWordImage] = useState<ImageSourcePropType | undefined>(undefined);
@@ -179,10 +220,11 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
     };
   }, []);
 
-  // TODO(japan-spec-drift): install expo-screen-orientation, lock LANDSCAPE on mount,
-  // restore on unmount. Spec: Landscape-Only Orientation (Java line 94).
-  // TODO(japan-spec-drift): RTL icon mirroring — when scriptDirection==='RTL',
-  // apply scaleX:-1 to instructions + repeat icons (Java Japan.java 96-104).
+  // expo-screen-orientation lock (Java line 97 SCREEN_ORIENTATION_LANDSCAPE):
+  // DEFERRED — `expo-screen-orientation` is not in package.json. Adding npm
+  // deps requires explicit user OK per agent protocol. When the dep lands,
+  // wire `ScreenOrientation.lockAsync(LANDSCAPE)` on mount and unlock on
+  // cleanup here.
 
   const startRound = useCallback(() => {
     const wordRows = assets.words.rows;
@@ -202,15 +244,10 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
       const candidateTiles = parseWordTiles(candidate);
       if (!candidateTiles || candidateTiles.length === 0) continue;
       if (candidateTiles.length > maxTiles) continue;
-
-      // Must have at least 2 tiles to have any link buttons
       if (candidateTiles.length < 2) continue;
 
       const candidateSyllables = parseCorrectSyllables(candidate);
       if (!candidateSyllables || candidateSyllables.length === 0) continue;
-
-      // Must have at least 2 syllables to be a meaningful game
-      // (single-syllable words are degenerate)
       if (candidateSyllables.length < 2) continue;
 
       chosenWord = candidate;
@@ -226,6 +263,7 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
 
     const initialGroups = buildInitialGroups(tiles);
     setGroups(initialGroups);
+    setLockedBoundaries(new Set());
     setCorrectSyllables(syllables);
     setWordText(chosenWord.wordInLOP.replace(/[.#]/g, ''));
     setWordImage(
@@ -246,24 +284,46 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * Run partial-credit evaluation; carry-forward prior locks so they remain
+   * monotonic. Returns next groups + cumulative locked boundaries.
+   */
   const applyEvaluation = useCallback(
-    (newGroups: TileGroup[], syllables: string[][]): TileGroup[] => {
-      const lockedIndices = evaluateGroupings(newGroups, syllables);
-      return newGroups.map((g, i) => ({
-        ...g,
-        isLocked: lockedIndices.has(i) || g.isLocked,
-      }));
+    (
+      newGroups: TileGroup[],
+      syllables: string[][],
+      priorLockedBoundaries: Set<number>,
+    ): { groups: TileGroup[]; lockedBoundaries: Set<number> } => {
+      const { lockedTiles, lockedBoundaries: nextBoundaries } = evaluateGroupings(
+        newGroups,
+        syllables,
+      );
+      // Carry forward already-locked tiles via the prior groups' isLocked flag.
+      let absTile = 0;
+      for (const g of newGroups) {
+        for (let i = 0; i < g.tiles.length; i++) {
+          if (g.isLocked) lockedTiles.add(absTile + i);
+        }
+        absTile += g.tiles.length;
+      }
+      const merged = new Set([...priorLockedBoundaries, ...nextBoundaries]);
+      return {
+        groups: applyTileLocks(newGroups, lockedTiles),
+        lockedBoundaries: merged,
+      };
     },
     [],
   );
 
-  // TODO(japan-spec-drift): Spec win = concat(currentViews text incl. remaining "."
-  // link-button chars) === stripSAD(wordInLOP). Current impl uses every-isLocked,
-  // which only fires once partial-credit positional matching succeeds. Java
-  // evaluateCombination 463-482.
+  /**
+   * Win condition (Java evaluateCombination 463): concat of currentViews text
+   * (tiles + remaining "." link buttons) equals SAD-stripped wordInLOP.
+   * Modeled as syllables-joined-by-'.' since both sides have SAD removed.
+   */
   const checkWin = useCallback(
-    (updatedGroups: TileGroup[]): boolean => {
-      return updatedGroups.length > 0 && updatedGroups.every((g) => g.isLocked);
+    (updatedGroups: TileGroup[], syllables: string[][]): boolean => {
+      if (updatedGroups.length === 0) return false;
+      return concatCurrentViewsText(updatedGroups) === buildExpectedConcat(syllables);
     },
     [],
   );
@@ -274,9 +334,16 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
 
       setGroups((prev) => {
         const joined = joinTiles(prev, boundaryIndex);
-        const evaluated = applyEvaluation(joined, correctSyllables);
+        const { groups: evaluated, lockedBoundaries: nextLocked } = applyEvaluation(
+          joined,
+          correctSyllables,
+          lockedBoundaries,
+        );
+        setLockedBoundaries(nextLocked);
 
-        if (checkWin(evaluated)) {
+        if (checkWin(evaluated, correctSyllables)) {
+          // Force-lock all groups for the green/disabled win state.
+          const finalGroups = evaluated.map((g) => ({ ...g, isLocked: true }));
           setIsWon(true);
           shell.setInteractionLocked(true);
           // Spec: playCorrectSoundThenActiveWordClip(false) — chime then word —
@@ -286,25 +353,39 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
             shell.replayWord();
             shell.incrementPointsAndTracker(true, 1);
           });
+          return finalGroups;
         }
 
         return evaluated;
       });
     },
-    [isWon, shell, correctSyllables, applyEvaluation, checkWin, audio],
+    [
+      isWon,
+      shell,
+      correctSyllables,
+      lockedBoundaries,
+      applyEvaluation,
+      checkWin,
+      audio,
+    ],
   );
 
   const onSeparate = useCallback(
-    (groupIndex: number) => {
+    (groupIndex: number, tilePositionInGroup: number) => {
       if (isWon || shell.interactionLocked) return;
 
       setGroups((prev) => {
-        const separated = separateTiles(prev, groupIndex);
-        const evaluated = applyEvaluation(separated, correctSyllables);
+        const separated = separateTiles(prev, groupIndex, tilePositionInGroup);
+        const { groups: evaluated, lockedBoundaries: nextLocked } = applyEvaluation(
+          separated,
+          correctSyllables,
+          lockedBoundaries,
+        );
+        setLockedBoundaries(nextLocked);
         return evaluated;
       });
     },
-    [isWon, shell, correctSyllables, applyEvaluation],
+    [isWon, shell, correctSyllables, lockedBoundaries, applyEvaluation],
   );
 
   if (error === 'insufficient-content') {
@@ -315,13 +396,14 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
         onJoin={noop}
         onSeparate={noop}
         wordText="?"
+        rtl={isRTL}
       />
     );
   }
 
   if (groups.length === 0) return <></>;
 
-  const boundaries = buildBoundaries(groups);
+  const boundaries = buildBoundaries(groups, lockedBoundaries);
 
   return (
     <JapanScreen
@@ -331,6 +413,7 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
       onSeparate={onSeparate}
       wordText={wordText}
       wordImage={wordImage}
+      rtl={isRTL}
     />
   );
 }
