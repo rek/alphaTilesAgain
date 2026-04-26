@@ -20,12 +20,16 @@ const ADVANCE_DELAY_MS = 1200;
 function buildRefDisplay(
   ref: ThailandRef,
   imageSource: ImageSourcePropType | undefined,
+  refColor: string,
 ): ThailandRefDisplay {
+  // TODO(thailand-spec-drift): WORD_TEXT must strip instruction chars (#,.) and render
+  // black text on white bg per Java 305-309. Currently uses raw wordInLOP and the
+  // global refText style is white (should be black for WORD_TEXT).
   switch (ref.display) {
     case 'TILE_LOWER':
-      return { type: 'text', text: ref.kind === 'tile' ? ref.tileRow.base : '', refColor: '#1565C0' };
+      return { type: 'text', text: ref.kind === 'tile' ? ref.tileRow.base : '', refColor };
     case 'TILE_UPPER':
-      return { type: 'text', text: ref.kind === 'tile' ? (ref.tileRow.upper || ref.tileRow.base) : '', refColor: '#1565C0' };
+      return { type: 'text', text: ref.kind === 'tile' ? (ref.tileRow.upper || ref.tileRow.base) : '', refColor };
     case 'TILE_AUDIO':
       return { type: 'audio', refType: ref.display };
     case 'WORD_TEXT':
@@ -35,11 +39,11 @@ function buildRefDisplay(
     case 'WORD_AUDIO':
       return { type: 'audio', refType: ref.display };
     case 'SYLLABLE_TEXT':
-      return { type: 'text', text: ref.kind === 'syllable' ? ref.syllableRow.syllable : '', refColor: '#1565C0' };
+      return { type: 'text', text: ref.kind === 'syllable' ? ref.syllableRow.syllable : '', refColor };
     case 'SYLLABLE_AUDIO':
       return { type: 'audio', refType: ref.display };
     default:
-      return { type: 'text', text: '', refColor: '#1565C0' };
+      return { type: 'text', text: '', refColor };
   }
 }
 
@@ -70,7 +74,11 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   const [round, setRound] = useState<ThailandRound | null>(null);
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
   const [error, setError] = useState<'insufficient-content' | null>(null);
+  const [refColor, setRefColor] = useState<string>('#1565C0');
   const recentRefStrings = useRef<string[]>([]);
+  // TODO(thailand-spec-drift): track incorrectAnswersSelected (cap 3 distinct entries) and
+  // incorrectOnLevel per Java 618-630; lock all 4 buttons after correct tap and apply
+  // refColor (non-WORD_IMAGE) or whiten others (WORD_IMAGE) per Java 588-595.
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -117,6 +125,13 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
         : result.ref.syllableRow.syllable;
 
     recentRefStrings.current = [refKey, ...recentRefStrings.current].slice(0, MAX_RECENT);
+
+    // Java 140: refColor = colorList[rand.nextInt(4)] — random of first 4 entries.
+    const palette = assets.colors?.hexByIndex ?? [];
+    if (palette.length > 0) {
+      const idx = Math.floor(Math.random() * Math.min(4, palette.length));
+      setRefColor(palette[idx] ?? '#1565C0');
+    }
 
     setRound(result);
     setCorrectIndex(null);
@@ -188,7 +203,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
       ? (assets.images.words[round.ref.wordRow.wordInLWC] as ImageSourcePropType | undefined)
       : undefined;
 
-  const refDisplay = buildRefDisplay(round.ref, refImageSource);
+  const refDisplay = buildRefDisplay(round.ref, refImageSource, refColor);
 
   const choiceDisplays = round.choices.map((choice): ThailandChoiceDisplay => {
     if (choice.kind === 'word' && choiceType === 'WORD_IMAGE') {
