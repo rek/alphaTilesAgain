@@ -38,10 +38,10 @@ function pickDistractor(
   allAlts: string[],
   rng: () => number,
 ): string {
-  // Filter out empty alternatives and the correct tile itself
+  // TODO(united-states-spec-drift): Java line 190 uses raw rand.nextInt(Start.ALT_COUNT)
+  // indexing alts directly, trusting pack data. We filter empty/'none'/self for safety.
   const valid = allAlts.filter((a) => a && a !== correctBase && a !== 'none');
   if (valid.length === 0) {
-    // Fallback: if no real distractors, use an empty string (blank tile)
     return '';
   }
   return valid[Math.floor(rng() * valid.length)];

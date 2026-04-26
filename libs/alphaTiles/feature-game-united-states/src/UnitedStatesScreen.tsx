@@ -48,6 +48,8 @@ export type UnitedStatesScreenProps = {
   /** Accessibility label for the word image. */
   wordLabel: string;
   interactionLocked: boolean;
+  /** True after a correct win — display turns dark green + bold (Java 286-287). */
+  isWin?: boolean;
   onTilePress: (pairIndex: number, tileIndex: 0 | 1) => void;
   onImagePress: () => void;
 };
@@ -60,6 +62,7 @@ export function UnitedStatesScreen({
   wordImageSrc,
   wordLabel,
   interactionLocked,
+  isWin = false,
   onTilePress,
   onImagePress,
 }: UnitedStatesScreenProps): React.JSX.Element {
@@ -107,7 +110,8 @@ export function UnitedStatesScreen({
             const isSelected = selections[pairIdx] === 0;
             const themeColor = themeColors[pairIdx % Math.max(1, themeColors.length)] ?? '#1565C0';
             const bg = isSelected ? themeColor : UNSELECTED_BG;
-            const textColor = isSelected ? contrastColor(themeColor) : '#FFFFFF';
+            // Selected: white text on theme color; unselected: black text on dark gray (Java 326-329)
+            const textColor = isSelected ? contrastColor(themeColor) : '#000000';
             return (
               <Pressable
                 key={pairIdx}
@@ -135,7 +139,8 @@ export function UnitedStatesScreen({
             const isSelected = selections[pairIdx] === 1;
             const themeColor = themeColors[pairIdx % Math.max(1, themeColors.length)] ?? '#1565C0';
             const bg = isSelected ? themeColor : UNSELECTED_BG;
-            const textColor = isSelected ? contrastColor(themeColor) : '#FFFFFF';
+            // Selected: white text on theme color; unselected: black text on dark gray (Java 326-329)
+            const textColor = isSelected ? contrastColor(themeColor) : '#000000';
             return (
               <Pressable
                 key={pairIdx}
@@ -158,9 +163,13 @@ export function UnitedStatesScreen({
         </View>
       </View>
 
-      {/* Constructed word display */}
+      {/* Constructed word display — dark green + bold on win (Java 286-287) */}
       <View style={styles.wordDisplay}>
-        <Text style={styles.wordText} numberOfLines={1} adjustsFontSizeToFit>
+        <Text
+          style={[styles.wordText, isWin && styles.wordTextWin]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
           {constructedWord}
         </Text>
       </View>
@@ -224,5 +233,8 @@ const styles = StyleSheet.create({
     color: '#333333',
     letterSpacing: 4,
     textAlign: 'center',
+  },
+  wordTextWin: {
+    color: '#006400',
   },
 });

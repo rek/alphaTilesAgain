@@ -23,6 +23,10 @@ import type { UnitedStatesData } from './buildUnitedStatesData';
 type RouteParams = Record<string, string | string[] | undefined>;
 
 
+// TODO(united-states-spec-drift): Java pre-renders 10/14/18 buttons per layout (cl1/2/3)
+// and hides extras via View.INVISIBLE (line 215-220). Our presenter dynamically renders
+// only pairs.length columns — visually equivalent, structurally simpler.
+// TODO(united-states-spec-drift): Syllable-mode branch (Java 137-139, 192, 202) not ported.
 function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
@@ -91,7 +95,12 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
           if (win) {
             shell.setInteractionLocked(true);
             shell.incrementPointsAndTracker(true);
-            audio.playCorrectFinal();
+            // Java line 296: playCorrectSoundThenActiveWordClip(false) — chime + word, NO final fanfare
+            void (async () => {
+              await audio.playCorrect();
+              if (!isMountedRef.current) return;
+              await audio.playWord(roundData.word.wordInLWC);
+            })();
             nextRoundTimer.current = setTimeout(() => {
               if (isMountedRef.current) {
                 startRound();
@@ -111,16 +120,27 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
     audio.playWord(roundData.word.wordInLWC);
   }, [roundData, audio]);
 
-  // Derived: constructed word string; use "_" for unselected positions
+  // Derived: constructed word string; "__" (double underscore) per unselected pair
+  // per Java line 229-231 — initial display = N copies of "__"
   const constructedWord = useMemo(() => {
     if (!roundData) return '';
     return roundData.pairs
       .map((pair, idx) => {
         const sel = selections[idx];
-        if (sel === null) return '_';
+        if (sel === null) return '__';
         return sel === 0 ? pair.top : pair.bottom;
       })
       .join('');
+  }, [roundData, selections]);
+
+  // Win iff every pair has the correct slot selected (Java 282-296)
+  const isWin = useMemo(() => {
+    if (!roundData || selections.length === 0) return false;
+    return selections.every((sel, idx) => {
+      if (sel === null) return false;
+      const pair = roundData.pairs[idx];
+      return (sel === 0 ? 'top' : 'bottom') === pair.correct;
+    });
   }, [roundData, selections]);
 
   // Theme colors for each pair (cycle through first 5 colors)
@@ -161,6 +181,7 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
       wordImageSrc={wordImageSrc}
       wordLabel={roundData.word.wordInLWC}
       interactionLocked={shell.interactionLocked}
+      isWin={isWin}
       onTilePress={onTilePress}
       onImagePress={onImagePress}
     />
