@@ -29,8 +29,8 @@ export const ThreeTileInitial: Story = {
       { tiles: ['n'], isLocked: false },
     ],
     boundaries: [
-      { index: 0, visible: true },
-      { index: 1, visible: true },
+      { index: 0, visible: true, clickable: true },
+      { index: 1, visible: true, clickable: true },
     ],
   } satisfies Partial<JapanScreenProps>,
 };
@@ -50,12 +50,12 @@ export const SevenTileInitial: Story = {
       { tiles: ['s'], isLocked: false },
     ],
     boundaries: [
-      { index: 0, visible: true },
-      { index: 1, visible: true },
-      { index: 2, visible: true },
-      { index: 3, visible: true },
-      { index: 4, visible: true },
-      { index: 5, visible: true },
+      { index: 0, visible: true, clickable: true },
+      { index: 1, visible: true, clickable: true },
+      { index: 2, visible: true, clickable: true },
+      { index: 3, visible: true, clickable: true },
+      { index: 4, visible: true, clickable: true },
+      { index: 5, visible: true, clickable: true },
     ],
   } satisfies Partial<JapanScreenProps>,
 };
@@ -71,8 +71,8 @@ export const PartialGreen: Story = {
       { tiles: ['na'], isLocked: false },
     ],
     boundaries: [
-      { index: 0, visible: false },
-      { index: 1, visible: true },
+      { index: 0, visible: false, clickable: false },
+      { index: 1, visible: true, clickable: true },
     ],
   } satisfies Partial<JapanScreenProps>,
 };
@@ -87,7 +87,7 @@ export const FullyWon: Story = {
       { tiles: ['na', 'na'], isLocked: true },
     ],
     boundaries: [
-      { index: 0, visible: false },
+      { index: 0, visible: false, clickable: false },
     ],
   } satisfies Partial<JapanScreenProps>,
 };

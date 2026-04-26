@@ -2,9 +2,11 @@
  * JapanScreen — pure presenter for the Japan syllable-segmentation game.
  *
  * Renders a horizontal row of tile groups interleaved with link buttons.
- * No hooks, no i18n — all data passed as props.
+ * Within a multi-tile (joined) group, each tile is a separate pressable so
+ * the user can PEEL just that tile (Java separateTiles 253-444). Adjacent
+ * tiles inside the same joined group share a "joined" visual edge (no gap).
  *
- * Port of Japan.java layout logic.
+ * No hooks, no i18n — all data passed as props.
  */
 import React from 'react';
 import {
@@ -15,7 +17,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import type { ImageSourcePropType } from 'react-native';
+import type { ImageSourcePropType, ImageStyle } from 'react-native';
 
 const TILE_BG = '#607D8B';
 const TILE_LOCKED_BG = '#4CAF50';
@@ -27,26 +29,34 @@ const LINK_BTN_HIT = 32;
 export type BoundaryInfo = {
   /** Index between groups[index] and groups[index+1] */
   index: number;
-  /** Whether the link button is visible/tappable */
+  /** Whether the link button is rendered. */
   visible: boolean;
+  /** Whether the link button is interactive (false when locked green). */
+  clickable: boolean;
 };
 
 export type JapanScreenProps = {
   groups: Array<{ tiles: string[]; isLocked: boolean }>;
   boundaries: BoundaryInfo[];
   onJoin: (boundaryIndex: number) => void;
-  onSeparate: (groupIndex: number) => void;
+  onSeparate: (groupIndex: number, tilePositionInGroup: number) => void;
   wordText: string;
   wordImage?: ImageSourcePropType;
+  /** When true, mirrors icon/image content via scaleX: -1 (Java line 99-104). */
+  rtl?: boolean;
 };
 
 function TileBox({
   text,
   isLocked,
+  joinedLeft,
+  joinedRight,
   onPress,
 }: {
   text: string;
   isLocked: boolean;
+  joinedLeft: boolean;
+  joinedRight: boolean;
   onPress: () => void;
 }): React.JSX.Element {
   return (
@@ -55,6 +65,8 @@ function TileBox({
       style={({ pressed }) => [
         styles.tileBox,
         isLocked ? styles.tileBoxLocked : styles.tileBoxDefault,
+        joinedLeft && styles.tileBoxJoinedLeft,
+        joinedRight && styles.tileBoxJoinedRight,
         pressed && !isLocked && styles.pressed,
       ]}
       accessibilityRole="button"
@@ -70,9 +82,11 @@ function TileBox({
 
 function LinkButton({
   visible,
+  clickable,
   onPress,
 }: {
   visible: boolean;
+  clickable: boolean;
   onPress: () => void;
 }): React.JSX.Element {
   if (!visible) {
@@ -81,13 +95,17 @@ function LinkButton({
 
   return (
     <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.linkButton, pressed && styles.pressed]}
+      onPress={clickable ? onPress : undefined}
+      style={({ pressed }) => [
+        styles.linkButton,
+        pressed && clickable && styles.pressed,
+      ]}
       hitSlop={LINK_BTN_HIT}
       accessibilityRole="button"
       accessibilityLabel="join tiles"
+      accessibilityState={{ disabled: !clickable }}
     >
-      <View style={styles.linkButtonDot} />
+      <View style={[styles.linkButtonDot, !clickable && styles.linkButtonDotLocked]} />
     </Pressable>
   );
 }
@@ -99,7 +117,10 @@ export function JapanScreen({
   onSeparate,
   wordText,
   wordImage,
+  rtl = false,
 }: JapanScreenProps): React.JSX.Element {
+  const mirror: ImageStyle | null = rtl ? { transform: [{ scaleX: -1 }] } : null;
+
   return (
     <View style={styles.root}>
       {/* Word reference row */}
@@ -107,7 +128,7 @@ export function JapanScreen({
         {wordImage ? (
           <Image
             source={wordImage}
-            style={styles.wordImage}
+            style={[styles.wordImage, mirror]}
             resizeMode="contain"
             accessibilityLabel={wordText}
           />
@@ -126,23 +147,29 @@ export function JapanScreen({
         showsHorizontalScrollIndicator={false}
       >
         {groups.map((group, gi) => {
-          const groupLabel = group.tiles.join('');
           const boundary = boundaries.find((b) => b.index === gi - 1);
           const showLink = boundary ? boundary.visible : false;
+          const linkClickable = boundary ? boundary.clickable : false;
 
           return (
             <React.Fragment key={gi}>
               {gi > 0 && (
                 <LinkButton
                   visible={showLink}
+                  clickable={linkClickable}
                   onPress={() => onJoin(gi - 1)}
                 />
               )}
-              <TileBox
-                text={groupLabel}
-                isLocked={group.isLocked}
-                onPress={() => onSeparate(gi)}
-              />
+              {group.tiles.map((tile, ti) => (
+                <TileBox
+                  key={`${gi}-${ti}`}
+                  text={tile}
+                  isLocked={group.isLocked}
+                  joinedLeft={ti > 0}
+                  joinedRight={ti < group.tiles.length - 1}
+                  onPress={() => onSeparate(gi, ti)}
+                />
+              ))}
             </React.Fragment>
           );
         })}
@@ -191,6 +218,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 10,
   },
+  tileBoxJoinedLeft: {
+    borderStartStartRadius: 0,
+    borderEndStartRadius: 0,
+    marginStart: -4,
+  },
+  tileBoxJoinedRight: {
+    borderStartEndRadius: 0,
+    borderEndEndRadius: 0,
+    marginEnd: -4,
+  },
   tileBoxDefault: {
     backgroundColor: TILE_BG,
   },
@@ -218,6 +255,9 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: LINK_BTN_BG,
+  },
+  linkButtonDotLocked: {
+    backgroundColor: '#4CAF50',
   },
   pressed: {
     opacity: 0.7,
