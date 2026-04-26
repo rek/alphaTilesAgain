@@ -278,9 +278,14 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
     });
   }, [assets, parseWordTiles, parseCorrectSyllables, maxTiles, shell]);
 
-  // Mount-only kickoff (useMountEffect pattern)
+  // Mount-only kickoff + wire advance arrow to startRound (spec line 76:
+  // "advance arrow turns blue" on win → tapping it starts a new round).
   useEffect(() => {
     startRound();
+    shell.setOnAdvance(startRound);
+    return () => {
+      shell.setOnAdvance(null);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

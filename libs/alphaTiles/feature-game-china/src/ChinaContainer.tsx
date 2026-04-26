@@ -6,7 +6,7 @@
  *
  * Port of China.java — see design.md for the full mapping table.
  */
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
@@ -76,13 +76,6 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
   const [solvedLines, setSolvedLines] = useState<boolean[]>([false, false, false, false]);
   const [currentWords, setCurrentWords] = useState<CurrentWords | null>(null);
   const [error, setError] = useState<'insufficient-content' | null>(null);
-  const isMountedRef = useRef(true);
-
-  useEffect(() => {
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
 
   const startRound = useCallback(() => {
     const chosen = chooseWords({
@@ -121,9 +114,13 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
     setError(null);
   }, [chinaData, parseTiles, moves, shell]);
 
-  // One-shot mount kickoff (useMountEffect pattern)
+  // One-shot mount kickoff + wire advance arrow to startRound (spec §Win/Advance).
   useEffect(() => {
     startRound();
+    shell.setOnAdvance(startRound);
+    return () => {
+      shell.setOnAdvance(null);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -162,18 +159,13 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
       if (newSolvedLines.every(Boolean)) {
         shell.setInteractionLocked(true);
         audio.playCorrectFinal();
-        shell.incrementPointsAndTracker(true);
-        setTimeout(() => {
-          if (isMountedRef.current) {
-            startRound();
-            shell.setInteractionLocked(false);
-          }
-        }, 1200);
+        // Spec line 83: incrementPointsAndTracker(4) on full-board solve.
+        shell.incrementPointsAndTracker(true, 4);
       }
     },
     [
       shell, blankIndex, board, currentWords, tileMap, placeholderChar,
-      scriptType, audio, startRound,
+      scriptType, audio,
     ],
   );
 
