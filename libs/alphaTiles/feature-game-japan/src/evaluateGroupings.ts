@@ -6,6 +6,15 @@
  * a group at position i is locked only if all groups 0..i-1 are also locked.
  *
  * Port of Japan.java evaluateCombination() partial-credit logic.
+ *
+ * TODO(japan-spec-drift): Spec partial-credit walks `currentViews` (interleaved
+ * tiles + link-buttons) and credits tiles that sit between any two CONSECUTIVE
+ * correct-boundary link-buttons that remain present — joining is NOT required.
+ * Java evaluateCombination 484-525 / design D4. Current impl does positional
+ * group-by-group string match, which only fires when the player has joined
+ * tiles into the exact correct grouping. This rejects the "un-joined but
+ * bracketed" credit case in spec scenario "Middle syllable correctly bracketed
+ * without joining".
  */
 
 export type TileGroup = {
