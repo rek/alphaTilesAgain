@@ -72,6 +72,10 @@ const config: StorybookConfig = {
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
     {
+      directory: '../../../alphaTiles/feature-game-colombia/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
       directory: '../../../alphaTiles/feature-game-ecuador/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },

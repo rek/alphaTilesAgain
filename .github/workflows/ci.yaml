@@ -36,3 +36,11 @@ jobs:
       - run: npx nx affected -t lint test --skip-nx-cache
         env:
           NX_NO_CLOUD: true
+
+      # Build the composite Storybook host. Catches story-render regressions
+      # for every game/UI lib (each game's Screen.stories.tsx is bundled).
+      # Always runs (not affected-gated) because storybook-host has no static
+      # imports of game libs — its dep graph is discovered at Vite build time.
+      - run: npx nx run storybook-host:build-storybook --skip-nx-cache
+        env:
+          NX_NO_CLOUD: true
