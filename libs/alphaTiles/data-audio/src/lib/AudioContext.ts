@@ -7,14 +7,19 @@ import type { AudioHandles } from './AudioHandles';
 
 export type AudioContextValue = {
   handles: AudioHandles | null;
+  isLoading: boolean;
+  loadProgress: { loaded: number; total: number };
+  /** Stable Promise that resolves when the loader finishes (or fails). */
+  awaitLoaded: Promise<void>;
   isAudioUnlocked: boolean;
   setIsAudioUnlocked: (v: boolean) => void;
 };
 
-// Default is a no-op sentinel — AudioProvider is always mounted, handles may
-// arrive after fonts load but before audio preload completes.
 export const AudioContext = createContext<AudioContextValue>({
   handles: null,
+  isLoading: false,
+  loadProgress: { loaded: 0, total: 0 },
+  awaitLoaded: Promise.resolve(),
   isAudioUnlocked: false,
   setIsAudioUnlocked: () => undefined,
 });

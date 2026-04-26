@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Constants from 'expo-constants';
 import { getLocales } from 'expo-localization';
 import { Stack } from 'expo-router';
@@ -8,8 +8,8 @@ import { LangAssetsProvider, useLangAssets } from '@alphaTiles/data-language-ass
 import { ThemeProvider, useFontsReady } from '@shared/util-theme';
 import { I18nProvider, initI18n } from '@shared/util-i18n';
 import { langManifest } from '@generated/langManifest';
-import { AudioProvider } from '@alphaTiles/data-audio';
-import { useAudioHandlesStore } from '@alphaTiles/feature-loading';
+import { AudioProvider, preloadAudio, BASE_CHIMES } from '@alphaTiles/data-audio';
+import type { AudioConfig } from '@alphaTiles/data-audio';
 import type { FontSource } from 'expo-font';
 import './registerPrecomputes';
 
@@ -49,28 +49,40 @@ const FONT_NAME_MAP = {
 
 /**
  * Inner layout — must be inside LangAssetsProvider so it can call useLangAssets().
- * Gates rendering until fonts have loaded to prevent flash of unstyled text.
+ * AudioProvider mounts unconditionally so audio loads in parallel with fonts.
+ * Stack (and all screens) gate on fontsReady to prevent flash of unstyled text.
  * See design.md §D5.
  */
-function InnerLayout(): React.JSX.Element | null {
+function InnerLayout(): React.JSX.Element {
   const assets = useLangAssets();
   const fontsReady = useFontsReady(FONT_ASSET_MAP);
-  const { handles } = useAudioHandlesStore();
 
-  if (!fontsReady) {
-    return null;
-  }
+  // Stable loader — assets from LangAssetsProvider are fixed for the app lifetime.
+  const audioLoader = useMemo(() => {
+    const audioConfig: AudioConfig = {
+      hasTileAudio: assets.settings.findBoolean('Has tile audio', false),
+      hasSyllableAudio: assets.settings.findBoolean('Has syllable audio', false),
+    };
+    const manifest = {
+      tiles: assets.audio.tiles,
+      words: assets.audio.words,
+      syllables: assets.audio.syllables,
+      instructions: assets.audio.instructions,
+    };
+    return (onProgress: (loaded: number, total: number) => void) =>
+      preloadAudio({ manifest, audioConfig, baseChimes: BASE_CHIMES, onProgress });
+  }, [assets]); // assets reference is stable for the app lifetime
 
-  // AudioProvider always in the tree — handles is null until preload completes,
-  // during which time all play* calls are no-ops. Stable tree prevents Stack remounts.
   return (
-    <AudioProvider handles={handles}>
-      <ThemeProvider
-        palette={assets.colors.hexByIndex}
-        fontMap={FONT_NAME_MAP}
-      >
-        <Stack screenOptions={{ headerShown: false }} />
-      </ThemeProvider>
+    <AudioProvider loader={audioLoader}>
+      {fontsReady ? (
+        <ThemeProvider
+          palette={assets.colors.hexByIndex}
+          fontMap={FONT_NAME_MAP}
+        >
+          <Stack screenOptions={{ headerShown: false }} />
+        </ThemeProvider>
+      ) : null}
     </AudioProvider>
   );
 }

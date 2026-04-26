@@ -48,7 +48,7 @@ async function playHandle(handle: SoundHandle): Promise<void> {
 }
 
 export function useAudio() {
-  const { handles, isAudioUnlocked, setIsAudioUnlocked } = useContext(AudioContext);
+  const { handles, isLoading, loadProgress, awaitLoaded, isAudioUnlocked, setIsAudioUnlocked } = useContext(AudioContext);
 
   // ── playTile ──────────────────────────────────────────────────────────
   const playTile = async (id: string): Promise<void> => {
@@ -204,6 +204,9 @@ export function useAudio() {
     getTileDuration,
     getWordDuration,
     getSyllableDuration,
+    isLoading,
+    loadProgress,
+    awaitLoaded,
     isAudioUnlocked,
     unlockAudio,
   };

@@ -3,20 +3,17 @@ import type { Phase } from '../bootSequence';
 
 function makeOpts(overrides: Partial<Parameters<typeof bootSequence>[0]> = {}) {
   const phases: Phase[] = [];
-  const audioProgressCalls: Array<[number, number]> = [];
 
   return {
     opts: {
       platform: 'native' as const,
       onPhaseChange: (p: Phase) => { phases.push(p); },
-      onAudioProgress: (loaded: number, total: number) => { audioProgressCalls.push([loaded, total]); },
       registerContent: jest.fn(),
-      loadAudio: jest.fn().mockResolvedValue(undefined),
+      awaitAudio: jest.fn().mockResolvedValue(undefined),
       awaitHydration: jest.fn().mockResolvedValue(undefined),
       ...overrides,
     },
     phases,
-    audioProgressCalls,
   };
 }
 
@@ -33,16 +30,13 @@ describe('bootSequence – native path', () => {
     expect(opts.registerContent).toHaveBeenCalledTimes(1);
   });
 
-  it('calls loadAudio and threads onAudioProgress', async () => {
-    const { opts, audioProgressCalls } = makeOpts({
-      loadAudio: jest.fn().mockImplementation(async (onProgress) => {
-        onProgress(1, 10);
-        onProgress(10, 10);
-      }),
+  it('calls awaitAudio and waits for it to resolve', async () => {
+    let resolved = false;
+    const { opts } = makeOpts({
+      awaitAudio: () => new Promise<void>((res) => setTimeout(() => { resolved = true; res(); }, 0)),
     });
     await bootSequence(opts);
-    expect(opts.loadAudio).toHaveBeenCalledTimes(1);
-    expect(audioProgressCalls).toEqual([[1, 10], [10, 10]]);
+    expect(resolved).toBe(true);
   });
 
   it('calls awaitHydration', async () => {
@@ -84,9 +78,9 @@ describe('bootSequence – web path', () => {
 });
 
 describe('bootSequence – error propagation', () => {
-  it('rejects and stops emitting phases when loadAudio throws', async () => {
+  it('rejects and stops emitting phases when awaitAudio throws', async () => {
     const { opts, phases } = makeOpts({
-      loadAudio: jest.fn().mockRejectedValue(new Error('audio fail')),
+      awaitAudio: jest.fn().mockRejectedValue(new Error('audio fail')),
     });
     await expect(bootSequence(opts)).rejects.toThrow('audio fail');
     expect(phases).not.toContain('done');

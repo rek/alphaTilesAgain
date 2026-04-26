@@ -10,13 +10,10 @@ export type Phase =
 export type BootSequenceOpts = {
   platform: 'web' | 'native';
   onPhaseChange: (phase: Phase) => void;
-  onAudioProgress: (loaded: number, total: number) => void;
   /** Synchronous — call registerContentNamespaces with derived content inside. */
   registerContent: () => void;
-  /** Async — call preloadAudio and return AudioHandles. */
-  loadAudio: (
-    onProgress: (loaded: number, total: number) => void,
-  ) => Promise<void>;
+  /** Resolves when AudioProvider has finished loading all handles. */
+  awaitAudio: () => Promise<void>;
   /** Web only — promise resolves when user taps "Tap to begin". */
   waitForWebGesture?: () => Promise<void>;
   /** Async — resolves when players store is hydrated. */
@@ -24,7 +21,7 @@ export type BootSequenceOpts = {
 };
 
 export async function bootSequence(opts: BootSequenceOpts): Promise<void> {
-  const { platform, onPhaseChange, onAudioProgress, registerContent, loadAudio, waitForWebGesture, awaitHydration } = opts;
+  const { platform, onPhaseChange, registerContent, awaitAudio, waitForWebGesture, awaitHydration } = opts;
 
   // Phase 1: fonts (already loaded by _layout.tsx/useFontsReady before container mounts)
   onPhaseChange('fonts');
@@ -39,9 +36,9 @@ export async function bootSequence(opts: BootSequenceOpts): Promise<void> {
     await waitForWebGesture();
   }
 
-  // Phase 4: audio preload (longest step — drives visible progress bar)
+  // Phase 4: await audio (AudioProvider loads in parallel; may already be resolved)
   onPhaseChange('audio');
-  await loadAudio(onAudioProgress);
+  await awaitAudio();
 
   // Phase 5: precomputes (already run in loadLangPack — emit phase for UI completeness)
   onPhaseChange('precompute');
