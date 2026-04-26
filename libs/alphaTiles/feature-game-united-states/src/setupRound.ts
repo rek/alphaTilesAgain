@@ -33,18 +33,18 @@ type SetupRoundArgs = {
   rng?: () => number;
 };
 
-function pickDistractor(
-  correctBase: string,
-  allAlts: string[],
-  rng: () => number,
-): string {
-  // TODO(united-states-spec-drift): Java line 190 uses raw rand.nextInt(Start.ALT_COUNT)
-  // indexing alts directly, trusting pack data. We filter empty/'none'/self for safety.
-  const valid = allAlts.filter((a) => a && a !== correctBase && a !== 'none');
-  if (valid.length === 0) {
-    return '';
-  }
-  return valid[Math.floor(rng() * valid.length)];
+/** Java `Start.ALT_COUNT` — number of alt slots per tile (alt1..alt3). */
+const ALT_COUNT = 3;
+
+/**
+ * Picks a distractor by raw index into the alt slots, matching Java
+ * `parsedRefWordTileArray.get(i).distractors.get(rand.nextInt(Start.ALT_COUNT))`
+ * (UnitedStates.java:161). No filtering for empty / `'none'` / self — Java trusts
+ * pack data; pack-validation is the language community's responsibility, not ours.
+ */
+function pickDistractor(allAlts: string[], rng: () => number): string {
+  const idx = Math.floor(rng() * ALT_COUNT);
+  return allAlts[idx] ?? '';
 }
 
 export function setupRound({
@@ -99,7 +99,7 @@ export function setupRound({
       tileMap.get(placeholderChar + correctText + placeholderChar);
 
     const alts = fullTile ? [fullTile.alt1, fullTile.alt2, fullTile.alt3] : [];
-    const distractorText = pickDistractor(correctText, alts, rng);
+    const distractorText = pickDistractor(alts, rng);
 
     // Randomize which slot is correct (top or bottom)
     const correctIsTop = rng() < 0.5;

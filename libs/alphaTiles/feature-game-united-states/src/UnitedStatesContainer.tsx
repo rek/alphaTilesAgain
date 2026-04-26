@@ -23,10 +23,29 @@ import type { UnitedStatesData } from './buildUnitedStatesData';
 type RouteParams = Record<string, string | string[] | undefined>;
 
 
-// TODO(united-states-spec-drift): Java pre-renders 10/14/18 buttons per layout (cl1/2/3)
-// and hides extras via View.INVISIBLE (line 215-220). Our presenter dynamically renders
-// only pairs.length columns — visually equivalent, structurally simpler.
-// TODO(united-states-spec-drift): Syllable-mode branch (Java 137-139, 192, 202) not ported.
+/**
+ * Java fixes the slot count per layout (UnitedStates.java:130-139):
+ *   cl1 → 10 buttons (5 pairs), cl2 → 14 (7 pairs), cl3 → 18 (9 pairs).
+ * The loop renders all slots and hides extras via View.INVISIBLE (lines 186-191).
+ * We mirror that pre-render+hide pattern by passing a fixed `slotCount` to the
+ * presenter; trailing slots become invisible placeholders.
+ */
+function slotCountForLevel(challengeLevel: number): number {
+  if (challengeLevel >= 3) return 9;
+  if (challengeLevel === 2) return 7;
+  return 5;
+}
+
+// TODO(united-states-spec-drift): Syllable-mode (Java `syllableGame.equals("S")`,
+// lines 137-139, 163-165, 173-175, 192, 202, 221-231) is unimplemented. Scope:
+//   1. Precompute: parse refWord into syllables (parsedRefWordSyllableArray) and
+//      surface a per-syllable distractor list, gated on pack mode `S`.
+//   2. setupRound: branch tile vs syllable selection per-pair, honoring the
+//      Java SAD_STRINGS exclusion that falls back to tile mode for sad syllables.
+//   3. buildWord: when in syllable mode the constructed string concatenates two
+//      `selections[]` cells per pair (Java 222-228) instead of one.
+//   4. Pack assets: requires syllable list + audio + the SAD_STRINGS data hook.
+// Defer until a syllable-mode pack ships and util-phoneme exposes a syllable parse.
 function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
@@ -154,10 +173,13 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
     return assets.images.words[roundData.word.wordInLWC] as ImageSourcePropType | undefined;
   }, [roundData, assets.images.words]);
 
+  const slotCount = slotCountForLevel(challengeLevel);
+
   if (error === 'insufficient-content') {
     return (
       <UnitedStatesScreen
         pairs={[]}
+        slotCount={slotCount}
         selections={[]}
         constructedWord={''}
         themeColors={[]}
@@ -175,6 +197,7 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
   return (
     <UnitedStatesScreen
       pairs={roundData.pairs}
+      slotCount={slotCount}
       selections={selections}
       constructedWord={constructedWord}
       themeColors={themeColors}
