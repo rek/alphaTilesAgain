@@ -107,7 +107,8 @@
       "@alphaTiles/feature-game-chile": ["libs/alphaTiles/feature-game-chile/src/index.ts"],
       "@alphaTiles/feature-game-peru": ["libs/alphaTiles/feature-game-peru/src/index.ts"],
       "@alphaTiles/feature-game-brazil": ["libs/alphaTiles/feature-game-brazil/src/index.ts"],
-      "@alphaTiles/feature-game-italy": ["libs/alphaTiles/feature-game-italy/src/index.ts"]
+      "@alphaTiles/feature-game-italy": ["libs/alphaTiles/feature-game-italy/src/index.ts"],
+      "@alphaTiles/feature-game-iraq": ["libs/alphaTiles/feature-game-iraq/src/index.ts"]
     }
   }
 }
