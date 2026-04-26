@@ -72,11 +72,27 @@ const config: StorybookConfig = {
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
     {
+      directory: '../../../alphaTiles/feature-game-ecuador/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-georgia/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-iraq/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
       directory: '../../../alphaTiles/feature-game-italy/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
     {
       directory: '../../../alphaTiles/feature-game-japan/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-malaysia/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
     {
@@ -101,6 +117,10 @@ const config: StorybookConfig = {
     },
     {
       directory: '../../../alphaTiles/feature-game-shell/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-sudan/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
     {
