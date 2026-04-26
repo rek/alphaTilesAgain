@@ -17,6 +17,8 @@ export type CardState = {
   word: { wordInLOP: string; wordInLWC: string };
   mode: CardMode;
   status: CardStatus;
+  /** Per-pair theme color hex; assigned on PAIRED transition (Mexico.java:307 colorList[cardHitA % 5]). */
+  pairedColor?: string;
 };
 
 type SetupResult =
@@ -31,6 +33,12 @@ export function setupMexicoBoard(
   if (validMatchingWords.length < pairCount) {
     return { error: 'insufficient-content' };
   }
+
+  // TODO(mexico-spec-drift): Java's chooseMemoryWords (Mexico.java:162-217) dedupes
+  // by wordInLWC at draw time with a sanity counter (cardsToSetUp * 3 retries) before
+  // bailing to goBackToEarth(null). We rely on validMatchingWords being unique by LWC
+  // (true if wordlist rows are unique). If a pack ships duplicates, we'd silently emit
+  // duplicate pairs instead of retrying. Promote dedup here if that ever surfaces.
 
   // Pick `pairCount` distinct words (Fisher-Yates partial shuffle)
   const pool = [...validMatchingWords];

@@ -85,6 +85,9 @@ export function MexicoScreen({
           else if (isRevealed && card.mode === 'TEXT') bgColor = REVEALED_BG;
           else if (isRevealed && card.mode === 'IMAGE') bgColor = BLANK_CARD_BG;
 
+          // Per-pair color (Mexico.java:307 colorList[cardHitA % 5]) overrides default.
+          const cardThemeColor = card.pairedColor ?? themeColor;
+
           const imgSrc = card.mode === 'IMAGE' ? wordImages[card.word.wordInLWC] : undefined;
 
           return (
@@ -97,7 +100,7 @@ export function MexicoScreen({
                   width: cardSize,
                   height: cardSize,
                   backgroundColor: bgColor,
-                  borderColor: isPaired ? themeColor : 'transparent',
+                  borderColor: isPaired ? cardThemeColor : 'transparent',
                   borderWidth: isPaired ? 2 : 0,
                 },
                 pressed && !isPaired && !isHidden && styles.pressed,
@@ -123,7 +126,7 @@ export function MexicoScreen({
                   style={[
                     styles.cardText,
                     {
-                      color: isPaired ? themeColor : TEXT_LIGHT,
+                      color: isPaired ? cardThemeColor : TEXT_LIGHT,
                       fontWeight: isPaired ? 'bold' : 'normal',
                     },
                   ]}
@@ -145,7 +148,7 @@ export function MexicoScreen({
 
               {!isHidden && card.mode === 'IMAGE' && !imgSrc && (
                 <Text
-                  style={[styles.cardText, { color: isPaired ? themeColor : themeTextColor }]}
+                  style={[styles.cardText, { color: isPaired ? cardThemeColor : themeTextColor }]}
                   numberOfLines={2}
                   adjustsFontSizeToFit
                 >

@@ -96,6 +96,14 @@ function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.E
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Pair colors cycled by first-matched index % 5 (Mexico.java:307 colorList[cardHitA % 5])
+  const pairColors = useMemo(() => {
+    const fallback = ['#4CAF50', '#1565C0', '#E53935', '#F9A825', '#8E24AA'];
+    return Array.from({ length: 5 }, (_, i) => assets.colors.hexByIndex[i] ?? fallback[i]);
+  }, [assets.colors.hexByIndex]);
+  // Default theme color (used by presenter for chrome) — first slot.
+  const themeColor = pairColors[0];
+
   /**
    * Handle match check after REVEAL_DELAY_MS.
    * Called via setTimeout — fIdx/sIdx captured via closure.
@@ -108,23 +116,31 @@ function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.E
       const cardB = currentCards[sIdx];
 
       if (cardA.word.wordInLWC === cardB.word.wordInLWC) {
-        // Match! Mark both as PAIRED
+        // Match! Mark both as PAIRED with per-pair theme color (Mexico.java:307)
+        const pairedColor = pairColors[fIdx % 5];
         const updated = currentCards.map((c, i) =>
-          i === fIdx || i === sIdx ? { ...c, status: 'PAIRED' as const } : c,
+          i === fIdx || i === sIdx
+            ? { ...c, status: 'PAIRED' as const, pairedColor }
+            : c,
         );
         const newPairsCompleted = updated.filter((c) => c.status === 'PAIRED').length / 2;
+        const isFinal = newPairsCompleted >= pairCount;
 
         setCards(updated);
         setFirstIdx(null);
         shell.setInteractionLocked(false);
 
-        // Play word audio for the matched word (Mexico.java:313–322)
-        audio.playWord(cardA.word.wordInLWC);
+        // playCorrectSoundThenActiveWordClip (Mexico.java:329) — chime, then word audio
+        void (async () => {
+          await audio.playCorrect();
+          if (!isMountedRef.current) return;
+          await audio.playWord(cardA.word.wordInLWC);
+          if (isFinal && isMountedRef.current) audio.playCorrectFinal();
+        })();
 
-        if (newPairsCompleted >= pairCount) {
-          // All pairs matched — win!
-          shell.incrementPointsAndTracker(true);
-          audio.playCorrectFinal();
+        if (isFinal) {
+          // Java passes pair count (Mexico.java:324-325 updatePointsAndTrackers((visibleGameButtons / 2)))
+          shell.incrementPointsAndTracker(true, pairCount);
         }
       } else {
         // No match — wait flipBackDelayMs, then flip cards back
@@ -140,7 +156,7 @@ function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.E
         }, flipBackDelayMs);
       }
     },
-    [audio, shell, pairCount, flipBackDelayMs],
+    [audio, shell, pairCount, flipBackDelayMs, pairColors],
   );
 
   const onCardPress = useCallback(
@@ -190,12 +206,6 @@ function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.E
     }
     return map;
   }, [cards, assets.images.words]);
-
-  // Game color for paired cards (Mexico.java:307: colorList.get(cardHitA % 5))
-  const themeColor = useMemo(() => {
-    // Use colorIndex 0 as the default theme color for paired cards
-    return assets.colors.hexByIndex[0] ?? '#4CAF50';
-  }, [assets.colors.hexByIndex]);
 
   // Logo source — static require, must not be dynamic (Metro constraint)
   const logoSource = assets.images.icon as ImageSourcePropType;
