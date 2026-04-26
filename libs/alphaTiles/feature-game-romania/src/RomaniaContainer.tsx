@@ -49,10 +49,15 @@ function RomaniaGame(): React.JSX.Element {
     [tileMap, multitypeTiles, placeholderChar],
   );
 
-  // All tiles that have at least one word in the precompute
+  // Tiles with at least one word after applying the scan setting filter
   const tilesWithWords = useMemo(
-    () => tileRows.filter((tile) => (romaniaData[tile.base]?.length ?? 0) > 0),
-    [tileRows, romaniaData],
+    () =>
+      tileRows.filter((tile) => {
+        const words = romaniaData[tile.base];
+        if (!words?.length) return false;
+        return filterWordsForTile(words, scanSetting, tile.base, parseWord).length > 0;
+      }),
+    [tileRows, romaniaData, scanSetting, parseWord],
   );
 
   const [tileIndex, setTileIndex] = useState(0);
