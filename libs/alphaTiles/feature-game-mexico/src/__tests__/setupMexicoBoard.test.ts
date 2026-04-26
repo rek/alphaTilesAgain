@@ -90,4 +90,35 @@ describe('setupMexicoBoard', () => {
       }
     }
   });
+
+  it('dedupes when pool has duplicate wordInLWC entries (Java sanity-counter)', () => {
+    // Pool length passes the size check but only 3 distinct LWC values exist.
+    const dupPool = [
+      makeWord('apple'),
+      makeWord('apple'),
+      makeWord('bird'),
+      makeWord('bird'),
+      makeWord('cat'),
+      makeWord('cat'),
+    ];
+    const result = setupMexicoBoard(dupPool, 3);
+    expect('error' in result).toBe(false);
+    if ('error' in result) return;
+    const distinct = new Set(result.cards.map((c) => c.word.wordInLWC));
+    expect(distinct.size).toBe(3);
+  });
+
+  it('bails to insufficient-content when pool lacks enough distinct LWC entries', () => {
+    // 5-entry pool but only 1 distinct LWC; sanity counter (pairCount*3) bails.
+    const dupPool = [
+      makeWord('apple'),
+      makeWord('apple'),
+      makeWord('apple'),
+      makeWord('apple'),
+      makeWord('apple'),
+    ];
+    const result = setupMexicoBoard(dupPool, 3);
+    expect('error' in result).toBe(true);
+    if ('error' in result) expect(result.error).toBe('insufficient-content');
+  });
 });
