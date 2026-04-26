@@ -179,17 +179,10 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
     };
   }, []);
 
-  // Landscape orientation on mount/unmount
-  // NOTE: expo-screen-orientation is not currently installed.
-  // Add it and uncomment when landscape locking is needed:
-  //
-  // import * as ScreenOrientation from 'expo-screen-orientation';
-  // useEffect(() => {
-  //   ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-  //   return () => {
-  //     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-  //   };
-  // }, []);
+  // TODO(japan-spec-drift): install expo-screen-orientation, lock LANDSCAPE on mount,
+  // restore on unmount. Spec: Landscape-Only Orientation (Java line 94).
+  // TODO(japan-spec-drift): RTL icon mirroring — when scriptDirection==='RTL',
+  // apply scaleX:-1 to instructions + repeat icons (Java Japan.java 96-104).
 
   const startRound = useCallback(() => {
     const wordRows = assets.words.rows;
@@ -264,6 +257,10 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
     [],
   );
 
+  // TODO(japan-spec-drift): Spec win = concat(currentViews text incl. remaining "."
+  // link-button chars) === stripSAD(wordInLOP). Current impl uses every-isLocked,
+  // which only fires once partial-credit positional matching succeeds. Java
+  // evaluateCombination 463-482.
   const checkWin = useCallback(
     (updatedGroups: TileGroup[]): boolean => {
       return updatedGroups.length > 0 && updatedGroups.every((g) => g.isLocked);
@@ -282,11 +279,12 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
         if (checkWin(evaluated)) {
           setIsWon(true);
           shell.setInteractionLocked(true);
-          shell.incrementPointsAndTracker(true);
+          // Spec: playCorrectSoundThenActiveWordClip(false) — chime then word —
+          // BEFORE updatePointsAndTrackers(1). Sequenced via .then chain.
           audio.playCorrectFinal().then(() => {
-            if (isMountedRef.current) {
-              shell.replayWord();
-            }
+            if (!isMountedRef.current) return;
+            shell.replayWord();
+            shell.incrementPointsAndTracker(true, 1);
           });
         }
 

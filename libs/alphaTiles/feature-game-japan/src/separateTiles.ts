@@ -5,6 +5,13 @@
  * side by splitting all its tiles back into individual groups.
  *
  * Port of Japan.java separateTiles().
+ *
+ * TODO(japan-spec-drift): Spec requires PEEL behaviour, not full split.
+ * Java separateTiles 253-444: tapping a tile restores ONLY the link button(s)
+ * adjacent to the clicked tile (left for last, right for first, both for
+ * middle). Other tiles in the same group remain joined. Current impl splits
+ * the entire group into singletons. Needs a tile-index parameter (not
+ * group-index) and per-tile peel logic.
  */
 
 import type { TileGroup } from './evaluateGroupings';
