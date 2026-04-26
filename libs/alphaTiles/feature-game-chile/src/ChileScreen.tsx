@@ -21,14 +21,16 @@ import {
 import type { ColorTile, TileColor } from './evaluateGuess';
 
 const TILE_BG: Record<TileColor, string> = {
-  GREEN: '#4CAF50',  // colorList[3]
-  BLUE:  '#2196F3',  // colorList[1]
-  GRAY:  '#9E9E9E',  // colorList[8]
-  EMPTY: '#E0E0E0',  // colorList[6]
-  KEY:   '#607D8B',  // colorList[0]
+  GREEN:  '#4CAF50', // colorList[3]
+  BLUE:   '#2196F3', // colorList[1]
+  GRAY:   '#9E9E9E', // colorList[8]
+  EMPTY:  '#E0E0E0', // colorList[6]
+  KEY:    '#607D8B', // colorList[0]
+  REVEAL: '#4CAF50', // GREEN bg for loss-reveal tiles (Chile.java:269)
 };
 
 const TILE_TEXT_COLOR = '#FFFFFF';
+const REVEAL_TEXT_COLOR = '#FFEB3B'; // YELLOW (colorList[5]) on loss-reveal tiles
 
 export type ChileScreenProps = {
   /** Flat array of tiles, guessCount × wordLength. */
@@ -109,7 +111,14 @@ export function ChileScreen({
                   ]}
                   accessibilityLabel={`row ${rowIdx + 1} col ${colIdx + 1}: ${text || 'empty'}`}
                 >
-                  <Text style={styles.guessTileText} adjustsFontSizeToFit numberOfLines={1}>
+                  <Text
+                    style={[
+                      styles.guessTileText,
+                      color === 'REVEAL' && { color: REVEAL_TEXT_COLOR },
+                    ]}
+                    adjustsFontSizeToFit
+                    numberOfLines={1}
+                  >
                     {text}
                   </Text>
                 </View>

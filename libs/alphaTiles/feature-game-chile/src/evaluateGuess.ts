@@ -16,7 +16,7 @@
  *   GREEN = index 3, BLUE = index 1, GRAY = index 8.
  */
 
-export type TileColor = 'GREEN' | 'BLUE' | 'GRAY' | 'EMPTY' | 'KEY';
+export type TileColor = 'GREEN' | 'BLUE' | 'GRAY' | 'EMPTY' | 'KEY' | 'REVEAL';
 
 export type ColorTile = {
   text: string;
