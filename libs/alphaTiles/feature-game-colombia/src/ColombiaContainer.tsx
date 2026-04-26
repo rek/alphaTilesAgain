@@ -19,6 +19,7 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import {
@@ -91,6 +92,10 @@ function ColombiaGame({
   variant: ColombiaVariant;
 }): React.JSX.Element {
   const shell = useGameShell();
+  const {
+    setRefWord, setInteractionLocked, incrementPointsAndTracker,
+    replayWord, interactionLocked,
+  } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
 
@@ -145,7 +150,7 @@ function ColombiaGame({
   }, [assets.words.rows]);
 
   const startRound = useCallback(() => {
-    shell.setInteractionLocked(false);
+    setInteractionLocked(false);
 
     let nextRound: Round | null = null;
     for (let attempt = 0; attempt < 8 && nextRound === null; attempt++) {
@@ -205,13 +210,13 @@ function ColombiaGame({
     setClickedKeys([]);
     setTilesInBuiltWord([]);
     setStatus('yellow');
-    shell.setRefWord({
+    setRefWord({
       wordInLOP: nextRound.word.wordInLOP,
       wordInLWC: nextRound.word.wordInLWC,
     });
     audio.playWord(nextRound.word.wordInLWC);
   }, [
-    shell, audio, assets.tiles.rows, assets.syllables.rows, assets.keys.rows,
+    setRefWord, setInteractionLocked, audio, assets.tiles.rows, assets.syllables.rows, assets.keys.rows,
     scriptType, placeholderChar, variant, challengeLevel, colorList, sadStrings,
     pickNextWord,
   ]);
@@ -219,13 +224,13 @@ function ColombiaGame({
   useEffect(() => {
     isMountedRef.current = true;
     startRound();
-    shell.setOnAdvance(startRound);
     return () => {
       isMountedRef.current = false;
-      shell.setOnAdvance(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useShellAdvance(startRound);
 
   const recomputeStatus = useCallback(
     (nextClickedKeys: WordPiece[], nextTilesBuilt: ParsedTile[]) => {
@@ -244,21 +249,22 @@ function ColombiaGame({
       });
       setStatus(result.color);
       if (result.isWin) {
-        shell.setInteractionLocked(true);
-        shell.incrementPointsAndTracker(true);
+        setInteractionLocked(true);
+        incrementPointsAndTracker(true);
         audio.playCorrect().then(() => {
           if (!isMountedRef.current) return;
-          shell.replayWord();
+          replayWord();
         });
       }
     },
-    [round, challengeLevel, variant, assets.tiles.rows, scriptType, placeholderChar, shell, audio],
+    [round, challengeLevel, variant, assets.tiles.rows, scriptType, placeholderChar,
+     setInteractionLocked, incrementPointsAndTracker, replayWord, audio],
   );
 
   const onKeyPress = useCallback(
     (slotIndex: number) => {
       if (!round) return;
-      if (shell.interactionLocked) return;
+      if (interactionLocked) return;
       const absIndex = round.paginated
         ? computeKeyIndex(page, slotIndex)
         : slotIndex;
@@ -288,13 +294,13 @@ function ColombiaGame({
       setTilesInBuiltWord(nextTilesBuilt);
       recomputeStatus(nextClickedKeys, nextTilesBuilt);
     },
-    [round, shell.interactionLocked, page, clickedKeys, tilesInBuiltWord,
+    [round, interactionLocked, page, clickedKeys, tilesInBuiltWord,
      variant, challengeLevel, recomputeStatus],
   );
 
   const onDelete = useCallback(() => {
     if (!round) return;
-    if (shell.interactionLocked) return;
+    if (interactionLocked) return;
     if (clickedKeys.length === 0) return;
 
     let nextTilesBuilt = tilesInBuiltWord;
@@ -305,7 +311,7 @@ function ColombiaGame({
     setClickedKeys(nextClickedKeys);
     setTilesInBuiltWord(nextTilesBuilt);
     recomputeStatus(nextClickedKeys, nextTilesBuilt);
-  }, [round, shell.interactionLocked, clickedKeys, tilesInBuiltWord,
+  }, [round, interactionLocked, clickedKeys, tilesInBuiltWord,
       variant, challengeLevel, recomputeStatus]);
 
   const onPageChange = useCallback(
@@ -322,8 +328,8 @@ function ColombiaGame({
   );
 
   const onImagePress = useCallback(() => {
-    shell.replayWord();
-  }, [shell]);
+    replayWord();
+  }, [replayWord]);
 
   if (error === 'insufficient-content' || !round) {
     return (
@@ -383,7 +389,7 @@ function ColombiaGame({
       paginated={round.paginated}
       page={page}
       totalScreens={round.totalScreens}
-      interactionLocked={shell.interactionLocked}
+      interactionLocked={interactionLocked}
       onDelete={onDelete}
       onKeyPress={onKeyPress}
       onPageChange={onPageChange}

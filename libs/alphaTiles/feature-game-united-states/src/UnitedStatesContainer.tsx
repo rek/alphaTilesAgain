@@ -48,6 +48,10 @@ function slotCountForLevel(challengeLevel: number): number {
 // Defer until a syllable-mode pack ships and util-phoneme exposes a syllable parse.
 function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
+  const {
+    setRefWord, setInteractionLocked, incrementPointsAndTracker,
+    interactionLocked,
+  } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
   const unitedStatesData = usePrecompute<UnitedStatesData>('united-states');
@@ -78,12 +82,12 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
     setRoundData(result);
     setSelections(new Array(result.pairs.length).fill(null));
     setError(null);
-    shell.setInteractionLocked(false);
-    shell.setRefWord({
+    setInteractionLocked(false);
+    setRefWord({
       wordInLOP: result.word.wordInLOP,
       wordInLWC: result.word.wordInLWC,
     });
-  }, [unitedStatesData, challengeLevel, assets, shell]);
+  }, [unitedStatesData, challengeLevel, assets, setInteractionLocked, setRefWord]);
 
   // One-shot mount kickoff
   useEffect(() => {
@@ -93,7 +97,7 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
 
   const onTilePress = useCallback(
     (pairIndex: number, tileIndex: 0 | 1) => {
-      if (shell.interactionLocked) return;
+      if (interactionLocked) return;
       if (!roundData) return;
 
       setSelections((prev) => {
@@ -112,8 +116,8 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
           });
 
           if (win) {
-            shell.setInteractionLocked(true);
-            shell.incrementPointsAndTracker(true);
+            setInteractionLocked(true);
+            incrementPointsAndTracker(true);
             // Java line 296: playCorrectSoundThenActiveWordClip(false) — chime + word, NO final fanfare
             void (async () => {
               await audio.playCorrect();
@@ -131,7 +135,7 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
         return next;
       });
     },
-    [shell, roundData, audio, startRound],
+    [interactionLocked, setInteractionLocked, incrementPointsAndTracker, roundData, audio, startRound],
   );
 
   const onImagePress = useCallback(() => {
@@ -203,7 +207,7 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
       themeColors={themeColors}
       wordImageSrc={wordImageSrc}
       wordLabel={roundData.word.wordInLWC}
-      interactionLocked={shell.interactionLocked}
+      interactionLocked={interactionLocked}
       isWin={isWin}
       onTilePress={onTilePress}
       onImagePress={onImagePress}

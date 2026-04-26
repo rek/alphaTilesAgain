@@ -23,6 +23,8 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
+  useShellRepeat,
 } from '@alphaTiles/feature-game-shell';
 import { ItalyScreen } from './ItalyScreen';
 import type { ItalyBoardCell } from './ItalyScreen';
@@ -173,16 +175,8 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
   }, [currentCall, playCallAudio]);
 
   // Wire shell advance arrow + repeat button to our handlers.
-  // Re-registers whenever the callbacks' identity changes so the shell
-  // always invokes the latest closure.
-  useEffect(() => {
-    shell.setOnAdvance(onAdvance);
-    shell.setOnRepeat(onRepeat);
-    return () => {
-      shell.setOnAdvance(null);
-      shell.setOnRepeat(null);
-    };
-  }, [shell, onAdvance, onRepeat]);
+  useShellAdvance(onAdvance);
+  useShellRepeat(onRepeat);
 
   const onTilePress = useCallback(
     (boardIndex: number) => {

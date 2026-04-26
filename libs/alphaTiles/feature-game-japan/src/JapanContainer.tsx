@@ -14,6 +14,7 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import {
   buildTileHashMap,
@@ -142,6 +143,10 @@ type JapanGameProps = {
 
 function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
   const shell = useGameShell();
+  const {
+    setRefWord, setInteractionLocked, incrementPointsAndTracker,
+    replayWord, interactionLocked,
+  } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
 
@@ -272,22 +277,19 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
     setIsWon(false);
     setError(null);
 
-    shell.setRefWord({
+    setRefWord({
       wordInLOP: chosenWord.wordInLOP,
       wordInLWC: chosenWord.wordInLWC,
     });
-  }, [assets, parseWordTiles, parseCorrectSyllables, maxTiles, shell]);
+  }, [assets, parseWordTiles, parseCorrectSyllables, maxTiles, setRefWord]);
 
-  // Mount-only kickoff + wire advance arrow to startRound (spec line 76:
-  // "advance arrow turns blue" on win → tapping it starts a new round).
+  // Mount-only kickoff (spec line 76: "advance arrow turns blue" on win → tapping it starts a new round).
   useEffect(() => {
     startRound();
-    shell.setOnAdvance(startRound);
-    return () => {
-      shell.setOnAdvance(null);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useShellAdvance(startRound);
 
   /**
    * Run partial-credit evaluation; carry-forward prior locks so they remain
@@ -335,7 +337,7 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
 
   const onJoin = useCallback(
     (boundaryIndex: number) => {
-      if (isWon || shell.interactionLocked) return;
+      if (isWon || interactionLocked) return;
 
       setGroups((prev) => {
         const joined = joinTiles(prev, boundaryIndex);
@@ -350,13 +352,13 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
           // Force-lock all groups for the green/disabled win state.
           const finalGroups = evaluated.map((g) => ({ ...g, isLocked: true }));
           setIsWon(true);
-          shell.setInteractionLocked(true);
+          setInteractionLocked(true);
           // Spec: playCorrectSoundThenActiveWordClip(false) — chime then word —
           // BEFORE updatePointsAndTrackers(1). Sequenced via .then chain.
           audio.playCorrectFinal().then(() => {
             if (!isMountedRef.current) return;
-            shell.replayWord();
-            shell.incrementPointsAndTracker(true, 1);
+            replayWord();
+            incrementPointsAndTracker(true, 1);
           });
           return finalGroups;
         }
@@ -366,7 +368,7 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
     },
     [
       isWon,
-      shell,
+      interactionLocked, setInteractionLocked, replayWord, incrementPointsAndTracker,
       correctSyllables,
       lockedBoundaries,
       applyEvaluation,
@@ -377,7 +379,7 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
 
   const onSeparate = useCallback(
     (groupIndex: number, tilePositionInGroup: number) => {
-      if (isWon || shell.interactionLocked) return;
+      if (isWon || interactionLocked) return;
 
       setGroups((prev) => {
         const separated = separateTiles(prev, groupIndex, tilePositionInGroup);
@@ -390,7 +392,7 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
         return evaluated;
       });
     },
-    [isWon, shell, correctSyllables, lockedBoundaries, applyEvaluation],
+    [isWon, interactionLocked, correctSyllables, lockedBoundaries, applyEvaluation],
   );
 
   if (error === 'insufficient-content') {

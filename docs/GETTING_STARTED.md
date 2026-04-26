@@ -15,10 +15,13 @@ npm install
 
 ```sh
 APP_LANG=eng nx start alphaTiles      # Metro bundler
-APP_LANG=eng nx serve alphaTiles      # Web dev server (http://localhost:8081)
+nx start-web-eng alphaTiles           # Web dev server — eng (http://localhost:8081)
+nx start-web-yue alphaTiles           # Web dev server — yue (http://localhost:8081)
 APP_LANG=eng nx run-android alphaTiles
 APP_LANG=eng nx run-ios alphaTiles
 ```
+
+> `start-web-*` regenerates the lang manifest before starting — no separate regen step needed.
 
 > Tip: `nx show project alphaTiles` lists all available targets.
 

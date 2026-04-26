@@ -21,6 +21,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { ScoreBar } from '@shared/ui-score-bar';
 import { Celebration } from '@shared/ui-celebration';
 import type { CelebrationProps } from '@shared/ui-celebration';
@@ -28,8 +29,6 @@ import type { CelebrationProps } from '@shared/ui-celebration';
 export type GameShellIcons = {
   back?: ImageSourcePropType;
   instructions?: ImageSourcePropType;
-  advance?: ImageSourcePropType;
-  advanceInactive?: ImageSourcePropType;
   trackerComplete?: ImageSourcePropType;
   trackerIncomplete?: ImageSourcePropType;
 };
@@ -93,10 +92,6 @@ export function GameShellScreen({
     icons?.trackerComplete && icons?.trackerIncomplete
       ? { complete: icons.trackerComplete, incomplete: icons.trackerIncomplete }
       : undefined;
-
-  const advanceIconSrc = advanceArrow === 'gray'
-    ? (icons?.advanceInactive ?? icons?.advance)
-    : (icons?.advance ?? icons?.advanceInactive);
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -172,13 +167,11 @@ export function GameShellScreen({
             accessibilityRole="button"
             disabled={interactionLocked || advanceArrow === 'gray'}
           >
-            {advanceIconSrc ? (
-              <Image source={advanceIconSrc} style={styles.chromeIcon} />
-            ) : (
-              <Text style={[styles.chromeLabel, advanceArrow === 'gray' && styles.chromeLabelGray]}>
-                →
-              </Text>
-            )}
+            <MaterialIcons
+              name="arrow-forward"
+              size={28}
+              color={advanceArrow === 'gray' ? '#e0e0e0' : '#fff'}
+            />
           </Pressable>
         )}
       </View>

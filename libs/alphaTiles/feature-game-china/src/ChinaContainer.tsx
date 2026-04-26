@@ -13,6 +13,7 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import {
@@ -42,6 +43,10 @@ type RouteParams = Record<string, string | string[] | undefined> & { icons?: Gam
 
 function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
+  const {
+    setRefWord, setInteractionLocked, incrementPointsAndTracker,
+    interactionLocked,
+  } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
   const chinaData = usePrecompute<ChinaData>('china');
@@ -107,26 +112,24 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
     setBlankIndex(boardResult.blankIndex);
     setSolvedLines([false, false, false, false]);
     setCurrentWords({ threeTileWord: chosen.threeTileWord, four: chosen.fourTileWords });
-    shell.setRefWord({
+    setRefWord({
       wordInLOP: chosen.threeTileWord.wordInLOP,
       wordInLWC: chosen.threeTileWord.wordInLWC,
     });
     setError(null);
-  }, [chinaData, parseTiles, moves, shell]);
+  }, [chinaData, parseTiles, moves, setRefWord]);
 
-  // One-shot mount kickoff + wire advance arrow to startRound (spec §Win/Advance).
+  // One-shot mount kickoff (spec §Win/Advance).
   useEffect(() => {
     startRound();
-    shell.setOnAdvance(startRound);
-    return () => {
-      shell.setOnAdvance(null);
-    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useShellAdvance(startRound);
+
   const onTilePress = useCallback(
     (index: number) => {
-      if (shell.interactionLocked) return;
+      if (interactionLocked) return;
       if (!currentWords) return;
       if (blankIndex === index) return;
       if (!isSlideable(index, blankIndex)) return;
@@ -157,14 +160,15 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
       setSolvedLines(newSolvedLines);
 
       if (newSolvedLines.every(Boolean)) {
-        shell.setInteractionLocked(true);
+        setInteractionLocked(true);
         audio.playCorrectFinal();
         // Spec line 83: incrementPointsAndTracker(4) on full-board solve.
-        shell.incrementPointsAndTracker(true, 4);
+        incrementPointsAndTracker(true, 4);
       }
     },
     [
-      shell, blankIndex, board, currentWords, tileMap, placeholderChar,
+      interactionLocked, setInteractionLocked, incrementPointsAndTracker,
+      blankIndex, board, currentWords, tileMap, placeholderChar,
       scriptType, audio,
     ],
   );
@@ -173,10 +177,10 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
     (i: number) => {
       if (!currentWords) return;
       const word = i === 3 ? currentWords.threeTileWord : currentWords.four[i];
-      shell.setRefWord({ wordInLOP: word.wordInLOP, wordInLWC: word.wordInLWC });
+      setRefWord({ wordInLOP: word.wordInLOP, wordInLWC: word.wordInLWC });
       audio.playWord(word.wordInLWC);
     },
-    [currentWords, shell, audio],
+    [currentWords, setRefWord, audio],
   );
 
   const rowColors: ('solved' | 'unsolved' | 'blank')[][] = [0, 1, 2, 3].map((row) => {
@@ -221,7 +225,7 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
         blankIndex={blankIndex}
         rowColors={rowColors}
         wordImages={wordImagesData}
-        interactionLocked={shell.interactionLocked}
+        interactionLocked={interactionLocked}
         onTilePress={onTilePress}
         onImagePress={onImagePress}
       />

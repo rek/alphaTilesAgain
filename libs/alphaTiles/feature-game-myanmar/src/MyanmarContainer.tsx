@@ -12,6 +12,7 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import {
@@ -72,6 +73,10 @@ function MyanmarGame({
   selectionMethod: 1 | 2;
 }): React.JSX.Element {
   const shell = useGameShell();
+  const {
+    setRefWord, setInteractionLocked, incrementPointsAndTracker,
+    replayWord, interactionLocked,
+  } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
 
@@ -99,7 +104,7 @@ function MyanmarGame({
   const isMountedRef = useRef(true);
 
   const startRound = useCallback(() => {
-    shell.setInteractionLocked(false);
+    setInteractionLocked(false);
 
     const rng = Math.random;
     // Pick candidate words: filter to those with parseable tile counts in [3..7],
@@ -143,13 +148,13 @@ function MyanmarGame({
 
     if (placed.length > 0) {
       const firstWord = placed[0].word;
-      shell.setRefWord({
+      setRefWord({
         wordInLOP: firstWord.wordInLOP,
         wordInLWC: firstWord.wordInLWC,
       });
     }
   }, [
-    shell,
+    setRefWord, setInteractionLocked,
     wordRows,
     tileRows,
     tileMap,
@@ -162,13 +167,13 @@ function MyanmarGame({
   useEffect(() => {
     isMountedRef.current = true;
     startRound();
-    shell.setOnAdvance(startRound);
     return () => {
       isMountedRef.current = false;
-      shell.setOnAdvance(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useShellAdvance(startRound);
 
   const recordFound = useCallback(
     (placedIdx: number) => {
@@ -182,20 +187,21 @@ function MyanmarGame({
         prev.map((v, i) => (i === placedIdx ? color : v)),
       );
       setActiveWord(word.wordInLOP);
-      shell.setRefWord({ wordInLOP: word.wordInLOP, wordInLWC: word.wordInLWC });
+      setRefWord({ wordInLOP: word.wordInLOP, wordInLWC: word.wordInLWC });
       // Completion fires here (event-driven), not in a derived effect.
       // Java parity: playCorrectThenWord(true) on the final found word.
       if (completionGoal > 0 && nextFoundCount === completionGoal) {
-        shell.incrementPointsAndTracker(true);
+        incrementPointsAndTracker(true);
         audio.playCorrect().then(() => {
           if (!isMountedRef.current) return;
-          shell.replayWord();
+          replayWord();
         });
       } else {
         audio.playCorrect();
       }
     },
-    [foundColorBySlot, palette, placedWords, foundFlags, completionGoal, shell, audio],
+    [foundColorBySlot, palette, placedWords, foundFlags, completionGoal,
+     setRefWord, incrementPointsAndTracker, replayWord, audio],
   );
 
   const handleClassicTap = useCallback(
@@ -243,11 +249,11 @@ function MyanmarGame({
 
   const onCellPress = useCallback(
     (i: number) => {
-      if (shell.interactionLocked) return;
+      if (interactionLocked) return;
       if (selectionMethod === 1) handleClassicTap(i);
       else handleStackTap(i);
     },
-    [shell.interactionLocked, selectionMethod, handleClassicTap, handleStackTap],
+    [interactionLocked, selectionMethod, handleClassicTap, handleStackTap],
   );
 
   const onImagePress = useCallback(
@@ -255,13 +261,13 @@ function MyanmarGame({
       const placed = placedWords[slot];
       if (!placed) return;
       setActiveWord(placed.word.wordInLOP);
-      shell.setRefWord({
+      setRefWord({
         wordInLOP: placed.word.wordInLOP,
         wordInLWC: placed.word.wordInLWC,
       });
-      shell.replayWord();
+      replayWord();
     },
-    [placedWords, shell],
+    [placedWords, setRefWord, replayWord],
   );
 
   // Build presenter props.
@@ -302,7 +308,7 @@ function MyanmarGame({
       grid={cells}
       imageBank={imageBank}
       activeWord={activeWord}
-      interactionLocked={shell.interactionLocked}
+      interactionLocked={interactionLocked}
       onCellPress={onCellPress}
       onImagePress={onImagePress}
     />

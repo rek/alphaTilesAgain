@@ -20,6 +20,7 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import {
   buildTileHashMap,
@@ -250,14 +251,14 @@ function BrazilGame({
 
   useEffect(() => {
     startRound();
-    shell.setOnAdvance(startRound);
     return () => {
       isMountedRef.current = false;
       if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-      shell.setOnAdvance(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useShellAdvance(startRound);
 
   const onChoice = useCallback(
     (index: number) => {

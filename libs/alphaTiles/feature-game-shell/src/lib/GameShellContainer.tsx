@@ -365,7 +365,7 @@ export function GameShellContainer({
     children,
   };
 
-  const contextValue = {
+  const contextValue = useMemo(() => ({
     incrementPointsAndTracker,
     replayWord,
     interactionLocked,
@@ -376,7 +376,18 @@ export function GameShellContainer({
     gameUniqueId,
     setOnAdvance,
     setOnRepeat,
-  };
+  }), [
+    incrementPointsAndTracker,
+    replayWord,
+    interactionLocked,
+    setInteractionLocked,
+    refWord,
+    setRefWord,
+    progressEntry,
+    gameUniqueId,
+    setOnAdvance,
+    setOnRepeat,
+  ]);
 
   return (
     <GameShellContextProvider value={contextValue}>

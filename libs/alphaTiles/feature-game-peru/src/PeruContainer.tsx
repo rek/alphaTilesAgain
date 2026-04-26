@@ -13,6 +13,7 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { buildTileHashMap } from '@shared/util-phoneme';
@@ -32,6 +33,10 @@ const PALETTE_FALLBACK = ['#1565C0', '#43A047', '#E53935', '#FB8C00'];
 
 function PeruGame({ challengeLevel }: { challengeLevel: ChoiceLevel }): React.JSX.Element {
   const shell = useGameShell();
+  const {
+    setRefWord, setInteractionLocked, incrementPointsAndTracker,
+    replayWord, interactionLocked,
+  } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
 
@@ -61,7 +66,7 @@ function PeruGame({ challengeLevel }: { challengeLevel: ChoiceLevel }): React.JS
   const isMountedRef = useRef(true);
 
   const startRound = useCallback(() => {
-    shell.setInteractionLocked(false);
+    setInteractionLocked(false);
 
     let pickedRound: {
       correct: string;
@@ -120,26 +125,26 @@ function PeruGame({ challengeLevel }: { challengeLevel: ChoiceLevel }): React.JS
     setWordLabel(pickedRound.label);
     setWordImage(pickedRound.image);
     wrongPicksRef.current = [];
-    shell.setRefWord(pickedRound.refWord);
+    setRefWord(pickedRound.refWord);
   }, [
-    shell, assets.images.words, wordRows, tileRows,
+    setRefWord, setInteractionLocked, assets.images.words, wordRows, tileRows,
     scriptType, placeholderChar, tileMap, sameTypePools, colorList, challengeLevel,
   ]);
 
   useEffect(() => {
     isMountedRef.current = true;
     startRound();
-    shell.setOnAdvance(startRound);
     return () => {
       isMountedRef.current = false;
-      shell.setOnAdvance(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useShellAdvance(startRound);
+
   const onChoicePress = useCallback(
     (index: number) => {
-      if (shell.interactionLocked) return;
+      if (interactionLocked) return;
       const choice = choices[index];
       if (!choice || choice.grayed) return;
 
@@ -149,11 +154,11 @@ function PeruGame({ challengeLevel }: { challengeLevel: ChoiceLevel }): React.JS
           i === index ? c : { ...c, grayed: true },
         );
         setChoices(grayed);
-        shell.setInteractionLocked(true);
-        shell.incrementPointsAndTracker(true);
+        setInteractionLocked(true);
+        incrementPointsAndTracker(true);
         audio.playCorrect().then(() => {
           if (!isMountedRef.current) return;
-          shell.replayWord();
+          replayWord();
         });
       } else {
         // Wrong: track up to 3 distinct picks, play incorrect chime.
@@ -164,12 +169,12 @@ function PeruGame({ challengeLevel }: { challengeLevel: ChoiceLevel }): React.JS
         audio.playIncorrect();
       }
     },
-    [shell, audio, choices, correctText],
+    [interactionLocked, setInteractionLocked, incrementPointsAndTracker, replayWord, audio, choices, correctText],
   );
 
   const onImagePress = useCallback(() => {
-    shell.replayWord();
-  }, [shell]);
+    replayWord();
+  }, [replayWord]);
 
   if (error === 'insufficient-content') {
     return (
@@ -191,7 +196,7 @@ function PeruGame({ challengeLevel }: { challengeLevel: ChoiceLevel }): React.JS
       wordImage={wordImage}
       wordLabel={wordLabel}
       choices={choices}
-      interactionLocked={shell.interactionLocked}
+      interactionLocked={interactionLocked}
       onChoicePress={onChoicePress}
       onImagePress={onImagePress}
     />

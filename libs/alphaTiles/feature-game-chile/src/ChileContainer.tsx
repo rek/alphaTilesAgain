@@ -17,12 +17,13 @@
  * Win: all tiles in current row GREEN → incrementPointsAndTracker(true), showReset.
  * Lose: last row, no win → append secret in GREEN, showReset.
  */
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import { ChileScreen } from './ChileScreen';
 import { evaluateGuess, countGreens } from './evaluateGuess';
@@ -205,10 +206,7 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
   }, [finished, wordList, chileData.words, chileData.keys, guessCount, secret]);
 
   // Register onReset as the shell's advance handler (Chile.java reset = advance arrow).
-  useEffect(() => {
-    shell.setOnAdvance(onReset);
-    return () => shell.setOnAdvance(null);
-  }, [shell, onReset]);
+  useShellAdvance(onReset);
 
   // RTL icon flip — Chile.java:87–90. Mirror the backspace/reset glyphs when
   // the language pack's "Script direction" is RTL. Same pattern as

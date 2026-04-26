@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
-import { GameShellContainer, useGameShell } from '@alphaTiles/feature-game-shell';
+import { GameShellContainer, useGameShell, useShellWord } from '@alphaTiles/feature-game-shell';
 import {
   parseWordIntoTilesPreliminary,
   buildTileHashMap,
@@ -75,11 +75,7 @@ function RomaniaGame(): React.JSX.Element {
 
   const currentWord = filteredWords[wordIndex] ?? null;
 
-  useEffect(() => {
-    if (currentWord) {
-      shell.setRefWord({ wordInLOP: currentWord.wordInLOP, wordInLWC: currentWord.wordInLWC });
-    }
-  }, [currentWord, shell]);
+  useShellWord(currentWord);
 
   const wordTiles = useMemo(
     () => (currentWord ? parseWord(currentWord) : []),

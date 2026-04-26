@@ -14,6 +14,7 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { EcuadorScreen } from './EcuadorScreen';
@@ -31,6 +32,10 @@ const WRONG_PICKS_CAP = TILE_COUNT - 1; // Java visibleGameButtons - 1
 
 function EcuadorGame(): React.JSX.Element {
   const shell = useGameShell();
+  const {
+    setRefWord, setInteractionLocked, incrementPointsAndTracker,
+    replayWord, interactionLocked,
+  } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
   const { width, height } = useWindowDimensions();
@@ -51,7 +56,7 @@ function EcuadorGame(): React.JSX.Element {
   const area = useMemo(() => ({ width, height }), [width, height]);
 
   const startRound = useCallback(() => {
-    shell.setInteractionLocked(false);
+    setInteractionLocked(false);
 
     let placement: ReturnType<typeof placeTiles> = null;
     let pick: ReturnType<typeof pickEcuadorWords> | null = null;
@@ -99,26 +104,26 @@ function EcuadorGame(): React.JSX.Element {
       assets.images.wordsAlt[pick.prompt.wordInLWC] as ImageSourcePropType | undefined,
     );
     wrongPicksRef.current = [];
-    shell.setRefWord({
+    setRefWord({
       wordInLOP: pick.prompt.wordInLOP,
       wordInLWC: pick.prompt.wordInLWC,
     });
-  }, [shell, wordRows, area, colorPalette, assets.images.wordsAlt]);
+  }, [setRefWord, setInteractionLocked, wordRows, area, colorPalette, assets.images.wordsAlt]);
 
   useEffect(() => {
     isMountedRef.current = true;
     startRound();
-    shell.setOnAdvance(startRound);
     return () => {
       isMountedRef.current = false;
-      shell.setOnAdvance(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useShellAdvance(startRound);
+
   const onTilePress = useCallback(
     (slot: number) => {
-      if (shell.interactionLocked) return;
+      if (interactionLocked) return;
       const tile = tiles[slot];
       if (!tile || tile.grayed) return;
 
@@ -127,12 +132,12 @@ function EcuadorGame(): React.JSX.Element {
           i === slot ? t : { ...t, grayed: true },
         );
         setTiles(grayed);
-        shell.setInteractionLocked(true);
+        setInteractionLocked(true);
         // Java updatePointsAndTrackers(2) → 2 points per correct.
-        shell.incrementPointsAndTracker(true, 2);
+        incrementPointsAndTracker(true, 2);
         audio.playCorrect().then(() => {
           if (!isMountedRef.current) return;
-          shell.replayWord();
+          replayWord();
         });
       } else {
         const list = wrongPicksRef.current;
@@ -142,12 +147,12 @@ function EcuadorGame(): React.JSX.Element {
         audio.playIncorrect();
       }
     },
-    [shell, audio, tiles, correctText],
+    [interactionLocked, setInteractionLocked, incrementPointsAndTracker, replayWord, audio, tiles, correctText],
   );
 
   const onImagePress = useCallback(() => {
-    shell.replayWord();
-  }, [shell]);
+    replayWord();
+  }, [replayWord]);
 
   if (error === 'insufficient-content') {
     return (
@@ -169,7 +174,7 @@ function EcuadorGame(): React.JSX.Element {
       promptImage={promptImage}
       promptLabel={promptLabel}
       tiles={tiles}
-      interactionLocked={shell.interactionLocked}
+      interactionLocked={interactionLocked}
       onTilePress={onTilePress}
       onImagePress={onImagePress}
     />

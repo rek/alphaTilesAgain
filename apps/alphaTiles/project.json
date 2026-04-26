@@ -89,6 +89,22 @@
     },
     "prebuild-lang": {
       "executor": "nx:noop"
+    },
+    "start-web-eng": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "APP_LANG=eng npx tsx tools/generate-lang-manifest.ts && cd apps/alphaTiles && APP_LANG=eng npx expo start -w --port 8081",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "start-web-yue": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "APP_LANG=yue npx tsx tools/generate-lang-manifest.ts && cd apps/alphaTiles && APP_LANG=yue npx expo start -w --port 8081",
+        "cwd": "{workspaceRoot}"
+      }
     }
   }
 }

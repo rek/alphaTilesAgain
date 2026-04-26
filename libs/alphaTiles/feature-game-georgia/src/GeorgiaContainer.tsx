@@ -24,6 +24,7 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import type { LangAssets } from '@alphaTiles/data-language-assets';
@@ -292,13 +293,13 @@ function GeorgiaGame({
   useEffect(() => {
     isMountedRef.current = true;
     startRound();
-    shell.setOnAdvance(startRound);
     return () => {
       isMountedRef.current = false;
-      shell.setOnAdvance(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useShellAdvance(startRound);
 
   const onChoicePress = useCallback(
     (index: number) => {
