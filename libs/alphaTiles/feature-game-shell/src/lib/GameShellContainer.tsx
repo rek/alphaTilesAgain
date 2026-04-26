@@ -212,7 +212,7 @@ export function GameShellContainer({
     if (after12checkedTrackers === 2) {
       // Mode 2: return to earth after correctSoundDuration ms (GameActivity.java:319-329)
       celebrationTimerRef.current = setTimeout(() => {
-        router.push('/earth' as Parameters<typeof router.push>[0]);
+        router.push('/menu' as Parameters<typeof router.push>[0]);
       }, correctSoundDuration);
       return;
     }
@@ -246,7 +246,7 @@ export function GameShellContainer({
             },
           } as Parameters<typeof router.push>[0]);
         } else {
-          router.push('/earth' as Parameters<typeof router.push>[0]);
+          router.push('/menu' as Parameters<typeof router.push>[0]);
         }
       }, NEXT_GAME_DELAY_MS);
     }
@@ -320,7 +320,7 @@ export function GameShellContainer({
 
   const handleCelebrationBack = useCallback(() => {
     setShowCelebration(false);
-    router.push('/earth' as Parameters<typeof router.push>[0]);
+    router.push('/menu' as Parameters<typeof router.push>[0]);
   }, [router]);
 
   // Advance arrow state: blue when changeArrowColor=false or not repeatLocked

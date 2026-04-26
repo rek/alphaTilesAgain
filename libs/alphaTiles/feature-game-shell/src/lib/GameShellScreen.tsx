@@ -172,7 +172,7 @@ export function GameShellScreen({
             style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
             accessibilityLabel="advance"
             accessibilityRole="button"
-            disabled={advanceArrow === 'gray'}
+            disabled={interactionLocked || advanceArrow === 'gray'}
           >
             {advanceIconSrc ? (
               <Image source={advanceIconSrc} style={styles.chromeIcon} />

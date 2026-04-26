@@ -14,7 +14,12 @@ export type RomaniaScreenProps = {
   focusTileBase: string;
   /** Pre-translated label for the next button. */
   nextLabel: string;
+  /** Pre-translated label for the previous button. */
+  prevLabel: string;
+  /** When false, prev button is hidden (at start of tile's word list). */
+  showPrev: boolean;
   onNext: () => void;
+  onPrev: () => void;
 };
 
 export function RomaniaScreen({
@@ -24,7 +29,10 @@ export function RomaniaScreen({
   boldFocusTile,
   focusTileBase,
   nextLabel,
+  prevLabel,
+  showPrev,
   onNext,
+  onPrev,
 }: RomaniaScreenProps): React.JSX.Element {
   return (
     <View style={styles.root}>
@@ -55,14 +63,26 @@ export function RomaniaScreen({
         </View>
       </Pressable>
 
-      <Pressable
-        style={styles.nextButton}
-        onPress={onNext}
-        accessibilityLabel={nextLabel}
-        accessibilityRole="button"
-      >
-        <Text style={styles.nextButtonText}>{nextLabel}</Text>
-      </Pressable>
+      <View style={styles.navRow}>
+        {showPrev && (
+          <Pressable
+            style={styles.navButton}
+            onPress={onPrev}
+            accessibilityLabel={prevLabel}
+            accessibilityRole="button"
+          >
+            <Text style={styles.navButtonText}>{prevLabel}</Text>
+          </Pressable>
+        )}
+        <Pressable
+          style={styles.navButton}
+          onPress={onNext}
+          accessibilityLabel={nextLabel}
+          accessibilityRole="button"
+        >
+          <Text style={styles.navButtonText}>{nextLabel}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -108,13 +128,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1565C0',
   },
-  nextButton: {
+  navRow: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  navButton: {
     backgroundColor: '#1565C0',
     borderRadius: 8,
     paddingHorizontal: 32,
     paddingVertical: 14,
   },
-  nextButtonText: {
+  navButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',

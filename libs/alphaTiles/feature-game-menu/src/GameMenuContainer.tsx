@@ -19,7 +19,6 @@ export function GameMenuContainer(): React.JSX.Element {
 
   const { allDoors } = useDoors(player?.id ?? null, 0);
   const score = useTotalPoints(player?.id ?? '');
-  const tMenu = (key: string, opts?: Record<string, unknown>) => t(`menu.${key}`, opts);
 
   if (player === null) {
     return <Redirect href="/choose-player" />;

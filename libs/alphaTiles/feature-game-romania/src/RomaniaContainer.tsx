@@ -103,6 +103,12 @@ function RomaniaGame(): React.JSX.Element {
     }
   }, [interactionLocked, wordIndex, filteredWords.length, tileIndex, tilesWithWords.length]);
 
+  // scrollBack() in Romania.java: navigate to previous word within current tile's word list
+  const onPrev = useCallback(() => {
+    if (interactionLocked) return;
+    setWordIndex((i) => Math.max(0, i - 1));
+  }, [interactionLocked]);
+
   if (tilesWithWords.length === 0 || !focusTile || !currentWord) {
     return (
       <RomaniaScreen
@@ -112,7 +118,10 @@ function RomaniaGame(): React.JSX.Element {
         boldFocusTile={false}
         focusTileBase=""
         nextLabel={t('next')}
+        prevLabel={t('go_backward')}
+        showPrev={false}
         onNext={() => undefined}
+        onPrev={() => undefined}
       />
     );
   }
@@ -125,7 +134,10 @@ function RomaniaGame(): React.JSX.Element {
       boldFocusTile={boldFocusTile}
       focusTileBase={focusTile.base}
       nextLabel={t('next')}
+      prevLabel={t('go_backward')}
+      showPrev={wordIndex > 0}
       onNext={onNext}
+      onPrev={onPrev}
     />
   );
 }

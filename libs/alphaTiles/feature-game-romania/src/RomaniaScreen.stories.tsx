@@ -6,7 +6,10 @@ const meta: Meta<typeof RomaniaScreen> = {
   component: RomaniaScreen,
   args: {
     nextLabel: 'Next',
+    prevLabel: 'Go To Previous',
+    showPrev: false,
     onNext: () => undefined,
+    onPrev: () => undefined,
   },
 };
 
