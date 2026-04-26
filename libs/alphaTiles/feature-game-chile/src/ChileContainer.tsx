@@ -17,8 +17,9 @@
  * Win: all tiles in current row GREEN → incrementPointsAndTracker(true), showReset.
  * Lose: last row, no win → append secret in GREEN, showReset.
  */
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
+import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
@@ -55,6 +56,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
   const assets = useLangAssets();
+  const audio = useAudio();
   const chileData = usePrecompute<ChileData>('chile');
 
   // Read baseGuessCount from settings (Chile.java:309)
@@ -65,15 +67,15 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
 
   const guessCount = Math.max(1, baseGuessCount - challengeLevel + 1);
 
-  // Initialize shuffled word list — stable reference via useMemo (one-shot at mount)
-  const [wordList, setWordList] = useState<string[][]>(() =>
-    shuffleArray(chileData.words),
+  // Initialize shuffled word list and pop initial secret from the SAME shuffle
+  // (Chile.java:111-114 — single shuffle, then remove last as secret).
+  const initialShuffle = useMemo(() => shuffleArray(chileData.words), [chileData.words]);
+  const [secret, setSecret] = useState<string[]>(
+    () => initialShuffle[initialShuffle.length - 1] ?? [],
   );
-
-  const [secret, setSecret] = useState<string[]>(() => {
-    const shuffled = shuffleArray(chileData.words);
-    return shuffled[shuffled.length - 1] ?? [];
-  });
+  const [wordList, setWordList] = useState<string[][]>(
+    () => initialShuffle.slice(0, -1),
+  );
 
   const [guessTiles, setGuessTiles] = useState<ColorTile[]>(() =>
     buildInitialGuessTiles(guessCount, secret.length),
@@ -157,17 +159,25 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
       setFinished(true);
       setShowReset(true);
       shell.incrementPointsAndTracker(true);
+      void audio.playCorrect();
     } else if (isLastRow) {
-      // Append secret row in GREEN (Chile.java line 268–271)
-      const answerTiles: ColorTile[] = secret.map((text) => ({ text, color: 'GREEN' as const }));
+      // Append secret row in REVEAL color: GREEN bg + YELLOW text (Chile.java:268–271).
+      const answerTiles: ColorTile[] = secret.map((text) => ({ text, color: 'REVEAL' as const }));
       setGuessTiles((prev) => [...prev, ...answerTiles]);
       setFinished(true);
       setShowReset(true);
+      void audio.playIncorrect();
     } else {
       setCurrentRow((r) => r + 1);
     }
-  }, [finished, currentRow, wordLength, guessTiles, secret, guessCount, shell]);
+  }, [finished, currentRow, wordLength, guessTiles, secret, guessCount, shell, audio]);
 
+  // Wire the shell's advance arrow to onReset (Chile.java:282 setOptionsRowClickable parity).
+  // Defined below; registered via effect after declaration.
+  // TODO(chile-spec-drift): No shell API for setAdvanceArrowToBlue / setAdvanceArrowToGray /
+  //   setOptionsRowClickable. Spec requires arrow color toggle on win/lose vs reset, and
+  //   gating the bottom options row. Add `setAdvanceArrowColor` + `setOptionsRowClickable`
+  //   to GameShellContextValue and call them from the win/lose/reset branches.
   const onReset = useCallback(() => {
     if (!finished) return;
 
@@ -188,6 +198,16 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
     setFinished(false);
     setShowReset(false);
   }, [finished, wordList, chileData.words, chileData.keys, guessCount, secret]);
+
+  // Register onReset as the shell's advance handler (Chile.java reset = advance arrow).
+  useEffect(() => {
+    shell.setOnAdvance(onReset);
+    return () => shell.setOnAdvance(null);
+  }, [shell, onReset]);
+
+  // TODO(chile-spec-drift): RTL icon flip — when assets.langInfo 'Script direction' === 'RTL',
+  //   pass an `rtl` prop to <ChileScreen> and apply `transform: [{ scaleX: -1 }]` to the
+  //   backspace and reset (repeat) icons (Chile.java:87–90).
 
   return (
     <ChileScreen

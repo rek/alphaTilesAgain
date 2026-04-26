@@ -23,6 +23,10 @@ export type ChileData = {
   keyboardWidth: number;
 };
 
+// TODO(chile-spec-drift): emit `fontScale: number` (Util.getMinFontSize(keys)) per spec D10.
+//   No equivalent util exists in @shared yet; once added, return it on ChileData and consume
+//   in <ChileScreen> to size keyboard tile text (Chile.java:368-369).
+
 const MAX_KEYBOARD_SIZE = 50;
 const DEFAULT_KEYBOARD_WIDTH = 7;
 const DEFAULT_MIN_WORD_LENGTH = 3;

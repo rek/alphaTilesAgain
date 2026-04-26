@@ -20,6 +20,7 @@ const COLOR_RANK: Record<TileColor, number> = {
   GRAY: 1,
   BLUE: 2,
   GREEN: 3,
+  REVEAL: 3,
 };
 
 /**
