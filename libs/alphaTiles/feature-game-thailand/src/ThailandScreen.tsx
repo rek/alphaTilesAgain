@@ -10,12 +10,15 @@ import {
 import type { ImageSourcePropType } from 'react-native';
 import type { ThailandType } from './decodeThailandChallengeLevel';
 
-// TODO(thailand-spec-drift): correct-feedback per Java 588-595 must use refColor (not
-// CORRECT_BG) for non-WORD_IMAGE choices, and must whiten the 3 NON-correct WORD_IMAGE
-// buttons. Also missing thailand2 larger layout variant when choiceType === WORD_TEXT
-// (Java 89-96).
-const CHOICE_BG = '#A9A9A9';
-const CORRECT_BG = '#4CAF50';
+// Java 588-595 correct-feedback parity: when the player taps the correct
+// choice and choiceType !== WORD_IMAGE the correct button takes refColor +
+// white text; when choiceType === WORD_IMAGE the THREE non-correct buttons
+// instead get a white background. The container computes the choice colours
+// (it knows refColor + choiceType) and passes them via `choiceFeedback`.
+//
+// TODO(thailand-spec-drift): thailand2 larger layout variant when
+// choiceType === WORD_TEXT (Java 89-96) is deferred — see CLAUDE.md task list.
+const DEFAULT_CHOICE_BG = '#A9A9A9';
 const REF_AUDIO_BG = '#1565C0';
 const REF_TEXT_BG = '#E0E0E0';
 const REF_WORD_TEXT_COLOR = '#000000';
@@ -23,7 +26,7 @@ const CHOICE_TEXT_COLOR = '#000000';
 const WHITE = '#FFFFFF';
 
 export type ThailandRefDisplay =
-  | { type: 'text'; text: string; refColor: string }
+  | { type: 'text'; text: string; backgroundColor: string; textColor: string }
   | { type: 'image'; imageSource: ImageSourcePropType | undefined; wordLabel: string }
   | { type: 'audio'; refType: ThailandType };
 
@@ -31,10 +34,23 @@ export type ThailandChoiceDisplay =
   | { type: 'text'; text: string }
   | { type: 'image'; imageSource: ImageSourcePropType | undefined; wordLabel: string };
 
+/**
+ * Per-choice visual override applied when correctIndex !== null. The
+ * container builds this once, encoding Java 588-595 semantics:
+ *   - non-WORD_IMAGE rounds: correct = { bg: refColor, fg: white }, others = null
+ *   - WORD_IMAGE rounds: correct = null, others = { bg: white }
+ */
+export type ThailandChoiceFeedback = {
+  backgroundColor?: string;
+  textColor?: string;
+} | null;
+
 export type ThailandScreenProps = {
   refDisplay: ThailandRefDisplay;
   choices: [ThailandChoiceDisplay, ThailandChoiceDisplay, ThailandChoiceDisplay, ThailandChoiceDisplay];
   correctIndex: number | null;
+  /** One slot per choice; ignored unless correctIndex !== null. */
+  choiceFeedback?: [ThailandChoiceFeedback, ThailandChoiceFeedback, ThailandChoiceFeedback, ThailandChoiceFeedback];
   interactionLocked: boolean;
   onChoicePress: (index: number) => void;
   onRefPress: () => void;
@@ -97,12 +113,16 @@ function RefDisplay({
       style={[
         styles.refCell,
         styles.refTextCell,
-        { width: cellSize * 2, height: cellSize * 2, backgroundColor: refDisplay.refColor },
+        { width: cellSize * 2, height: cellSize * 2, backgroundColor: refDisplay.backgroundColor },
       ]}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
     >
-      <Text style={styles.refText} numberOfLines={1} adjustsFontSizeToFit>
+      <Text
+        style={[styles.refText, { color: refDisplay.textColor }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+      >
         {refDisplay.text}
       </Text>
     </Pressable>
@@ -111,23 +131,21 @@ function RefDisplay({
 
 function ChoiceCell({
   choice,
-  isCorrect,
-  correctIndex,
+  feedback,
   interactionLocked,
   cellSize,
   onPress,
   accessibilityLabel,
 }: {
   choice: ThailandChoiceDisplay;
-  isCorrect: boolean;
-  correctIndex: number | null;
+  feedback: ThailandChoiceFeedback;
   interactionLocked: boolean;
   cellSize: number;
   onPress: () => void;
   accessibilityLabel: string;
 }): React.JSX.Element {
-  const showCorrect = correctIndex !== null && isCorrect;
-  const bg = showCorrect ? CORRECT_BG : CHOICE_BG;
+  const bg = feedback?.backgroundColor ?? DEFAULT_CHOICE_BG;
+  const fg = feedback?.textColor ?? CHOICE_TEXT_COLOR;
 
   return (
     <Pressable
@@ -150,12 +168,12 @@ function ChoiceCell({
             importantForAccessibility="no"
           />
         ) : (
-          <Text style={[styles.choiceText, { color: CHOICE_TEXT_COLOR }]} numberOfLines={1} adjustsFontSizeToFit>
+          <Text style={[styles.choiceText, { color: fg }]} numberOfLines={1} adjustsFontSizeToFit>
             {choice.wordLabel}
           </Text>
         )
       ) : (
-        <Text style={[styles.choiceText, showCorrect && styles.choiceTextCorrect]} numberOfLines={1} adjustsFontSizeToFit>
+        <Text style={[styles.choiceText, { color: fg }]} numberOfLines={1} adjustsFontSizeToFit>
           {choice.text}
         </Text>
       )}
@@ -167,6 +185,7 @@ export function ThailandScreen({
   refDisplay,
   choices,
   correctIndex,
+  choiceFeedback,
   interactionLocked,
   onChoicePress,
   onRefPress,
@@ -175,6 +194,9 @@ export function ThailandScreen({
 }: ThailandScreenProps): React.JSX.Element {
   const { width, height } = useWindowDimensions();
   const cellSize = Math.max(60, Math.min(Math.floor(width / 3), Math.floor(height * 0.25)));
+
+  const feedbackFor = (i: 0 | 1 | 2 | 3): ThailandChoiceFeedback =>
+    correctIndex !== null && choiceFeedback ? choiceFeedback[i] : null;
 
   return (
     <View style={styles.root}>
@@ -191,8 +213,7 @@ export function ThailandScreen({
             <ChoiceCell
               key={i}
               choice={choices[i]}
-              isCorrect={i === correctIndex}
-              correctIndex={correctIndex}
+              feedback={feedbackFor(i)}
               interactionLocked={interactionLocked}
               cellSize={cellSize}
               onPress={() => onChoicePress(i)}
@@ -205,8 +226,7 @@ export function ThailandScreen({
             <ChoiceCell
               key={i}
               choice={choices[i]}
-              isCorrect={i === correctIndex}
-              correctIndex={correctIndex}
+              feedback={feedbackFor(i)}
               interactionLocked={interactionLocked}
               cellSize={cellSize}
               onPress={() => onChoicePress(i)}
@@ -281,9 +301,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-  },
-  choiceTextCorrect: {
-    color: WHITE,
   },
   pressed: {
     opacity: 0.75,
