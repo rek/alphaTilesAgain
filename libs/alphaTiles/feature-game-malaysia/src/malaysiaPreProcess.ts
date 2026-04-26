@@ -10,9 +10,8 @@
  * - "Stage correspondence ratio" → float (default 0.7)
  * - "Malaysia colorless" → boolean (default false)
  *
- * Done at boot via registerPrecompute so paginating a stage at runtime is O(N).
+ * Done at boot via registerPrecompute (registered in app/registerPrecomputes.ts) so paginating a stage at runtime is O(N).
  */
-import { registerPrecompute } from '@shared/util-precompute';
 import {
   parseWordIntoTiles,
   type ScriptType,
@@ -71,5 +70,3 @@ export function malaysiaPreProcess(assets: LangAssets): MalaysiaData {
 
   return { wordStagesByStage, colorless };
 }
-
-registerPrecompute('malaysia', malaysiaPreProcess);

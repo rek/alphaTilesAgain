@@ -1,10 +1,7 @@
 /**
  * Precompute that buckets the pack's word list by tile length for the United States game.
- * Registered at module load so it runs during loadLangPack (boot time).
- *
  * Port of UnitedStates.java:70–88 onCreate — word length filtering moved to boot time.
  */
-import { registerPrecompute } from '@shared/util-precompute';
 import {
   parseWordIntoTilesPreliminary,
   buildTileHashMap,
@@ -55,5 +52,3 @@ export function buildUnitedStatesData(assets: LangAssets): UnitedStatesData {
 
   return { level1Words, level2Words, level3Words };
 }
-
-registerPrecompute('united-states', buildUnitedStatesData);

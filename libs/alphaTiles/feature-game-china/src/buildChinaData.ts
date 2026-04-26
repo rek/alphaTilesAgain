@@ -1,10 +1,7 @@
 /**
  * Precompute that buckets the pack's word list into 3-tile and 4-tile sets.
- * Registered at module load so it runs during loadLangPack (boot time).
- *
  * Port of China.java:161–177 preprocessWords — moved to boot to avoid per-game cost.
  */
-import { registerPrecompute } from '@shared/util-precompute';
 import {
   parseWordIntoTilesPreliminary,
   buildTileHashMap,
@@ -46,5 +43,3 @@ export function buildChinaData(assets: LangAssets): ChinaData {
 
   return { threeTileWords, fourTileWords };
 }
-
-registerPrecompute('china', buildChinaData);

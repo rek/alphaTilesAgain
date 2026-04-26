@@ -11,6 +11,7 @@ import { langManifest } from '@generated/langManifest';
 import { AudioProvider } from '@alphaTiles/data-audio';
 import { useAudioHandlesStore } from '@alphaTiles/feature-loading';
 import type { FontSource } from 'expo-font';
+import './registerPrecomputes';
 
 // Keep splash visible until LoadingContainer hides it explicitly (design D5).
 SplashScreen.preventAutoHideAsync().catch(() => {});

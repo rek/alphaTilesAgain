@@ -1,11 +1,8 @@
 /**
  * Precompute that buckets the pack's tiles into Brazil's choice pools.
- * Registered at module load so it runs during loadLangPack (boot time).
- *
  * Port of Brazil.java VOWELS / CONSONANTS / TONES / SYLLABLES / MULTITYPE_TILES
  * population in onCreate (~lines 100-150) — moved to boot to avoid per-round cost.
  */
-import { registerPrecompute } from '@shared/util-precompute';
 import type { LangAssets } from '@alphaTiles/data-language-assets';
 
 type TileRow = LangAssets['tiles']['rows'][number];
@@ -39,5 +36,3 @@ export function brazilPreProcess(assets: LangAssets): BrazilData {
 
   return { vowels, consonants, tones, syllables, multitypeTiles };
 }
-
-registerPrecompute('brazil', brazilPreProcess);

@@ -1,4 +1,3 @@
-import { registerPrecompute } from '@shared/util-precompute';
 import {
   parseWordIntoTilesPreliminary,
   buildTileHashMap,
@@ -38,5 +37,3 @@ export function buildRomaniaData(assets: LangAssets): RomaniaData {
 
   return result;
 }
-
-registerPrecompute('romania', buildRomaniaData);
