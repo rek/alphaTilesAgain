@@ -82,8 +82,7 @@ export function LoadingScreen({
               strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
               strokeDashoffset={isIndeterminate ? 0 : strokeDashoffset}
               strokeLinecap="round"
-              rotation="-90"
-              origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}
+              transform={`rotate(-90, ${RING_SIZE / 2}, ${RING_SIZE / 2})`}
               opacity={isIndeterminate ? 0.4 : 1}
             />
           </Svg>
