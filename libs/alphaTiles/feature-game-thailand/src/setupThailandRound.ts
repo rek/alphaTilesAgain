@@ -57,6 +57,10 @@ function isSyllableBased(t: ThailandType): boolean {
   return t === 'SYLLABLE_TEXT' || t === 'SYLLABLE_AUDIO';
 }
 
+// TODO(thailand-spec-drift): replace with `firstAudibleTile(Word)` per Java 633-646:
+// skip a leading LV when followed by non-PC, then advance past PC|AD|D|T tiles via
+// the parsed-tile sequence. Match comparisons (Java 524-527) ALSO need
+// `typeOfThisTileInstance` parity which this string-prefix approach cannot express.
 function getFirstTileBase(wordRow: WordRow, tiles: TileRow[]): string {
   const lopNorm = wordRow.wordInLOP.replace(/[#.]/g, '');
   const sorted = [...tiles].sort((a, b) => b.base.length - a.base.length);
@@ -266,6 +270,10 @@ function returnFourSyllableChoices(
   return shuffle(result, rng);
 }
 
+// TODO(thailand-spec-drift): impl `verifyFreshTile` (Java 424-435) — last-3 anti-repeat
+// must allow break after 25 retry attempts; current isRecent never gives up. Also missing:
+// CL1 ref-tile filter (reject T|AD|D|PC tiles per Java 157, 178, 199, 258, 279) and
+// CorV gate for standalone TILE_LOWER/TILE_AUDIO ref picks (Java 252).
 function isRecent(text: string, recent: string[]): boolean {
   return recent.some((r) => r.toLowerCase() === text.toLowerCase());
 }

@@ -10,6 +10,10 @@ import {
 import type { ImageSourcePropType } from 'react-native';
 import type { ThailandType } from './decodeThailandChallengeLevel';
 
+// TODO(thailand-spec-drift): correct-feedback per Java 588-595 must use refColor (not
+// CORRECT_BG) for non-WORD_IMAGE choices, and must whiten the 3 NON-correct WORD_IMAGE
+// buttons. Also missing thailand2 larger layout variant when choiceType === WORD_TEXT
+// (Java 89-96).
 const CHOICE_BG = '#A9A9A9';
 const CORRECT_BG = '#4CAF50';
 const REF_AUDIO_BG = '#1565C0';
