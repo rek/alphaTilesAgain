@@ -1,4 +1,4 @@
-import { chilePreProcess } from '../chilePreProcess';
+import { chilePreProcess, getMinFontSize } from '../chilePreProcess';
 import type { LangAssets } from '@alphaTiles/data-language-assets';
 
 function makeTile(base: string) {
@@ -64,6 +64,30 @@ function makeAssets(
     precomputes: new Map(),
   } as unknown as LangAssets;
 }
+
+describe('getMinFontSize', () => {
+  it('returns 0.5 cap for empty input', () => {
+    expect(getMinFontSize([])).toBe(0.5);
+  });
+
+  it('returns 0.5 cap when all strings are short (1 codepoint)', () => {
+    expect(getMinFontSize(['a', 'b'])).toBeCloseTo(0.5, 5);
+  });
+
+  it('shrinks proportionally to longest tile codepoint count', () => {
+    // 3 codepoints → 1000/(3*600) ≈ 0.555 → still capped at 0.5
+    expect(getMinFontSize(['abc'])).toBeCloseTo(0.5, 5);
+    // 4 codepoints → 1000/(4*600) ≈ 0.4167
+    expect(getMinFontSize(['abcd'])).toBeCloseTo(1000 / 2400, 5);
+    // mixed: longest dominates
+    expect(getMinFontSize(['a', 'abcdef'])).toBeCloseTo(1000 / (6 * 600), 5);
+  });
+
+  it('counts codepoints, not UTF-16 units (handles surrogate pairs)', () => {
+    // U+1F600 GRINNING FACE — 1 codepoint, 2 UTF-16 units.
+    expect(getMinFontSize(['\u{1F600}'])).toBeCloseTo(0.5, 5);
+  });
+});
 
 describe('chilePreProcess', () => {
   it('filters words shorter than minWordLength', () => {
@@ -157,6 +181,29 @@ describe('chilePreProcess', () => {
     );
     const result = chilePreProcess(assets);
     expect(result.keyboardWidth).toBe(5);
+  });
+
+  it('emits fontScale capped at 0.5 for short tiles', () => {
+    const assets = makeAssets(
+      ['a', 'b', 'c'],
+      [{ id: 'abc', lop: 'abc' }],
+    );
+    const result = chilePreProcess(assets);
+    expect(result.fontScale).toBeCloseTo(0.5, 5);
+  });
+
+  it('emits smaller fontScale when keys contain multi-codepoint tiles', () => {
+    // Tile 'xyzw' has 4 codepoints → width ≈ 2400 → 1000/2400 ≈ 0.417 < 0.5 cap.
+    // Word needs ≥ minWordLength (default 3) tiles to survive filter.
+    const assets = makeAssets(
+      ['xyzw', 'a', 'b'],
+      [{ id: 'xyzwab', lop: 'xyzwab' }],
+    );
+    const result = chilePreProcess(assets);
+    expect(result.words).toHaveLength(1);
+    expect(result.keys).toContain('xyzw');
+    expect(result.fontScale).toBeLessThan(0.5);
+    expect(result.fontScale).toBeCloseTo(1000 / (4 * 600), 5);
   });
 
   it('skips unparseable words', () => {

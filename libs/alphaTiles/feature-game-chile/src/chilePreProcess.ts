@@ -21,16 +21,49 @@ export type ChileData = {
   keys: string[];
   /** Number of keyboard columns (default 7). */
   keyboardWidth: number;
+  /**
+   * Multiplier applied to keyboard tile font size so the longest tile string fits.
+   * Port of `Util.getMinFontSize(String[])` (Util.java:29-43).
+   *
+   * Java algorithm:
+   *   size = 1000; min = 0.5
+   *   for s in strings: width = paint.getTextBounds(s).width(); min = min(1000/width, min)
+   *
+   * Real pixel widths require a font renderer; we approximate width with the
+   * tile string's codepoint count (Array.from length) times a per-glyph width
+   * factor. The 0.5 cap matches Java; values < 0.5 shrink longer strings.
+   */
+  fontScale: number;
 };
-
-// TODO(chile-spec-drift): emit `fontScale: number` (Util.getMinFontSize(keys)) per spec D10.
-//   No equivalent util exists in @shared yet; once added, return it on ChileData and consume
-//   in <ChileScreen> to size keyboard tile text (Chile.java:368-369).
 
 const MAX_KEYBOARD_SIZE = 50;
 const DEFAULT_KEYBOARD_WIDTH = 7;
 const DEFAULT_MIN_WORD_LENGTH = 3;
 const DEFAULT_MAX_WORD_LENGTH = 100;
+/**
+ * Approximation of Android `Paint.getTextBounds` width per glyph at textSize=1000.
+ * A typical sans-serif glyph renders ~600px wide at textSize=1000 (em ≈ 0.6 em-square).
+ * Tuned so 1-codepoint strings yield 1000/600 ≈ 1.67 → capped to 0.5.
+ */
+const GLYPH_WIDTH_AT_1000 = 600;
+const FONT_SCALE_CAP = 0.5;
+
+/**
+ * Port of `Util.getMinFontSize(String[])` (Util.java:29-43).
+ * Returns `min(1000 / width(s), 0.5)` over all `s` in `keys`.
+ * Width approximated by codepoint count (handles surrogate pairs).
+ */
+export function getMinFontSize(keys: string[]): number {
+  let min = FONT_SCALE_CAP;
+  for (const s of keys) {
+    const codepointCount = Array.from(s).length;
+    if (codepointCount === 0) continue;
+    const width = codepointCount * GLYPH_WIDTH_AT_1000;
+    const widthScale = 1000 / width;
+    if (widthScale < min) min = widthScale;
+  }
+  return min;
+}
 
 export function chilePreProcess(assets: LangAssets): ChileData {
   const settings = assets.settings;
@@ -87,5 +120,7 @@ export function chilePreProcess(assets: LangAssets): ChileData {
   indexedKeys.sort((a, b) => a.idx - b.idx);
   const keys = indexedKeys.map((k) => k.text);
 
-  return { words: splitWords, keys, keyboardWidth };
+  const fontScale = getMinFontSize(keys);
+
+  return { words: splitWords, keys, keyboardWidth, fontScale };
 }
