@@ -49,6 +49,8 @@ type GameShellContainerProps = {
   confirmOnBack?: boolean;
   /** Whether to show the instructions audio button. */
   showInstructionsButton?: boolean;
+  /** Whether to show the advance arrow button. Defaults true. Set false for games with no lock/unlock mechanic (e.g. Romania). */
+  showAdvanceArrow?: boolean;
   /** Audio ID for the instruction clip (passed to useAudio().playInstruction). */
   instructionAudioId?: string;
   /**
@@ -65,6 +67,7 @@ export function GameShellContainer({
   children,
   confirmOnBack = false,
   showInstructionsButton = true,
+  showAdvanceArrow = true,
   instructionAudioId,
   celebrationSource,
   icons,
@@ -329,9 +332,9 @@ export function GameShellContainer({
     () => assets.settings.findBoolean('changeArrowColor', false),
     [assets.settings],
   );
-  const advanceArrow: 'blue' | 'gray' | 'hidden' = !changeArrowColor || !repeatLocked
-    ? 'blue'
-    : 'gray';
+  const advanceArrow: 'blue' | 'gray' | 'hidden' = !showAdvanceArrow
+    ? 'hidden'
+    : (!changeArrowColor || !repeatLocked ? 'blue' : 'gray');
 
   // Score from progress entry
   const score = progressEntry.points;

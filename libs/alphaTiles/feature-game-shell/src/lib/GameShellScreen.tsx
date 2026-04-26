@@ -150,22 +150,20 @@ export function GameShellScreen({
           </Pressable>
         )}
 
-        {/* Audio-replay / advance arrow — mirrors repeatImage in Java layouts */}
-        {advanceArrow !== 'hidden' && (
-          <Pressable
-            onPress={onReplayPress}
-            style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
-            accessibilityLabel={replayLabel}
-            accessibilityRole="button"
-            disabled={interactionLocked || advanceArrow === 'gray'}
-          >
-            <Text style={[styles.chromeLabel, advanceArrow === 'gray' && styles.chromeLabelGray]}>
-              {replayLabel}
-            </Text>
-          </Pressable>
-        )}
+        {/* Audio-replay button — always visible */}
+        <Pressable
+          onPress={onReplayPress}
+          style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
+          accessibilityLabel={replayLabel}
+          accessibilityRole="button"
+          disabled={interactionLocked || advanceArrow === 'gray'}
+        >
+          <Text style={[styles.chromeLabel, advanceArrow === 'gray' && styles.chromeLabelGray]}>
+            {replayLabel}
+          </Text>
+        </Pressable>
 
-        {/* Advance arrow (separate from replay) */}
+        {/* Advance arrow (separate from replay) — hidden when advanceArrow='hidden' */}
         {advanceArrow !== 'hidden' && (
           <Pressable
             onPress={onAdvancePress}

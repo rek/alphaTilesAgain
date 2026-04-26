@@ -154,6 +154,7 @@ export function RomaniaContainer(props: RouteParams): React.JSX.Element {
     <GameShellContainer
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
+      showAdvanceArrow={false}
       confirmOnBack={false}
     >
       <RomaniaGame />
