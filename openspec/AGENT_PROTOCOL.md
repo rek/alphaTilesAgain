@@ -60,12 +60,7 @@ Slash-commands (from `.claude/commands/opsx/`):
 ✓ game-united-states      — pairing + spelling
 ```
 
-**Active changes** (spec merged, apply pending unless noted):
-
-```
-· deploy-gh-pages         — GH Pages CI/CD (spec proposed, apply pending)
-· landing-page-dashboard  — lang-pack build dashboard (spec proposed, apply pending)
-```
+**Active changes**: none. All 17 games + foundational + deploy + landing-page are archived.
 
 **Non-game backlog** (in `openspec/changes/`, awaiting prioritization): analytics-firebase, app-store-metadata, ci-per-language-builds, crash-reporting, e2e-tests-maestro, font-scaling-accessibility, haptics-feedback, lang-pack-downloader, onboarding-tutorial, performance-bundle-analysis, player-stats-screen, scorebar-hud-fidelity, storybook-visual-regression, tablet-layout, web-platform-parity.
 
