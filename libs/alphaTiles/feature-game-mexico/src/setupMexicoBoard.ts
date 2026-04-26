@@ -2,12 +2,14 @@
  * Pure board setup for the Mexico memory game.
  *
  * Port of Mexico.java:chooseMemoryWords + Collections.shuffle:
- * 1. Pick `pairCount` random distinct words from validMatchingWords.
+ * 1. Pick `pairCount` distinct (by wordInLWC) random words via Java's
+ *    sanity-counter dedup loop (Mexico.java:162-217). Bails to
+ *    insufficient-content after pairCount*3 attempts.
  * 2. Create two CardState entries per word: one TEXT, one IMAGE.
  * 3. Shuffle the result.
  *
  * Returns { cards } on success, { error: 'insufficient-content' } when the pool
- * is too small.
+ * is too small or has too few distinct LWC entries.
  */
 
 export type CardMode = 'TEXT' | 'IMAGE';
@@ -34,24 +36,30 @@ export function setupMexicoBoard(
     return { error: 'insufficient-content' };
   }
 
-  // TODO(mexico-spec-drift): Java's chooseMemoryWords (Mexico.java:162-217) dedupes
-  // by wordInLWC at draw time with a sanity counter (cardsToSetUp * 3 retries) before
-  // bailing to goBackToEarth(null). We rely on validMatchingWords being unique by LWC
-  // (true if wordlist rows are unique). If a pack ships duplicates, we'd silently emit
-  // duplicate pairs instead of retrying. Promote dedup here if that ever surfaces.
-
-  // Pick `pairCount` distinct words (Fisher-Yates partial shuffle)
-  const pool = [...validMatchingWords];
+  // Java chooseMemoryWords (Mexico.java:162-217) parity: pick a random word from the
+  // full pool, reject if its wordInLWC already appears in the deck, retry via i--.
+  // A sanity counter increments every iteration and bails after cardsToSetUp*3 to
+  // avoid infinite loops when the pool has too few distinct LWC entries.
   const chosen: Array<{ wordInLOP: string; wordInLWC: string }> = [];
+  const seenLwc = new Set<string>();
+  const sanityLimit = pairCount * 3;
+  let sanityCounter = 0;
 
   for (let i = 0; i < pairCount; i++) {
-    const remaining = pool.length - i;
-    const pick = i + Math.floor(rng() * remaining);
-    // Swap chosen position with pick
-    const tmp = pool[i];
-    pool[i] = pool[pick];
-    pool[pick] = tmp;
-    chosen.push(pool[i]);
+    const candidate = validMatchingWords[Math.floor(rng() * validMatchingWords.length)];
+    const wordAcceptable = !seenLwc.has(candidate.wordInLWC);
+
+    if (wordAcceptable) {
+      seenLwc.add(candidate.wordInLWC);
+      chosen.push(candidate);
+    } else {
+      i--; // Java: retry this slot
+    }
+
+    if (++sanityCounter > sanityLimit) {
+      // Java goBackToEarth(null) — pool can't supply pairCount distinct LWC entries.
+      return { error: 'insufficient-content' };
+    }
   }
 
   // Create pairs
