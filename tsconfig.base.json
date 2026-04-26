@@ -112,7 +112,8 @@
       "@alphaTiles/feature-game-iraq": ["libs/alphaTiles/feature-game-iraq/src/index.ts"],
       "@alphaTiles/feature-game-georgia": ["libs/alphaTiles/feature-game-georgia/src/index.ts"],
       "@alphaTiles/feature-game-malaysia": ["libs/alphaTiles/feature-game-malaysia/src/index.ts"],
-      "@alphaTiles/feature-game-sudan": ["libs/alphaTiles/feature-game-sudan/src/index.ts"]
+      "@alphaTiles/feature-game-sudan": ["libs/alphaTiles/feature-game-sudan/src/index.ts"],
+      "@alphaTiles/feature-game-colombia": ["libs/alphaTiles/feature-game-colombia/src/index.ts"]
     }
   }
 }
