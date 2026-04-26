@@ -52,11 +52,79 @@ const config: StorybookConfig = {
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
     {
+      directory: '../../../alphaTiles/feature-about/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-choose-player/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-brazil/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-chile/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
       directory: '../../../alphaTiles/feature-game-china/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
     {
+      directory: '../../../alphaTiles/feature-game-italy/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-japan/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-menu/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-mexico/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
       directory: '../../../alphaTiles/feature-game-myanmar/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-peru/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-romania/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-shell/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-thailand/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-game-united-states/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-loading/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-resources/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-set-player-name/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
+      directory: '../../../alphaTiles/feature-share/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
   ],

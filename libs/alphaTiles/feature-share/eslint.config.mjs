@@ -15,6 +15,8 @@ export default [
             '{projectRoot}/src/**/*.test.tsx',
             '{projectRoot}/src/**/*.spec.ts',
             '{projectRoot}/src/**/*.spec.tsx',
+            '{projectRoot}/src/**/*.stories.tsx',
+            '{projectRoot}/src/**/*.stories.ts',
           ],
         },
       ],
