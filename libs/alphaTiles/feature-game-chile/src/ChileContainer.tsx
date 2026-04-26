@@ -174,10 +174,15 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
 
   // Wire the shell's advance arrow to onReset (Chile.java:282 setOptionsRowClickable parity).
   // Defined below; registered via effect after declaration.
-  // TODO(chile-spec-drift): No shell API for setAdvanceArrowToBlue / setAdvanceArrowToGray /
-  //   setOptionsRowClickable. Spec requires arrow color toggle on win/lose vs reset, and
-  //   gating the bottom options row. Add `setAdvanceArrowColor` + `setOptionsRowClickable`
-  //   to GameShellContextValue and call them from the win/lose/reset branches.
+  // TODO(chile-spec-drift): DEFERRED — needs game-engine-base extension.
+  //   GameShellContextValue (libs/alphaTiles/feature-game-shell/src/lib/GameShellContext.tsx)
+  //   exposes only setOnAdvance / setOnRepeat — no APIs for advance-arrow color or
+  //   options-row clickability. Spec D7 (Win) and D8 (Lose) require:
+  //     - shell.setAdvanceArrowToBlue() on win/lose, setAdvanceArrowToGray() on reset
+  //     - shell.setOptionsRowClickable() / setOptionsRowUnclickable() to gate footer chrome
+  //   Per agent protocol, do NOT add new shell APIs from here; track as a separate
+  //   game-engine-base proposal (extend GameShellContextValue with
+  //   setAdvanceArrowColor + setOptionsRowEnabled, then re-wire here).
   const onReset = useCallback(() => {
     if (!finished) return;
 
@@ -205,9 +210,11 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
     return () => shell.setOnAdvance(null);
   }, [shell, onReset]);
 
-  // TODO(chile-spec-drift): RTL icon flip — when assets.langInfo 'Script direction' === 'RTL',
-  //   pass an `rtl` prop to <ChileScreen> and apply `transform: [{ scaleX: -1 }]` to the
-  //   backspace and reset (repeat) icons (Chile.java:87–90).
+  // RTL icon flip — Chile.java:87–90. Mirror the backspace/reset glyphs when
+  // the language pack's "Script direction" is RTL. Same pattern as
+  // feature-game-iraq (IraqContainer.tsx) and feature-game-malaysia.
+  const scriptDirection = assets.langInfo.find('Script direction') ?? 'LTR';
+  const rtl = scriptDirection.toUpperCase() === 'RTL';
 
   return (
     <ChileScreen
@@ -221,6 +228,7 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
       onSubmitGuess={onSubmitGuess}
       showReset={showReset}
       onReset={onReset}
+      rtl={rtl}
     />
   );
 }

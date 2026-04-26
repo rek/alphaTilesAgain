@@ -53,6 +53,11 @@ export type ChileScreenProps = {
   showReset?: boolean;
   /** Called when reset is pressed. */
   onReset?: () => void;
+  /**
+   * When true, mirror the backspace and reset glyphs via `scaleX: -1`
+   * (Chile.java:87–90 RTL parity). Submit checkmark stays unflipped.
+   */
+  rtl?: boolean;
 };
 
 const TILE_GAP = 4;
@@ -69,8 +74,10 @@ export function ChileScreen({
   onSubmitGuess,
   showReset = false,
   onReset,
+  rtl = false,
 }: ChileScreenProps): React.JSX.Element {
   const { width } = useWindowDimensions();
+  const iconFlip = rtl ? styles.iconFlipped : null;
 
   // Compute guess tile size to fit wordLength columns
   const guessTileSize = Math.max(
@@ -136,7 +143,7 @@ export function ChileScreen({
           accessibilityLabel="backspace"
           accessibilityRole="button"
         >
-          <Text style={styles.actionButtonText}>⌫</Text>
+          <Text style={[styles.actionButtonText, iconFlip]}>⌫</Text>
         </Pressable>
 
         {showReset ? (
@@ -146,7 +153,7 @@ export function ChileScreen({
             accessibilityLabel="play again"
             accessibilityRole="button"
           >
-            <Text style={styles.actionButtonText}>↺</Text>
+            <Text style={[styles.actionButtonText, iconFlip]}>↺</Text>
           </Pressable>
         ) : (
           <Pressable
@@ -262,5 +269,8 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
     transform: [{ scale: 0.93 }],
+  },
+  iconFlipped: {
+    transform: [{ scaleX: -1 }],
   },
 });
