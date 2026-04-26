@@ -36,7 +36,7 @@ type Story = StoryObj<typeof ThailandScreen>;
 export const TileLowerRefTileLowerChoices: Story = {
   name: 'TILE_LOWER ref → TILE_LOWER choices',
   args: {
-    refDisplay: { type: 'text', text: 'ba', refColor: '#1565C0' },
+    refDisplay: { type: 'text', text: 'ba', backgroundColor: '#1565C0', textColor: '#FFFFFF' },
     choices: FOUR_TEXT_CHOICES,
     accessibilityRefLabel: 'ba',
     accessibilityChoiceLabels: CHOICE_LABELS,
@@ -71,9 +71,15 @@ export const TileAudioRefTileLowerChoices: Story = {
 export const CorrectSelected: Story = {
   name: 'Correct choice selected (highlighted)',
   args: {
-    refDisplay: { type: 'text', text: 'ba', refColor: '#1565C0' },
+    refDisplay: { type: 'text', text: 'ba', backgroundColor: '#1565C0', textColor: '#FFFFFF' },
     choices: FOUR_TEXT_CHOICES,
     correctIndex: 0,
+    choiceFeedback: [
+      { backgroundColor: '#1565C0', textColor: '#FFFFFF' },
+      null,
+      null,
+      null,
+    ],
     interactionLocked: true,
     accessibilityRefLabel: 'ba',
     accessibilityChoiceLabels: CHOICE_LABELS,

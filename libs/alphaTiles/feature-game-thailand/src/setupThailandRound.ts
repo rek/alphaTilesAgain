@@ -1,5 +1,14 @@
 import type { LangAssets } from '@alphaTiles/data-language-assets';
 import type { ThailandType } from './decodeThailandChallengeLevel';
+import { firstAudibleTile } from './firstAudibleTile';
+import { verifyFreshTile } from './verifyFreshTile';
+
+// Java 258, 279: CL1 rejects ref tiles whose typeOfThisTileInstance matches
+// these regex patterns (T = tone mark, AD/D = diacritic, PC = placeholder
+// consonant — and C for the standalone TILE_LOWER path).
+const CL1_REJECT_REF_TILE = /^(T|AD|D|PC)$/;
+const CL1_REJECT_STANDALONE_TILE = /^(T|AD|C|PC)$/;
+const COR_V = /^(C|V)$/;
 
 type TileRow = LangAssets['tiles']['rows'][number];
 type WordRow = LangAssets['words']['rows'][number];
@@ -57,16 +66,19 @@ function isSyllableBased(t: ThailandType): boolean {
   return t === 'SYLLABLE_TEXT' || t === 'SYLLABLE_AUDIO';
 }
 
-// TODO(thailand-spec-drift): replace with `firstAudibleTile(Word)` per Java 633-646:
-// skip a leading LV when followed by non-PC, then advance past PC|AD|D|T tiles via
-// the parsed-tile sequence. Match comparisons (Java 524-527) ALSO need
-// `typeOfThisTileInstance` parity which this string-prefix approach cannot express.
+/**
+ * Java parity: returns the base text of `firstAudibleTile(word)`. Falls back
+ * to the longest-prefix tile or the first character if the parser produced
+ * nothing (defensive — should not happen for validated packs).
+ *
+ * Note: full Java match parity (Thailand.java 524-527) also requires
+ * `typeOfThisTileInstance` equality. That deeper parity is captured in the
+ * spec but lives outside this base-text helper — see firstAudibleTile.ts.
+ */
 function getFirstTileBase(wordRow: WordRow, tiles: TileRow[]): string {
+  const tile = firstAudibleTile(wordRow, tiles);
+  if (tile) return tile.base;
   const lopNorm = wordRow.wordInLOP.replace(/[#.]/g, '');
-  const sorted = [...tiles].sort((a, b) => b.base.length - a.base.length);
-  for (const tile of sorted) {
-    if (lopNorm.startsWith(tile.base)) return tile.base;
-  }
   return lopNorm.charAt(0);
 }
 
@@ -270,12 +282,24 @@ function returnFourSyllableChoices(
   return shuffle(result, rng);
 }
 
-// TODO(thailand-spec-drift): impl `verifyFreshTile` (Java 424-435) — last-3 anti-repeat
-// must allow break after 25 retry attempts; current isRecent never gives up. Also missing:
-// CL1 ref-tile filter (reject T|AD|D|PC tiles per Java 157, 178, 199, 258, 279) and
-// CorV gate for standalone TILE_LOWER/TILE_AUDIO ref picks (Java 252).
-function isRecent(text: string, recent: string[]): boolean {
-  return recent.some((r) => r.toLowerCase() === text.toLowerCase());
+/**
+ * Pick the first item from `pool` for which `accept(item, retries)` returns
+ * true. `retries` starts at 0 and increments per scanned candidate so the
+ * acceptor (typically `verifyFreshTile`) can give up after 25 attempts —
+ * matching Java's `freshChecks > 25` escape (Thailand.java 424-435).
+ */
+function pickWithRetries<T>(
+  pool: T[],
+  accept: (item: T, freshChecks: number) => boolean,
+): T | null {
+  let freshChecks = 0;
+  for (const item of pool) {
+    if (accept(item, freshChecks)) return item;
+    freshChecks++;
+  }
+  // Past 25 attempts the acceptor short-circuits; fall back to first item
+  // so we never deadlock on a small content pool.
+  return pool[0] ?? null;
 }
 
 export function setupThailandRound(
@@ -299,16 +323,33 @@ export function setupThailandRound(
   let ref: ThailandRef | null = null;
   let rawChoiceItems: (TileRow | WordRow | SyllableRow)[] = [];
 
+  // CL1 ref-tile rejection (Java 157, 178, 199, 258, 279) — when distractor
+  // strategy is 1, structural tile types are unsuitable refs.
+  const cl1Reject = (tile: TileRow, pattern: RegExp): boolean =>
+    distractorStrategy === 1 && pattern.test(tile.type);
+
   if (isTileBased(refType) && isTileBased(choiceType)) {
-    const refTile =
-      shuffledTiles.find((t) => !isRecent(t.base, recentRefStrings)) ?? shuffledTiles[0];
+    // Standalone tile pick (Java 252-262): TILE_LOWER/TILE_AUDIO additionally
+    // require the chosen tile to be a Consonant or Vowel (`CorV`), and CL1
+    // rejects T|AD|C|PC.
+    const needsCorV = refType === 'TILE_LOWER' || refType === 'TILE_AUDIO';
+    const refTile = pickWithRetries(shuffledTiles, (t, freshChecks) => {
+      if (needsCorV && !COR_V.test(t.type)) return false;
+      if (cl1Reject(t, CL1_REJECT_STANDALONE_TILE)) return false;
+      return verifyFreshTile(t.base, recentRefStrings, freshChecks);
+    });
     if (!refTile) return { error: 'insufficient-content' };
     ref = { kind: 'tile', tileRow: refTile, display: refType };
     rawChoiceItems = returnFourTileChoices(refTile, distractorStrategy, tiles, choiceType, rng);
   } else if (isTileBased(refType) && isWordBased(choiceType)) {
-    const refWord =
-      shuffledWords.find((w) => !isRecent(getFirstTileBase(w, tiles), recentRefStrings)) ??
-      shuffledWords[0];
+    // Word-based ref tile (Java 146-211): pick a word whose firstAudibleTile
+    // satisfies CL1 rejection (T|AD|D|PC) and freshness.
+    const refWord = pickWithRetries(shuffledWords, (w, freshChecks) => {
+      const tile = firstAudibleTile(w, tiles);
+      if (!tile) return false;
+      if (cl1Reject(tile, CL1_REJECT_REF_TILE)) return false;
+      return verifyFreshTile(tile.base, recentRefStrings, freshChecks);
+    });
     if (!refWord) return { error: 'insufficient-content' };
     const refTileBase = getFirstTileBase(refWord, tiles);
     ref = {
@@ -318,31 +359,33 @@ export function setupThailandRound(
     };
     rawChoiceItems = returnFourWordChoices(refWord, refTileBase, distractorStrategy, tiles, words, rng);
   } else if (isWordBased(refType) && isWordBased(choiceType)) {
-    const refWord =
-      shuffledWords.find((w) => !isRecent(w.wordInLOP, recentRefStrings)) ?? shuffledWords[0];
+    const refWord = pickWithRetries(shuffledWords, (w, freshChecks) =>
+      verifyFreshTile(w.wordInLOP, recentRefStrings, freshChecks),
+    );
     if (!refWord) return { error: 'insufficient-content' };
     const refTileBase = getFirstTileBase(refWord, tiles);
     ref = { kind: 'word', wordRow: refWord, display: refType };
     rawChoiceItems = returnFourWordChoices(refWord, refTileBase, distractorStrategy, tiles, words, rng);
   } else if (isWordBased(refType) && isTileBased(choiceType)) {
-    const refWord =
-      shuffledWords.find((w) => !isRecent(w.wordInLOP, recentRefStrings)) ?? shuffledWords[0];
+    const refWord = pickWithRetries(shuffledWords, (w, freshChecks) =>
+      verifyFreshTile(w.wordInLOP, recentRefStrings, freshChecks),
+    );
     if (!refWord) return { error: 'insufficient-content' };
     const refTileBase = getFirstTileBase(refWord, tiles);
     const refTileRow = tiles.find((t) => t.base === refTileBase) ?? tiles[0];
     ref = { kind: 'word', wordRow: refWord, display: refType };
     rawChoiceItems = returnFourTileChoices(refTileRow, distractorStrategy, tiles, choiceType, rng);
   } else if (isSyllableBased(refType) && isSyllableBased(choiceType)) {
-    const refSyllable =
-      shuffledSyllables.find((s) => !isRecent(s.syllable, recentRefStrings)) ??
-      shuffledSyllables[0];
+    const refSyllable = pickWithRetries(shuffledSyllables, (s, freshChecks) =>
+      verifyFreshTile(s.syllable, recentRefStrings, freshChecks),
+    );
     if (!refSyllable) return { error: 'insufficient-content' };
     ref = { kind: 'syllable', syllableRow: refSyllable, display: refType };
     rawChoiceItems = returnFourSyllableChoices(refSyllable.syllable, syllables, distractorStrategy, rng);
   } else if (isSyllableBased(refType) && isWordBased(choiceType)) {
-    const refSyllable =
-      shuffledSyllables.find((s) => !isRecent(s.syllable, recentRefStrings)) ??
-      shuffledSyllables[0];
+    const refSyllable = pickWithRetries(shuffledSyllables, (s, freshChecks) =>
+      verifyFreshTile(s.syllable, recentRefStrings, freshChecks),
+    );
     if (!refSyllable) return { error: 'insufficient-content' };
     ref = { kind: 'syllable', syllableRow: refSyllable, display: refType };
     rawChoiceItems = returnFourSyllableWordChoices(

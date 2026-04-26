@@ -9,41 +9,67 @@ import {
 import { decodeThailandChallengeLevel } from './decodeThailandChallengeLevel';
 import { setupThailandRound } from './setupThailandRound';
 import type { ThailandRound, ThailandRef, ThailandChoice } from './setupThailandRound';
+import { stripInstructionCharacters } from './stripInstructionCharacters';
 import { ThailandScreen } from './ThailandScreen';
-import type { ThailandRefDisplay, ThailandChoiceDisplay } from './ThailandScreen';
+import type {
+  ThailandRefDisplay,
+  ThailandChoiceDisplay,
+  ThailandChoiceFeedback,
+} from './ThailandScreen';
 
 type RouteParams = Record<string, string | string[] | undefined>;
 
 const MAX_RECENT = 3;
 const ADVANCE_DELAY_MS = 1200;
+const MAX_INCORRECT_TRACKED = 3;
 
 function buildRefDisplay(
   ref: ThailandRef,
   imageSource: ImageSourcePropType | undefined,
   refColor: string,
 ): ThailandRefDisplay {
-  // TODO(thailand-spec-drift): WORD_TEXT must strip instruction chars (#,.) and render
-  // black text on white bg per Java 305-309. Currently uses raw wordInLOP and the
-  // global refText style is white (should be black for WORD_TEXT).
+  // Java 291-320 dictates per-display rendering. WORD_TEXT specifically
+  // renders stripInstructionCharacters(wordInLOP) on a white background with
+  // black text (Java 305-309); other text refs use refColor bg + white text.
   switch (ref.display) {
     case 'TILE_LOWER':
-      return { type: 'text', text: ref.kind === 'tile' ? ref.tileRow.base : '', refColor };
+      return {
+        type: 'text',
+        text: ref.kind === 'tile' ? ref.tileRow.base : '',
+        backgroundColor: refColor,
+        textColor: '#FFFFFF',
+      };
     case 'TILE_UPPER':
-      return { type: 'text', text: ref.kind === 'tile' ? (ref.tileRow.upper || ref.tileRow.base) : '', refColor };
+      return {
+        type: 'text',
+        text: ref.kind === 'tile' ? (ref.tileRow.upper || ref.tileRow.base) : '',
+        backgroundColor: refColor,
+        textColor: '#FFFFFF',
+      };
     case 'TILE_AUDIO':
       return { type: 'audio', refType: ref.display };
     case 'WORD_TEXT':
-      return { type: 'text', text: ref.kind === 'word' ? ref.wordRow.wordInLOP : '', refColor: '#FFFFFF' };
+      return {
+        type: 'text',
+        text: ref.kind === 'word' ? stripInstructionCharacters(ref.wordRow.wordInLOP) : '',
+        backgroundColor: '#FFFFFF',
+        textColor: '#000000',
+      };
     case 'WORD_IMAGE':
       return { type: 'image', imageSource, wordLabel: ref.kind === 'word' ? ref.wordRow.wordInLWC : '' };
     case 'WORD_AUDIO':
       return { type: 'audio', refType: ref.display };
     case 'SYLLABLE_TEXT':
-      return { type: 'text', text: ref.kind === 'syllable' ? ref.syllableRow.syllable : '', refColor };
+      return {
+        type: 'text',
+        text: ref.kind === 'syllable' ? ref.syllableRow.syllable : '',
+        backgroundColor: refColor,
+        textColor: '#FFFFFF',
+      };
     case 'SYLLABLE_AUDIO':
       return { type: 'audio', refType: ref.display };
     default:
-      return { type: 'text', text: '', refColor };
+      return { type: 'text', text: '', backgroundColor: refColor, textColor: '#FFFFFF' };
   }
 }
 
@@ -61,7 +87,7 @@ function buildChoiceDisplay(
   if (imageSource !== undefined) {
     return { type: 'image', imageSource, wordLabel: wordRow.wordInLWC };
   }
-  return { type: 'text', text: wordRow.wordInLOP };
+  return { type: 'text', text: stripInstructionCharacters(wordRow.wordInLOP) };
 }
 
 function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
@@ -76,9 +102,10 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   const [error, setError] = useState<'insufficient-content' | null>(null);
   const [refColor, setRefColor] = useState<string>('#1565C0');
   const recentRefStrings = useRef<string[]>([]);
-  // TODO(thailand-spec-drift): track incorrectAnswersSelected (cap 3 distinct entries) and
-  // incorrectOnLevel per Java 618-630; lock all 4 buttons after correct tap and apply
-  // refColor (non-WORD_IMAGE) or whiten others (WORD_IMAGE) per Java 588-595.
+  // Java 618-630 parity: per-round set of distinct wrong-answer texts (cap 3).
+  // Resets each round. We also keep a running level counter for diagnostics.
+  const incorrectAnswersSelected = useRef<string[]>([]);
+  const incorrectOnLevel = useRef<number>(0);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -136,6 +163,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     setRound(result);
     setCorrectIndex(null);
     setError(null);
+    incorrectAnswersSelected.current = [];
 
     playRefAudio(result.ref);
   }, [refType, choiceType, distractorStrategy, assets, playRefAudio]);
@@ -150,9 +178,12 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     (index: number) => {
       if (!round) return;
       if (shell.interactionLocked) return;
+      // Java 588: once correct, all 4 buttons go non-clickable until next round.
+      if (correctIndex !== null) return;
 
       if (index === round.correctIndex) {
         setCorrectIndex(index);
+        shell.setInteractionLocked(true);
         shell.incrementPointsAndTracker(true);
         audio.playCorrect().then(() => {
           playRefAudio(round.ref);
@@ -160,15 +191,30 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
 
         const timer = setTimeout(() => {
           if (isMountedRef.current) {
+            shell.setInteractionLocked(false);
             startRound();
           }
         }, ADVANCE_DELAY_MS);
         return () => clearTimeout(timer);
-      } else {
-        audio.playIncorrect();
+      }
+
+      // Java 618-630: incorrect tap -> chime, incorrectOnLevel++, distinct
+      // wrong-answer text appended (capped at 3); buttons stay clickable.
+      audio.playIncorrect();
+      incorrectOnLevel.current += 1;
+      const chosen = round.choices[index];
+      const chosenText =
+        chosen.kind === 'tile'
+          ? chosen.displayText
+          : chosen.kind === 'syllable'
+          ? chosen.syllableRow.syllable
+          : stripInstructionCharacters(chosen.wordRow.wordInLOP);
+      const list = incorrectAnswersSelected.current;
+      if (!list.includes(chosenText) && list.length < MAX_INCORRECT_TRACKED) {
+        incorrectAnswersSelected.current = [...list, chosenText];
       }
     },
-    [round, shell, audio, playRefAudio, startRound],
+    [round, shell, audio, playRefAudio, startRound, correctIndex],
   );
 
   const onRefPress = useCallback(() => {
@@ -179,7 +225,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   if (error === 'insufficient-content') {
     return (
       <ThailandScreen
-        refDisplay={{ type: 'text', text: '?', refColor: '#999' }}
+        refDisplay={{ type: 'text', text: '?', backgroundColor: '#999', textColor: '#FFFFFF' }}
         choices={[
           { type: 'text', text: '' },
           { type: 'text', text: '' },
@@ -226,12 +272,32 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
       ? round.ref.wordRow.wordInLWC
       : round.ref.syllableRow.syllable;
 
+  // Java 588-595: encode the per-choice correct-tap feedback colours.
+  //   - WORD_IMAGE: the THREE non-correct buttons get a white background.
+  //   - other choiceTypes: the correct button gets refColor + white text.
+  const buildFeedback = (i: 0 | 1 | 2 | 3): ThailandChoiceFeedback => {
+    if (correctIndex === null) return null;
+    if (choiceType === 'WORD_IMAGE') {
+      return i === correctIndex ? null : { backgroundColor: '#FFFFFF' };
+    }
+    return i === correctIndex
+      ? { backgroundColor: refColor, textColor: '#FFFFFF' }
+      : null;
+  };
+  const choiceFeedback: [
+    ThailandChoiceFeedback,
+    ThailandChoiceFeedback,
+    ThailandChoiceFeedback,
+    ThailandChoiceFeedback,
+  ] = [buildFeedback(0), buildFeedback(1), buildFeedback(2), buildFeedback(3)];
+
   return (
     <ThailandScreen
       refDisplay={refDisplay}
       choices={choiceDisplays}
       correctIndex={correctIndex}
-      interactionLocked={shell.interactionLocked}
+      choiceFeedback={choiceFeedback}
+      interactionLocked={shell.interactionLocked || correctIndex !== null}
       onChoicePress={onChoicePress}
       onRefPress={onRefPress}
       accessibilityRefLabel={refLabel}
