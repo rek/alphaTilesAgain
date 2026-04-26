@@ -9,11 +9,11 @@ export function useShellWord(
   word: { wordInLOP: string; wordInLWC: string } | null | undefined,
 ): void {
   const { setRefWord } = useGameShell();
-  const wordInLOP = word?.wordInLOP;
-  const wordInLWC = word?.wordInLWC;
+  const wordInLOP = word?.wordInLOP ?? null;
+  const wordInLWC = word?.wordInLWC ?? null;
   useEffect(() => {
-    if (wordInLOP != null && wordInLWC != null) {
-      setRefWord({ wordInLOP, wordInLWC });
-    }
+    setRefWord(
+      wordInLOP != null && wordInLWC != null ? { wordInLOP, wordInLWC } : null,
+    );
   }, [wordInLOP, wordInLWC, setRefWord]);
 }
