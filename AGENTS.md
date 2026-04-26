@@ -46,7 +46,7 @@ At runtime, packs land under `languages/<code>/` (gitignored — never commit a 
 
 ## Port status
 
-**16 foundational changes + 11 games implemented and archived** (as of 2026-04-25). Run `openspec status --all`.
+**16 foundational changes + 17 games (full Java roster) implemented and archived** (as of 2026-04-26). Run `openspec status --all`.
 
 ```
 port-foundations                   ✓ archived 2026-04-23
@@ -75,6 +75,12 @@ game-georgia                       ✓ archived 2026-04-25
 game-iraq                          ✓ archived 2026-04-25
 game-malaysia                      ✓ archived 2026-04-25
 game-sudan                         ✓ archived 2026-04-25
+game-chile                         ✓ archived 2026-04-26
+game-japan                         ✓ archived 2026-04-26
+game-mexico                        ✓ archived 2026-04-26
+game-romania                       ✓ archived 2026-04-26
+game-thailand                      ✓ archived 2026-04-26
+game-united-states                 ✓ archived 2026-04-26
 ```
 
 Next changes must be proposed with `/opsx:propose <name>`, then implemented via `/opsx:apply <name>`.

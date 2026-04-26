@@ -23,7 +23,7 @@ Slash-commands (from `.claude/commands/opsx/`):
 
 ## Dependency chart (snapshot, maintain in `AGENTS.md`)
 
-16 foundational changes + 11 concrete games **merged + implemented** as of 2026-04-25.
+16 foundational changes + 17 concrete games (full Java roster) **merged + implemented** as of 2026-04-26.
 
 ```
 ✓ port-foundations        — build pipeline, docs, util-precompute skeleton
@@ -52,20 +52,22 @@ Slash-commands (from `.claude/commands/opsx/`):
 ✓ game-iraq               — non-scored 5×7 tile explorer
 ✓ game-malaysia           — non-scored 11/page word browser
 ✓ game-sudan              — non-scored tile/syllable audio browser
+✓ game-chile              — Phonemic Wordle (CL→guess rows)
+✓ game-japan              — syllable-segmentation with link buttons (landscape-only)
+✓ game-mexico             — Memory matching pairs
+✓ game-romania            — scanning / focus-tile word sequence (NO_TRACKER)
+✓ game-thailand           — 4-choice identification (3-digit XYZ CL, 8 TYPES)
+✓ game-united-states      — pairing + spelling
 ```
 
 **Active changes** (spec merged, apply pending unless noted):
 
 ```
-· game-mexico             — Matching/Memory game (spec proposed, apply pending)
-· game-thailand           — Always 4-choice identification; 3-digit CL: distractor-strategy×refType×choiceType (8 TYPES enum) (spec proposed, apply pending)
-· game-united-states      — Pairing + Spelling; select correct tile from N pairs to build word (spec proposed, apply pending)
-· game-chile              — Phonemic Wordle; guess secret word using tile keyboard; GREEN/BLUE/GRAY feedback (spec proposed, apply pending)
-· game-japan              — Syllable-segmentation; tap link buttons between tiles to group into syllables; partial credit; landscape-only (spec proposed, apply pending)
-· game-romania            — Scanning / focus-tile word sequence, NO_TRACKER (spec proposed, apply pending)
 · deploy-gh-pages         — GH Pages CI/CD (spec proposed, apply pending)
 · landing-page-dashboard  — lang-pack build dashboard (spec proposed, apply pending)
 ```
+
+**Non-game backlog** (in `openspec/changes/`, awaiting prioritization): analytics-firebase, app-store-metadata, ci-per-language-builds, crash-reporting, e2e-tests-maestro, font-scaling-accessibility, haptics-feedback, lang-pack-downloader, onboarding-tutorial, performance-bundle-analysis, player-stats-screen, scorebar-hud-fidelity, storybook-visual-regression, tablet-layout, web-platform-parity.
 
 New changes go through `/opsx:propose` → `/opsx:apply` → `/opsx:archive`.
 
