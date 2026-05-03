@@ -1,0 +1,8 @@
+{
+  "name": "feature-game-taiwan",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/feature-game-taiwan/src",
+  "projectType": "library",
+  "tags": ["type:feature", "scope:alphaTiles"],
+  "targets": {}
+}

@@ -24,4 +24,14 @@ export interface FileInventory {
   icon?: string;
   /** if images/splash.png exists */
   splash?: string;
+  /**
+   * Per-character stroke-data files under strokes/ (basename without `.json`).
+   * Empty for non-Chinese packs and for Chinese packs without stroke data.
+   */
+  strokeChars?: string[];
+  /**
+   * Raw JSON contents keyed by character — used by the stroke-data shape check.
+   * Only populated when the validator needs to inspect file contents.
+   */
+  strokeFileContents?: Record<string, string>;
 }

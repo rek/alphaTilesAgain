@@ -269,6 +269,26 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
     }
   }
 
+  // --- Strokes: per-character JSON emitted by tools/build-stroke-data.ts ---
+  // Inlined as JS literals (not require()d) so Metro never has to resolve a
+  // dynamic asset; non-Chinese packs simply have no strokes/ directory.
+  const strokesDir = path.join(langDir, 'strokes');
+  const strokeLines: string[] = [];
+  if (fs.existsSync(strokesDir)) {
+    const strokeFiles = listFiles(strokesDir).filter((f) => f.endsWith('.json')).sort();
+    for (const f of strokeFiles) {
+      const ch = path.basename(f, '.json');
+      const content = fs.readFileSync(path.join(strokesDir, f), 'utf8').trim();
+      // Validate parse-time so we fail fast on malformed JSON.
+      try {
+        JSON.parse(content);
+      } catch (e) {
+        die(`malformed JSON in strokes/${f}: ${(e as Error).message}`);
+      }
+      strokeLines.push(`    ${escapeStr(ch)}: ${content},`);
+    }
+  }
+
   // --- Audio: instructions ---
   const audioInstrDir = path.join(langDir, 'audio', 'instructions');
   const instrFiles = listFiles(audioInstrDir).filter((f) => f.endsWith('.mp3')).sort();
@@ -330,6 +350,9 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
     ...audioInstrLines,
     `    },`,
     `  },`,
+    `  strokes: {`,
+    ...strokeLines,
+    `  },`,
     `} as const;`,
     ``,
     `export type LangManifest = typeof langManifest;`,
@@ -344,7 +367,7 @@ function generateManifest(lang: string, langDir: string, outPath: string): void 
     `  rawFiles: ${TXT_NAMES.length}, fonts: ${fonts.all.length}, ` +
       `audio.tiles: ${audioTileLines.length}, audio.words: ${audioWordLines.length}, ` +
       `audio.syllables: ${audioSyllLines.length}, audio.instructions: ${audioInstrLines.length}, ` +
-      `images.words: ${wordImgLines.length}, images.tiles: ${tileImgLines.length}`,
+      `images.words: ${wordImgLines.length}, images.tiles: ${tileImgLines.length}, strokes: ${strokeLines.length}`,
   );
 }
 

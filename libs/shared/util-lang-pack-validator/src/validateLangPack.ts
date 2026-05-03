@@ -33,6 +33,7 @@ import { checkDuplicates } from './checks/checkDuplicates';
 import { checkLangInfoRequired } from './checks/checkLangInfoRequired';
 import { checkSettingsTypes } from './checks/checkSettingsTypes';
 import { checkSyllablesCoherence } from './checks/checkSyllablesCoherence';
+import { checkStrokeData } from './checks/checkStrokeData';
 
 export interface ValidateInput {
   rawFiles: Record<string, string>;
@@ -129,6 +130,9 @@ export function validateLangPack(input: ValidateInput): ValidationReport {
   // Syllables check — checkSyllablesCoherence handles the threshold internally;
   // emits SYLLABLES_SKIPPED info when fewer than 6 words use '.' markers
   issues.push(...checkSyllablesCoherence(parsed, input.fileInventory));
+
+  // Stroke-data coverage + shape (game-taiwan)
+  issues.push(...checkStrokeData(parsed, input.fileInventory));
 
   return buildReport(sortIssues(issues));
 }

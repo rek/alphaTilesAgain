@@ -246,5 +246,7 @@ export function mkInventory(override: Partial<FileInventory> = {}): FileInventor
     sizes: override.sizes ?? {},
     icon: override.icon,
     splash: override.splash,
+    strokeChars: override.strokeChars,
+    strokeFileContents: override.strokeFileContents,
   };
 }

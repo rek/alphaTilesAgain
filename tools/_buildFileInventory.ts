@@ -74,6 +74,19 @@ export function buildFileInventory(langDir: string): FileInventory {
   const iconPath = path.join(langDir, 'images', 'icon.png');
   const splashPath = path.join(langDir, 'images', 'splash.png');
 
+  const strokesDir = path.join(langDir, 'strokes');
+  const strokeFiles = listDir(strokesDir).filter((f) => f.endsWith('.json'));
+  const strokeChars = strokeFiles.map((f) => f.replace(/\.json$/, ''));
+  const strokeFileContents: Record<string, string> = {};
+  for (const f of strokeFiles) {
+    const ch = f.replace(/\.json$/, '');
+    try {
+      strokeFileContents[ch] = fs.readFileSync(path.join(strokesDir, f), 'utf8');
+    } catch {
+      strokeFileContents[ch] = '';
+    }
+  }
+
   return {
     fonts,
     avatars,
@@ -87,5 +100,7 @@ export function buildFileInventory(langDir: string): FileInventory {
     sizes,
     icon: fs.existsSync(iconPath) ? 'icon' : undefined,
     splash: fs.existsSync(splashPath) ? 'splash' : undefined,
+    strokeChars,
+    strokeFileContents,
   };
 }

@@ -128,6 +128,10 @@ const config: StorybookConfig = {
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },
     {
+      directory: '../../../alphaTiles/feature-game-taiwan/src',
+      files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
+    },
+    {
       directory: '../../../alphaTiles/feature-game-thailand/src',
       files: '**/*.stories.@(js|jsx|ts|tsx|mdx)',
     },

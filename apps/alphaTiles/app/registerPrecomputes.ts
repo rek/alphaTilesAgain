@@ -15,6 +15,7 @@ import { buildMexicoData } from '@alphaTiles/feature-game-mexico';
 import { georgiaPreProcess } from '@alphaTiles/feature-game-georgia';
 import { malaysiaPreProcess } from '@alphaTiles/feature-game-malaysia';
 import { buildSudanData } from '@alphaTiles/feature-game-sudan';
+import { buildTaiwanData } from '@alphaTiles/feature-game-taiwan';
 
 registerPrecompute('romania', buildRomaniaData);
 registerPrecompute('china', buildChinaData);
@@ -25,3 +26,4 @@ registerPrecompute('mexico', buildMexicoData);
 registerPrecompute('georgia', georgiaPreProcess);
 registerPrecompute('malaysia', malaysiaPreProcess);
 registerPrecompute('sudan', (assets) => buildSudanData(assets, 7));
+registerPrecompute('taiwan', buildTaiwanData);

@@ -35,25 +35,31 @@ When `availableTiles.length === 0`, the screen SHALL render a friendly insuffici
 
 ### Requirement: Challenge-Level Decoding
 
-The container SHALL decode `challengeLevel` into three knobs passed to `<HanziWriter />`:
+The container SHALL decode `challengeLevel` into three configuration switches:
 
-| CL | `showOutline` | `showCharacter` (start dots / numbered guides) | `leniency` |
+| CL | `<HanziWriter.Outline>` rendered | `<HanziWriter.Character>` rendered | `quiz.start({leniency})` |
 |---|---|---|---|
-| 1 (default) | `true` | `true` | `1.5` |
-| 2 | `true` | `false` | `1.0` |
-| 3 | `false` | `false` | `0.7` |
+| 1 (default) | yes | yes | `1.5` |
+| 2 | yes | no | `1.0` |
+| 3 | no | no | `0.7` |
+
+`<HanziWriter />` exposes outline + character + grid-lines as compositional **children** (not props). The presenter SHALL render or omit `<HanziWriter.Outline />` and `<HanziWriter.Character />` per the table.
+
+`leniency` SHALL be passed to `quiz.start(...)` (not to `useHanziWriter`).
 
 Unknown CL SHALL fall through to CL1 behaviour.
 
 #### Scenario: CL 1 enables full guidance
 - **GIVEN** `challengeLevel === 1`
 - **WHEN** the screen renders
-- **THEN** the writer is configured with `showOutline=true`, `showCharacter=true`, `leniency=1.5`
+- **THEN** both `<HanziWriter.Outline>` and `<HanziWriter.Character>` are rendered as children
+- **AND** the container starts the quiz with `leniency: 1.5`
 
 #### Scenario: CL 3 enables blank-canvas mode
 - **GIVEN** `challengeLevel === 3`
 - **WHEN** the screen renders
-- **THEN** the writer is configured with `showOutline=false`, `showCharacter=false`, `leniency=0.7`
+- **THEN** neither `<HanziWriter.Outline>` nor `<HanziWriter.Character>` is rendered
+- **AND** the container starts the quiz with `leniency: 0.7`
 
 #### Scenario: Unknown CL falls through
 - **GIVEN** `challengeLevel === 99`
@@ -62,21 +68,25 @@ Unknown CL SHALL fall through to CL1 behaviour.
 
 ### Requirement: Stroke Lifecycle Events
 
-The container SHALL handle these `<HanziWriter />` events:
+The container SHALL configure the upstream quiz via `quiz.start({ leniency, showHintAfterMisses, onMistake, onComplete })`:
 
-- `onMistake({ strokeNum })` MUST increment a per-character `mistakeCount` ref. After 3 mistakes within one character the container MUST call `writer.highlightStroke(strokeNum)` to hint the expected stroke. No point penalty beyond the mistake counter.
+- `showHintAfterMisses: 3` — after 3 mistakes on the current stroke the upstream renders the expected stroke via the `<HanziWriter.QuizMistakeHighlighter />` child rendered inside `<HanziWriter.Svg>`. The hint mechanism is configured at quiz-start, NOT invoked imperatively. There is no `writer.highlightStroke` method in v1.2.
+- `onMistake(strokeData)` MUST increment a per-character `mistakeCount` ref for diagnostics / analytics. No point penalty beyond the mistake counter.
 - `onCorrectStroke` MUST be a no-op in v1 (no chime).
-- `onComplete({ totalMistakes })` MUST call `shell.incrementPointsAndTracker(true, strokeCount)` where `strokeCount === assets.strokes[char].strokes.length`. Then `shell.audio.playWord(char)` plays the character audio. The container then advances to the next character in the round.
+- `onComplete({ totalMistakes, character })` MUST call `shell.incrementPointsAndTracker(true, strokeCount)` where `strokeCount === assets.strokes[char].strokes.length`. Then `shell.audio.playWord(char)` plays the character audio. The container then advances to the next character in the round.
+
+The `<HanziWriter.QuizMistakeHighlighter />` child MUST be rendered inside `<HanziWriter.Svg>` so the hint is visible when the threshold trips.
 
 #### Scenario: Successful character grants stroke-count points
 - **GIVEN** the current character `"生"` has 5 strokes
 - **WHEN** the player completes the character with no mistakes
 - **THEN** `incrementPointsAndTracker` is called with `(true, 5)`
 
-#### Scenario: 3 mistakes triggers hint
-- **GIVEN** the current character has been mis-stroked twice
+#### Scenario: 3 mistakes triggers hint via upstream highlighter
+- **GIVEN** `quiz.start` was invoked with `showHintAfterMisses: 3`
+- **AND** the current character has been mis-stroked twice
 - **WHEN** the player makes a third mistake
-- **THEN** `writer.highlightStroke` is invoked with the current stroke number
+- **THEN** the upstream `<QuizMistakeHighlighter />` renders the expected stroke automatically
 - **AND** the round does NOT advance to the next character
 
 #### Scenario: Round advances after each character

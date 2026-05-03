@@ -50,6 +50,13 @@ dist/storybook/
 
 # Generated prebuild artifacts — recreated by generate-lang-manifest
 apps/alphaTiles/src/generated/
+
+# Stroke-data cache — fetched on demand by tools/build-stroke-data.ts
+tools/data/stroke-cache/*.json
+
+# Devanagari Wikimedia SVG cache — re-fetchable from Wikimedia
+tools/data/wikimedia-deva-cache/*.svg
+tools/data/wikimedia-deva-cache/_attribution.json
 ## Nested node_modules
 
 node_modules/

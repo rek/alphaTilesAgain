@@ -60,6 +60,17 @@ export interface LangAssets {
     /** Keyed by game.instructionAudio. */
     instructions: Record<string, number>;
   };
+  /**
+   * Per-character stroke data, keyed by character glyph. Empty `{}` for
+   * non-Chinese packs. See `data-stroke-data` for type + accessor.
+   */
+  strokes: Record<string, StrokeData>;
   /** Output of runPrecomputes(). Typed access via usePrecompute<T>(key). */
   precomputes: Map<string, unknown>;
+}
+
+export interface StrokeData {
+  character: string;
+  strokes: readonly string[];
+  medians: ReadonlyArray<ReadonlyArray<readonly number[]>>;
 }

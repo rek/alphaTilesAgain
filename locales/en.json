@@ -7,6 +7,12 @@
     "set_player_name": "Set Player Name",
     "tracker_of_total": "Tracker {{current}} of {{total}}",
     "replay": "Replay",
+    "retry": "Retry",
+    "loading_short": "Loading…",
+    "taiwan": {
+      "progress": "Character {{current}} of {{total}}",
+      "no_content": "No stroke data available."
+    },
     "next": "Next",
     "instructions": "Instructions",
     "play_again": "Play Again",

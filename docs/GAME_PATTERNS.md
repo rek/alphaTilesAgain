@@ -120,6 +120,7 @@ export function <Name>Screen(props: <Name>ScreenProps) {
 | Mexico | 1-digit difficulty | `1`→3 pairs, `2`→4, `3`→6, `4`→8, `5`→10 (Memory) |
 | Romania | none | CL ignored; NO_TRACKER (non-scored). scanSetting (1/2/3) controls word filtering |
 | United States | 1-digit difficulty | tile-count cap (5/7/9, no min); pair-and-spell; no `playCorrectFinal` fanfare on win |
+| Taiwan | 1-digit difficulty | CL1 → outline + numbered guides + leniency 1.5; CL2 → outline only + leniency 1.0; CL3 → blank + leniency 0.7. CL knobs gate **child rendering** + `quiz.start()` opts, not props on `<HanziWriter />`. |
 
 Decode locally in the container via a constant map. Add new games here when their `challengeLevel` is decoded.
 
@@ -571,3 +572,55 @@ Track the timer in a ref and clear it in `startRound()` and on unmount; otherwis
 When a game needs decorative overlays (Italy beans, future games' chips/marks), default to **styled View shapes** in the presenter — not pack-injected images. The presenter accepts an optional image-source prop (`beanImage`, `loteriaImage`) so an app may swap the styled circle for a real `zz_bean.png` later.
 
 Why: pack assets for these overlays are inconsistently shipped, and the presenter has zero asset dependencies otherwise. Image override is opt-in, not required.
+
+---
+
+## OSS-wrap discipline (from game-taiwan)
+
+Taiwan is the first non-Java game in the catalogue. The mechanic (stroke-order tracing) is delegated wholesale to `@jamsch/react-native-hanzi-writer`. Pattern for any future "wrap an existing OSS lib" game:
+
+1. **Pin the dep exactly** in `package.json` (no caret) — small-maintainer libs go stale; we own the rollover.
+2. **Vendor data through a per-pack prebuild step** (`tools/build-stroke-data.ts`) — never bundle the full upstream dataset; per-pack subset keeps APK size linear in pack count.
+3. **Cache fetched data under `tools/data/<lib>-cache/`** + `.gitignore` it. CDN-fetch + cache is functionally equivalent to vendoring, with first-fetch the only network dep.
+4. **Add a NOTICE entry** for license attribution. Even MIT deps get a NOTICE row when they ship a non-trivial dataset (MMH/Arphic in Taiwan's case is LGPL).
+5. **Document API quirks in `tasks.md` + spec.md** before impl. Library APIs evolve — don't assume the readme matches what's installed. The Taiwan spec originally referenced `showOutline`/`showCharacter` props that don't exist in `1.2.0`; we corrected pre-impl.
+
+---
+
+## Web SSR + worklet libs need a client-only mount boundary (from game-taiwan)
+
+`expo-router` `web.output: 'static'` prerenders every route in Node. Libraries that depend on `react-native-reanimated` v4 worklets via `react-native-worklets` (e.g. `@jamsch/react-native-hanzi-writer`) cannot run under Node SSR — the worklet plugin's transformed module is referenced before initialization, throwing `Cannot access 'getPathString' before initialization` at the import line.
+
+Symptom: dev server returns 500 on the route; production export bundles fine but throws at load.
+
+Fix: dynamic-import the lib (or any sibling that statically imports it) inside `useEffect`. SSR pass renders the fallback only; browser pass loads the lib post-mount.
+
+```tsx
+// Container at the route boundary:
+const [mod, setMod] = useState<typeof import('./Inner') | null>(null);
+useEffect(() => { import('./Inner').then(setMod); }, []);
+if (!mod) return <ActivityIndicator />;
+return <mod.Inner {...props} />;
+```
+
+Notes:
+- `babel-preset-expo` 55+ auto-adds `react-native-worklets/plugin` when worklets is installed; do NOT list it manually in `babel.config.js` (double-transform → same TDZ).
+- The lazy boundary must be at the route file or a sibling that the route does NOT statically import. Once the bundler follows the chain to the worklet lib's static import, you're back in SSR.
+
+---
+
+## Auto-start the quiz/animation when the upstream signals readiness (from game-taiwan)
+
+Libraries with internal async loading (e.g. `useHanziWriter` fetches per-character JSON) expose a memoized loaded state — for hanzi-writer that's `writer.characterClass: Character | null`. To auto-start the quiz on each new character, depend on the loaded handle in a `useEffect` and short-circuit on `null`:
+
+```ts
+useEffect(() => {
+  const cls = writer.characterClass;
+  if (!cls) return;                               // still loading
+  if (startedForCharRef.current === currentChar) return;  // already started
+  startedForCharRef.current = currentChar;
+  writer.quiz.start({ ... });
+}, [writer, currentChar]);
+```
+
+Track started-state in a ref (not state) so the effect doesn't re-render on the start. Reset the ref when `currentChar` changes.

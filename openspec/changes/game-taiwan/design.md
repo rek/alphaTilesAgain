@@ -50,15 +50,18 @@ Stakeholders: PM (curriculum + launch), engineering (build), legal (LGPL data sh
 
 **Rationale:** Matches existing per-asset layout. Lazy-load possible later. Keeps the pack human-inspectable.
 
-### D3. Prebuild `tools/build-stroke-data.ts` vendors MMH dataset, emits per-char JSON
+### D3. Prebuild `tools/build-stroke-data.ts` fetches per-char JSON from CDN, caches locally, emits per-pack
 
-**Decision:** A new prebuild tool runs only for Chinese-script packs (`aa_langinfo.txt § Script type === "Chinese"`). It reads the bundled MMH dataset, looks up each tile glyph from `aa_gametiles.txt`, and writes `languages/<code>/strokes/<char>.json`. Missing-from-MMH characters are logged as warnings and skipped.
+**Decision:** A new prebuild tool runs only for Chinese-script packs (`aa_langinfo.txt § Script type === "Chinese"`). It scans tile glyphs from `aa_gametiles.txt`, fetches each character's JSON from `cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/<char>.json` (npm distribution of MMH), caches under `tools/data/stroke-cache/<char>.json`, and writes `languages/<code>/strokes/<char>.json`. Missing-from-MMH characters are logged as warnings and skipped.
 
 **Alternatives:**
 - At-runtime lookup of MMH → rejected; would need full MMH dataset bundled, defeats per-pack approach.
+- Vendor full `graphics.txt` (~30MB) → rejected post-impl; CDN fetch + cache produces identical per-char output without bulk vendor.
 - Manual authoring per pack → rejected; content team should not hand-write stroke JSON.
 
-**Rationale:** One-line opt-in for any future Chinese-script pack. Coverage-gap is visible at build time, not at runtime.
+**Rationale:** One-line opt-in for any future Chinese-script pack. Coverage-gap is visible at build time, not at runtime. Cache keeps subsequent prebuilds offline; only the first fetch needs network. Cache is git-ignored — files in `tools/data/stroke-cache/*.json` are deterministic outputs of the public CDN, regenerable on demand.
+
+**Yue smoke result:** 86 / 87 distinct hanzi covered. Missing: `嫲` (Cantonese-specific, not in MMH dictionary).
 
 ### D4. CL decoding via leniency + outline visibility
 

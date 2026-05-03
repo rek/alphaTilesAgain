@@ -12,7 +12,7 @@
 
 import { parsePack } from '@shared/util-lang-pack-parser';
 import { runPrecomputes } from '@shared/util-precompute';
-import type { LangAssets } from './LangAssets';
+import type { LangAssets, StrokeData } from './LangAssets';
 import { resolveAudio } from './internal/resolveAudio';
 import { resolveImages } from './internal/resolveImages';
 import { resolveFonts } from './internal/resolveFonts';
@@ -43,6 +43,11 @@ type ManifestInput = {
     syllables: Record<string, number>;
     instructions: Record<string, number>;
   };
+  /**
+   * Per-character stroke data, populated by `tools/build-stroke-data.ts` for
+   * Chinese-script packs. Empty / absent for non-Chinese packs.
+   */
+  strokes?: Record<string, StrokeData>;
 };
 
 export function loadLangPack(manifest: ManifestInput): LangAssets {
@@ -69,6 +74,7 @@ export function loadLangPack(manifest: ManifestInput): LangAssets {
     fonts,
     images,
     audio,
+    strokes: manifest.strokes ?? {},
     precomputes: new Map(), // populated below
   };
 

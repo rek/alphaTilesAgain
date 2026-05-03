@@ -71,9 +71,17 @@
         "cwd": "{workspaceRoot}"
       }
     },
-    "validate-lang-pack": {
+    "build-stroke-data": {
       "executor": "nx:run-commands",
       "dependsOn": ["rsync-lang-pack"],
+      "options": {
+        "command": "npx tsx tools/build-stroke-data.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "validate-lang-pack": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build-stroke-data"],
       "options": {
         "command": "npx tsx tools/validate-lang-pack.ts",
         "cwd": "{workspaceRoot}"
@@ -102,7 +110,7 @@
       "executor": "nx:run-commands",
       "continuous": true,
       "options": {
-        "command": "APP_LANG=yue npx tsx tools/generate-lang-manifest.ts && cd apps/alphaTiles && APP_LANG=yue npx expo start -w --port 8081",
+        "command": "APP_LANG=yue npx tsx tools/build-stroke-data.ts && APP_LANG=yue npx tsx tools/generate-lang-manifest.ts && cd apps/alphaTiles && APP_LANG=yue npx expo start -w --port 8081",
         "cwd": "{workspaceRoot}"
       }
     }
