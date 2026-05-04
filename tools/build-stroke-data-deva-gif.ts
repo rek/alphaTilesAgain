@@ -458,42 +458,63 @@ function round(x: number, decimals: number): number {
 /**
  * Vectorize a binary mask via potrace → smooth Bézier SVG path.
  *
- * Pipeline: render mask to a 4× upsampled PNG (black-on-white) → potrace
- * with curve optimisation → extract the `d=` attribute. Holes (counters)
- * are emitted by potrace as additional sub-paths with reverse winding,
- * which SVG fill-rule renders as holes for free.
+ * Pipeline:
+ *   1. Render mask at 8× upsample (black on white) into a node-canvas.
+ *   2. Apply Gaussian-style blur via node-canvas `ctx.filter`. This anti-
+ *      aliases the source's pixel stair-step BEFORE potrace runs — without
+ *      it, potrace fits curves to the jagged pixel edges and reproduces the
+ *      aliasing.
+ *   3. Re-binarise via `threshold:128` so potrace sees a clean B&W bitmap.
+ *   4. Trace with permissive curve params (high `optTolerance` + max
+ *      `alphaMax`) for maximum smoothing. Low `turdSize` (1) so small holes
+ *      (e.g. द's interior counter) aren't filtered as noise.
+ *   5. Scale coords back from upsampled space to original mask pixel coords.
  *
- * 4× upsample makes potrace's curve fit cleaner on low-res GIF rasters
- * (217×181 source); cost is ~16× pixels, but potrace is fast.
+ * Holes (counters) are emitted by potrace as additional sub-paths with
+ * reverse winding — SVG fill-rule renders them as holes for free.
  */
 async function maskToPotraceSvg(
   mask: Uint8Array,
   w: number,
   h: number,
 ): Promise<string | null> {
-  const SCALE = 4;
-  const canvas = createCanvas(w * SCALE, h * SCALE);
+  const SCALE = 8;
+  const BLUR_PX = SCALE / 2; // half-pixel blur in upsampled space
+  const W = w * SCALE;
+  const H = h * SCALE;
+  const canvas = createCanvas(W, H);
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, w * SCALE, h * SCALE);
+  ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = 'black';
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       if (mask[y * w + x]) ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
     }
   }
-  const png = canvas.toBuffer('image/png');
+  // Blur to soften the pixel stair-step. Re-draw onto a fresh canvas with
+  // CSS-style filter applied.
+  const blurred = createCanvas(W, H);
+  const bctx = blurred.getContext('2d');
+  bctx.filter = `blur(${BLUR_PX}px)`;
+  bctx.drawImage(canvas, 0, 0);
+  const png = blurred.toBuffer('image/png');
 
   return new Promise((resolve) => {
     potrace.trace(
       png,
-      { threshold: 128, turdSize: 4, optCurve: true, optTolerance: 0.4 },
+      {
+        threshold: 128,
+        turdSize: 1,            // catch small holes (e.g. द interior counter)
+        optCurve: true,
+        optTolerance: 1.5,      // smoother curve fit (default 0.2)
+        alphaMax: 1.3,          // max corner-curving (max 1.334)
+      },
       (err: unknown, svg: string) => {
         if (err) { resolve(null); return; }
         const m = svg.match(/d="([^"]+)"/);
         if (!m) { resolve(null); return; }
-        // Coords are in upsampled space (SCALE×). Pre-scale back so callers
-        // can think in original mask pixel coords.
+        // Coords are in upsampled space (SCALE×). Pre-scale back to mask px.
         const dStr = svgpath(m[1]).scale(1 / SCALE).abs().toString();
         resolve(dStr);
       },
