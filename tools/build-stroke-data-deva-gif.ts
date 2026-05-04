@@ -479,25 +479,33 @@ async function maskToPotraceSvg(
   h: number,
 ): Promise<string | null> {
   const SCALE = 8;
-  const BLUR_PX = SCALE / 2; // half-pixel blur in upsampled space
   const W = w * SCALE;
   const H = h * SCALE;
-  const canvas = createCanvas(W, H);
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = 'black';
+  // Step 1: render mask at NATIVE pixel resolution into a small canvas.
+  const small = createCanvas(w, h);
+  const sctx = small.getContext('2d');
+  sctx.fillStyle = 'white';
+  sctx.fillRect(0, 0, w, h);
+  sctx.fillStyle = 'black';
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      if (mask[y * w + x]) ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+      if (mask[y * w + x]) sctx.fillRect(x, y, 1, 1);
     }
   }
-  // Blur to soften the pixel stair-step. Re-draw onto a fresh canvas with
-  // CSS-style filter applied.
+  // Step 2: upsample via drawImage with imageSmoothingEnabled=true for
+  // bilinear interpolation. Hard 8×8 squares (fillRect) preserve aliasing;
+  // bilinear upsampling smooths the edges.
+  const big = createCanvas(W, H);
+  const bctx = big.getContext('2d');
+  (bctx as unknown as { imageSmoothingEnabled: boolean }).imageSmoothingEnabled = true;
+  (bctx as unknown as { imageSmoothingQuality: string }).imageSmoothingQuality = 'high';
+  bctx.drawImage(small, 0, 0, W, H);
+  // Step 3: extra Gaussian blur on top of bilinear (≈1 source pixel) for
+  // potrace's curve fit to land on smoother contours.
   const blurred = createCanvas(W, H);
-  const bctx = blurred.getContext('2d');
-  bctx.filter = `blur(${BLUR_PX}px)`;
-  bctx.drawImage(canvas, 0, 0);
+  const blctx = blurred.getContext('2d');
+  blctx.filter = `blur(${SCALE / 2}px)`;
+  blctx.drawImage(big, 0, 0);
   const png = blurred.toBuffer('image/png');
 
   return new Promise((resolve) => {
