@@ -63,6 +63,7 @@
     "metro-config": "~0.82.4",
     "metro-resolver": "~0.82.4",
     "nx": "22.6.5",
+    "omggif": "^1.0.10",
     "postcss": "^8.5.10",
     "prettier": "~3.6.2",
     "react-native-svg": "~15.11.2",

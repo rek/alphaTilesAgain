@@ -320,6 +320,23 @@ export function traceSkeleton(skeleton: Uint8Array, w: number, h: number): [numb
   });
 }
 
+/**
+ * One-shot pipeline for callers that already have a binary mask (e.g. from
+ * GIF frame-diff). Skips the SVG rasterize step and returns medians in the
+ * mask's pixel coordinate space — caller is responsible for mapping back.
+ */
+export function skeletonizeMask(
+  mask: Uint8Array,
+  w: number,
+  h: number,
+  totalSamples: number,
+): [number, number][] {
+  thinZhangSuen(mask, w, h);
+  const path = traceSkeleton(mask, w, h);
+  if (path.length === 0) return [];
+  return samplePolyline(path, totalSamples);
+}
+
 /** Sample N points uniformly along arc length of an ordered pixel polyline. */
 export function samplePolyline(pts: [number, number][], n: number): [number, number][] {
   if (pts.length === 0) return [];
