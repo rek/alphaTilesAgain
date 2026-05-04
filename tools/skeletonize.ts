@@ -410,6 +410,88 @@ export function traceBoundary(
 }
 
 /**
+ * Find holes (interior 0-regions enclosed by 1-pixels) inside a binary mask.
+ * Returns a mask of the same size where 1-pixels mark hole interiors.
+ *
+ * Algorithm: flood-fill 0-pixels from the image boundary; everything still
+ * 0 after the flood is enclosed (= a hole).
+ */
+export function findHoles(mask: Uint8Array, w: number, h: number): Uint8Array {
+  const filled = new Uint8Array(mask); // copy
+  // Flood-fill outside region with 1 (treating it as "ink" temporarily).
+  const queue: number[] = [];
+  for (let x = 0; x < w; x++) {
+    if (!filled[x]) { filled[x] = 2; queue.push(x); }
+    const j = (h - 1) * w + x;
+    if (!filled[j]) { filled[j] = 2; queue.push(j); }
+  }
+  for (let y = 0; y < h; y++) {
+    const a = y * w;
+    if (!filled[a]) { filled[a] = 2; queue.push(a); }
+    const b = y * w + w - 1;
+    if (!filled[b]) { filled[b] = 2; queue.push(b); }
+  }
+  let head = 0;
+  while (head < queue.length) {
+    const idx = queue[head++];
+    const x = idx % w;
+    const y = (idx - x) / w;
+    for (let dy = -1; dy <= 1; dy++) {
+      const ny = y + dy;
+      if (ny < 0 || ny >= h) continue;
+      for (let dx = -1; dx <= 1; dx++) {
+        if (dx === 0 && dy === 0) continue;
+        const nx = x + dx;
+        if (nx < 0 || nx >= w) continue;
+        const ni = ny * w + nx;
+        if (filled[ni] === 0) {
+          filled[ni] = 2;
+          queue.push(ni);
+        }
+      }
+    }
+  }
+  // Anything still 0 in `filled` is enclosed.
+  const holes = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    if (filled[i] === 0) holes[i] = 1;
+  }
+  return holes;
+}
+
+/**
+ * Smooth a polyline by Chaikin-style corner cutting (one iteration). Each
+ * input segment (P_i → P_{i+1}) becomes two new points at 1/4 and 3/4 along
+ * the segment, doubling the point count and softening sharp corners. Apply
+ * `iterations` times for progressively smoother curves.
+ *
+ * Preserves the closed-loop property: the last point in the output connects
+ * back to the first if `closed=true`.
+ */
+export function smoothPolyline(
+  pts: [number, number][],
+  iterations = 2,
+  closed = true,
+): [number, number][] {
+  let cur = pts;
+  for (let it = 0; it < iterations; it++) {
+    const next: [number, number][] = [];
+    const n = cur.length;
+    if (n < 2) return cur;
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      if (!closed && j === 0) break;
+      const [x0, y0] = cur[i];
+      const [x1, y1] = cur[j];
+      next.push([0.75 * x0 + 0.25 * x1, 0.75 * y0 + 0.25 * y1]);
+      next.push([0.25 * x0 + 0.75 * x1, 0.25 * y0 + 0.75 * y1]);
+    }
+    cur = next;
+  }
+  return cur;
+}
+
+/**
  * One-shot pipeline for callers that already have a binary mask (e.g. from
  * GIF frame-diff). Skips the SVG rasterize step and returns medians in the
  * mask's pixel coordinate space — caller is responsible for mapping back.

@@ -35,6 +35,8 @@ import {
   samplePolyline,
   dilate,
   traceBoundary,
+  findHoles,
+  smoothPolyline,
 } from './skeletonize';
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -354,6 +356,7 @@ export function extractFromGif(buf: Buffer): ExtractResult {
   interface StrokePolys {
     centerline: [number, number][];
     boundary: [number, number][];
+    holes: [number, number][][];
   }
   const strokes: StrokePolys[] = [];
   for (const seg of segments) {
@@ -367,12 +370,54 @@ export function extractFromGif(buf: Buffer): ExtractResult {
     const boundary = traceBoundary(dilated, w, h);
     if (boundary.length < 4) continue;
 
+    // Find interior holes (counters) — 0-pixel regions enclosed by the
+    // stroke. Each hole becomes a separate sub-path in the d-string with
+    // OPPOSITE winding so SVG even-odd / non-zero fill leaves them as holes.
+    const holesMask = findHoles(dilated, w, h);
+    const holePolys: [number, number][][] = [];
+    // Trace each hole component separately by extracting + clearing one at a
+    // time. A hole big enough to render is ≥ 4 connected px (3x3 minus center).
+    const holeWork = new Uint8Array(holesMask);
+    while (true) {
+      // Find a remaining hole pixel.
+      let start = -1;
+      for (let i = 0; i < holeWork.length; i++) {
+        if (holeWork[i]) { start = i; break; }
+      }
+      if (start === -1) break;
+      // Flood-fill this hole component to identify its pixels, then trace.
+      const comp = new Uint8Array(w * h);
+      const queue = [start];
+      comp[start] = 1; holeWork[start] = 0;
+      let head = 0;
+      while (head < queue.length) {
+        const idx = queue[head++];
+        const cx = idx % w; const cy = (idx - cx) / w;
+        for (let dy = -1; dy <= 1; dy++) {
+          const ny = cy + dy; if (ny < 0 || ny >= h) continue;
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nx = cx + dx; if (nx < 0 || nx >= w) continue;
+            const ni = ny * w + nx;
+            if (holeWork[ni]) {
+              comp[ni] = 1; holeWork[ni] = 0; queue.push(ni);
+            }
+          }
+        }
+      }
+      let count = 0;
+      for (let j = 0; j < comp.length; j++) if (comp[j]) count++;
+      if (count < 4) continue; // tiny hole = aliasing artifact
+      const holeBoundary = traceBoundary(comp, w, h);
+      if (holeBoundary.length >= 4) holePolys.push(holeBoundary);
+    }
+
     const centerlineMask = new Uint8Array(union); // copy
     thinZhangSuen(centerlineMask, w, h);
     const centerline = traceSkeleton(centerlineMask, w, h);
     if (centerline.length < 2) continue;
 
-    strokes.push({ centerline, boundary });
+    strokes.push({ centerline, boundary, holes: holePolys });
   }
   if (strokes.length === 0) {
     return { strokes: [], medians: [], error: 'no strokes after skeletonization' };
@@ -406,14 +451,25 @@ export function extractFromGif(buf: Buffer): ExtractResult {
   const finalStrokes: string[] = [];
   const finalMedians: number[][][] = [];
   for (const s of strokes) {
-    // Boundary → closed-polygon d-string for fill.
-    const boundaryRemapped = s.boundary.map(([x, y]) => remap(x, y));
-    let bd = '';
-    for (let i = 0; i < boundaryRemapped.length; i++) {
-      const [x, y] = boundaryRemapped[i];
-      bd += `${i === 0 ? 'M' : ' L'} ${x} ${y}`;
+    // Boundary → closed polygon. Smooth via Chaikin (2 passes) to soften
+    // the pixel-resolution stair-step aliasing.
+    const smoothBoundary = smoothPolyline(
+      s.boundary.map(([x, y]) => remap(x, y) as [number, number]),
+      2,
+      true,
+    );
+    let bd = polylineToPath(smoothBoundary);
+
+    // Each hole is a reverse-wound sub-path. SVG `fill-rule: evenodd` (or
+    // `nonzero` with opposite winding) treats them as holes in the outer
+    // polygon — leaves the counter empty.
+    for (const hole of s.holes) {
+      const remappedHole = hole.map(([x, y]) => remap(x, y) as [number, number]);
+      const smoothed = smoothPolyline(remappedHole, 2, true);
+      // Reverse to get opposite winding from the outer.
+      smoothed.reverse();
+      bd += ' ' + polylineToPath(smoothed);
     }
-    bd += ' Z';
     finalStrokes.push(bd);
 
     // Centerline → medians for quiz scoring.
@@ -451,6 +507,17 @@ function stripHtml(s: string | undefined): string | undefined {
 function round(x: number, decimals: number): number {
   const k = Math.pow(10, decimals);
   return Math.round(x * k) / k;
+}
+
+function polylineToPath(pts: [number, number][]): string {
+  if (pts.length === 0) return '';
+  let s = '';
+  for (let i = 0; i < pts.length; i++) {
+    const [x, y] = pts[i];
+    s += `${i === 0 ? 'M' : ' L'} ${round(x, ROUND_PRECISION)} ${round(y, ROUND_PRECISION)}`;
+  }
+  s += ' Z';
+  return s;
 }
 
 /**
