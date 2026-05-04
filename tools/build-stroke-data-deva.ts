@@ -42,6 +42,13 @@ import * as path from 'path';
 import { XMLParser } from 'fast-xml-parser';
 import { svgPathProperties as _svgPathProperties } from 'svg-path-properties';
 import svgpath from 'svgpath';
+import {
+  rasterizePath,
+  thinZhangSuen,
+  traceSkeleton,
+  samplePolyline,
+  makeUnrasterize,
+} from './skeletonize';
 
 const svgPathProperties = (d: string) =>
   new (_svgPathProperties as unknown as new (s: string) => {
@@ -65,9 +72,52 @@ const ACCEPTED_LICENSES = new Set([
 ]);
 
 const TARGET_BOX = 1024;
-const MEDIAN_COUNT = 10;
+const MEDIAN_COUNT = 15;
 const ROUND_PRECISION = 1; // 1 decimal place — keeps curves smooth at 1024 scale
-const GREY_FILL_PATTERNS = [/#c8c8c8/i, /#cccccc/i, /rgb\(\s*200\s*,\s*200\s*,\s*200\s*\)/i];
+// "Not drawn" markers in a path/parent style. Catches:
+//   - any neutral light-grey hex (#c0c0c0..#dadada with R≈G≈B), e.g. #c8c8c8 (अ), #c9c9c9 (ए, ई)
+//   - rgb(R,R,R) where R ∈ ~[180, 220]
+//   - opacity < 0.5 (faded out — explicitly hidden)
+//   - fill:none (transparent)
+function isGreyStyle(style: string): boolean {
+  if (!style) return false;
+  // Match each declaration via the merged style string (k:v;…).
+  const decls = new Map<string, string>();
+  for (const decl of style.split(';')) {
+    const i = decl.indexOf(':');
+    if (i < 0) continue;
+    decls.set(decl.slice(0, i).trim(), decl.slice(i + 1).trim());
+  }
+  const opacity = parseFloat(decls.get('opacity') ?? '1');
+  if (Number.isFinite(opacity) && opacity < 0.5) return true;
+  const fill = (decls.get('fill') ?? '').toLowerCase();
+  if (!fill || fill === 'inherit') return false;
+  if (fill === 'none' || fill === 'transparent') return true;
+  // Hex #RRGGBB
+  const hex = fill.match(/^#([0-9a-f]{6})$/);
+  if (hex) {
+    const r = parseInt(hex[1].slice(0, 2), 16);
+    const g = parseInt(hex[1].slice(2, 4), 16);
+    const b = parseInt(hex[1].slice(4, 6), 16);
+    if (Math.abs(r - g) < 16 && Math.abs(g - b) < 16 && r >= 160 && r <= 230) return true;
+  }
+  const hex3 = fill.match(/^#([0-9a-f]{3})$/);
+  if (hex3) {
+    const r = parseInt(hex3[1][0] + hex3[1][0], 16);
+    const g = parseInt(hex3[1][1] + hex3[1][1], 16);
+    const b = parseInt(hex3[1][2] + hex3[1][2], 16);
+    if (Math.abs(r - g) < 16 && Math.abs(g - b) < 16 && r >= 160 && r <= 230) return true;
+  }
+  // rgb(R,G,B)
+  const rgb = fill.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (rgb) {
+    const r = parseInt(rgb[1], 10);
+    const g = parseInt(rgb[2], 10);
+    const b = parseInt(rgb[3], 10);
+    if (Math.abs(r - g) < 16 && Math.abs(g - b) < 16 && r >= 160 && r <= 230) return true;
+  }
+  return false;
+}
 
 main().catch((e) => {
   console.error('[build-stroke-data-deva] fatal:', e);
@@ -254,6 +304,14 @@ interface PathEntry {
 
 interface NumericGroup {
   n: number;
+  /**
+   * X-translate of the group's own `transform` (parsed from its first
+   * `translate(tx, …)` clause). Inkscape places stage groups side-by-side via
+   * horizontal translates; the smallest tx is the chronologically first stage,
+   * regardless of the inkscape:label number. For some chars (e.g. ई) labels
+   * are NOT in chronological order.
+   */
+  tx: number;
   paths: PathEntry[];
   transformChain: string[];
 }
@@ -296,18 +354,60 @@ export function extractStrokes(svgText: string): ExtractResult {
       error: `not enough consistent groups (modal count=${modal}, kept=${numericGroups.length}, raw=${allNumericGroups.map((g) => `${g.n}:${g.paths.length}`).join(',')})`,
     };
   }
-  numericGroups.sort((a, b) => a.n - b.n);
+  // Wikimedia stroke-order SVGs use two ordering conventions:
+  //   (A) Side-by-side stages (अ, ई, ए, ओ, …). Each group is translated
+  //       horizontally so the stages display in a row. Sort by tx ascending
+  //       to recover chronological order — `inkscape:label="N"` is just an
+  //       identifier and may NOT be in tx order (e.g. ई has labels 1,3,2).
+  //   (B) Stacked stages (ऐ). All groups share the same tx; the displayed
+  //       image is the final character with the latest stroke highlighted.
+  //       Here the inkscape:label number IS the drawing order (1 = first).
+  // Detect by looking at tx spread: < 1 unit total → layout B; otherwise A.
+  const txMin = Math.min(...numericGroups.map((g) => g.tx));
+  const txMax = Math.max(...numericGroups.map((g) => g.tx));
+  const txSpread = txMax - txMin;
+  const isSinglePathLayout = modal === 1; // truly one-path-per-group (rare; not in current corpus)
+  const isStackedLayout = txSpread < 1; // ऐ-style: same tx for all groups
+  if (isSinglePathLayout || isStackedLayout) {
+    numericGroups.sort((a, b) => a.n - b.n);
+  } else {
+    numericGroups.sort((a, b) => a.tx - b.tx);
+    numericGroups.forEach((g, i) => { g.n = i + 1; });
+  }
   const expected = modal;
 
   // For each path index, find the smallest stage N at which it's NOT grey.
   // That's the drawing stage of the stroke containing that path.
   const drawingStage: number[] = new Array(expected).fill(Infinity);
-  for (const g of numericGroups) {
-    g.paths.forEach((p, i) => {
-      if (!isGreyStyle(p.style)) {
-        drawingStage[i] = Math.min(drawingStage[i], g.n);
-      }
-    });
+  if (isSinglePathLayout) {
+    // Each group contributes its own path. Path index isn't comparable across
+    // groups because every group has a different path. We synthesize a
+    // virtual path index per group so each ends up its own stroke.
+    // Concretely: combine all group's lone paths into a flat list ordered by
+    // label, and assign drawingStage[i] = i+1 for path i.
+    const flatPaths: PathEntry[] = [];
+    for (const g of numericGroups) {
+      flatPaths.push(...g.paths);
+    }
+    drawingStage.length = flatPaths.length;
+    for (let i = 0; i < flatPaths.length; i++) drawingStage[i] = i + 1;
+    // Replace canonical with a synthetic group containing all flat paths in order.
+    const canonicalSyn: NumericGroup = {
+      n: numericGroups.length,
+      tx: 0,
+      paths: flatPaths,
+      transformChain: numericGroups[numericGroups.length - 1].transformChain,
+    };
+    numericGroups.length = 0;
+    numericGroups.push(canonicalSyn);
+  } else {
+    for (const g of numericGroups) {
+      g.paths.forEach((p, i) => {
+        if (!isGreyStyle(p.style)) {
+          drawingStage[i] = Math.min(drawingStage[i], g.n);
+        }
+      });
+    }
   }
 
   // Use the highest-N group as the canonical source of d-strings + transform —
@@ -413,8 +513,14 @@ function collectNumericLabelGroups(
       if (tag === 'g') {
         const label = attrs['@_inkscape:label'];
         if (label && /^\d+$/.test(label)) {
-          const paths = collectPathsWithStyle(children ?? []);
-          out.push({ n: parseInt(label, 10), paths, transformChain: chain });
+          const groupStyle = attrs['@_style'] ?? '';
+          const paths = collectPathsWithStyle(children ?? [], groupStyle);
+          out.push({
+            n: parseInt(label, 10),
+            tx: extractTranslateX(transform),
+            paths,
+            transformChain: chain,
+          });
         }
       }
       if (Array.isArray(children)) {
@@ -425,38 +531,55 @@ function collectNumericLabelGroups(
   return out;
 }
 
-function collectPathsWithStyle(nodes: PreservedNode[]): PathEntry[] {
+function collectPathsWithStyle(nodes: PreservedNode[], inheritedStyle: string): PathEntry[] {
   const out: PathEntry[] = [];
   let idx = 0;
-  function walk(arr: PreservedNode[]): void {
+  function walk(arr: PreservedNode[], parentStyle: string): void {
     for (const node of arr) {
       for (const tag of Object.keys(node)) {
         if (tag.startsWith(':@')) continue;
         const attrs = (node as { ':@'?: Record<string, string> })[':@'] ?? {};
         if (tag === 'path' && attrs['@_d']) {
-          out.push({
-            d: attrs['@_d'],
-            style: attrs['@_style'] ?? '',
-            index: idx++,
-          });
+          // Effective style = parent inheritable + own (own wins on conflicts).
+          const ownStyle = attrs['@_style'] ?? '';
+          const effective = mergeStyles(parentStyle, ownStyle);
+          out.push({ d: attrs['@_d'], style: effective, index: idx++ });
           continue;
         }
-        // Don't descend into nested labeled groups — those are sibling stages
-        // (e.g. label="3" inside label="4") or non-stroke groups (Arrows,
-        // Start markers). Only walk into UNLABELED <g>s and other elements.
         if (tag === 'g' && attrs['@_inkscape:label']) continue;
         const children = node[tag] as PreservedNode[] | undefined;
-        if (Array.isArray(children)) walk(children);
+        if (Array.isArray(children)) {
+          const childInherited = mergeStyles(parentStyle, attrs['@_style'] ?? '');
+          walk(children, childInherited);
+        }
       }
     }
   }
-  walk(nodes);
+  walk(nodes, inheritedStyle);
   return out;
 }
 
-function isGreyStyle(style: string): boolean {
-  if (!style) return false;
-  return GREY_FILL_PATTERNS.some((re) => re.test(style));
+function extractTranslateX(transform: string | undefined): number {
+  if (!transform) return 0;
+  const m = transform.match(/translate\(\s*(-?\d+\.?\d*)/);
+  return m ? parseFloat(m[1]) : 0;
+}
+
+function mergeStyles(parent: string, own: string): string {
+  // Parse "k:v;k:v" pairs, merge with own overriding parent on key match.
+  const merged = new Map<string, string>();
+  const parse = (s: string): void => {
+    for (const decl of s.split(';')) {
+      const i = decl.indexOf(':');
+      if (i < 0) continue;
+      const k = decl.slice(0, i).trim();
+      const v = decl.slice(i + 1).trim();
+      if (k) merged.set(k, v);
+    }
+  };
+  parse(parent);
+  parse(own);
+  return [...merged].map(([k, v]) => `${k}:${v}`).join(';');
 }
 
 // ---------------------------------------------------------------------------
@@ -513,68 +636,36 @@ function unionOf(bs: BBox[]): BBox {
 // centerline separately, concatenate with even point counts per subpath.
 // ---------------------------------------------------------------------------
 
+/**
+ * Compute a stroke's centerline via raster + Zhang-Suen thinning. The d-string
+ * is rasterized to a binary mask; thinned to a 1-pixel skeleton; the longest
+ * skeleton path is traced and sampled to N medians. Handles arbitrarily curved
+ * stroke shapes including self-folding ("3" / right-side-of-8) shapes that
+ * pair-averaging breaks on.
+ *
+ * Multi-sub-path strokes (outer perimeter + inner counters) render correctly
+ * via canvas's non-zero winding fill — counters with opposite winding leave
+ * holes in the mask, and the skeleton naturally hugs the body's medial axis.
+ */
 function sampleCenterlineMedians(d: string, totalSamples: number): number[][] {
-  const subPaths = splitOnMoveTo(d);
-  if (subPaths.length === 0) return [];
+  if (!d || d.length === 0) return [];
+  const bbox = measureBbox(d);
+  if (bbox.maxX - bbox.minX < 1 || bbox.maxY - bbox.minY < 1) return [];
 
-  // For "3"-shaped or multi-counter strokes, the d-string contains sub-paths
-  // for the outer perimeter PLUS inner counters (holes). Use only the longest.
-  const lens = subPaths.map((sd) => svgPathProperties(sd).getTotalLength());
-  let longestIdx = 0;
-  for (let i = 1; i < lens.length; i++) if (lens[i] > lens[longestIdx]) longestIdx = i;
-  const outline = subPaths[longestIdx];
+  const { mask, w, h } = rasterizePath(d, bbox);
+  thinZhangSuen(mask, w, h);
+  const skelPath = traceSkeleton(mask, w, h);
+  if (skelPath.length === 0) return [];
 
-  // Densely sample the closed-loop outline.
-  const N = 256;
-  const props = svgPathProperties(outline);
-  const totalLen = props.getTotalLength();
-  if (totalLen === 0) return [];
-  const pts: [number, number][] = [];
-  for (let i = 0; i < N; i++) {
-    const p = props.getPointAtLength((i / N) * totalLen);
-    pts.push([p.x, p.y]);
-  }
-
-  // Find the two outline tips: the pair (i, j) with maximum chord distance.
-  // For an elongated stroke shape these are the two ends of the stroke;
-  // walking each side of the loop between them traces the two edges of the
-  // pen path, whose pairwise average is the centerline.
-  let tipA = 0, tipB = 0, maxD2 = -1;
-  for (let i = 0; i < N; i++) {
-    for (let j = i + 1; j < N; j++) {
-      const dx = pts[i][0] - pts[j][0];
-      const dy = pts[i][1] - pts[j][1];
-      const d2 = dx * dx + dy * dy;
-      if (d2 > maxD2) {
-        maxD2 = d2;
-        tipA = i;
-        tipB = j;
-      }
-    }
-  }
-
-  // Walk side A: tipA → tipB stepping forward through the array (length pA).
-  // Walk side B: tipA → tipB stepping backward through the array (length pB).
-  // Pair samples at proportional progress so each pair is on opposite edges.
-  const pA = (tipB - tipA + N) % N;
-  const pB = N - pA;
-
-  const result: number[][] = [];
-  for (let k = 0; k < totalSamples; k++) {
-    const alpha = totalSamples === 1 ? 0.5 : k / (totalSamples - 1);
-    // Side A: index = tipA + alpha * pA
-    const iA = (tipA + Math.round(alpha * pA)) % N;
-    // Side B: index = tipA - alpha * pB (mod N)
-    const iB = (tipA - Math.round(alpha * pB) + N * 10) % N;
-    const ax = pts[iA][0];
-    const ay = pts[iA][1];
-    const bx = pts[iB][0];
-    const by = pts[iB][1];
-    const px = Math.max(0, Math.min(TARGET_BOX, Math.round((ax + bx) / 2)));
-    const py = Math.max(0, Math.min(TARGET_BOX, Math.round((ay + by) / 2)));
-    result.push([px, py]);
-  }
-  return result;
+  const samples = samplePolyline(skelPath, totalSamples);
+  const unraster = makeUnrasterize(bbox);
+  return samples.map(([rx, ry]) => {
+    const [x, y] = unraster(rx, ry);
+    return [
+      Math.max(0, Math.min(TARGET_BOX, Math.round(x))),
+      Math.max(0, Math.min(TARGET_BOX, Math.round(y))),
+    ];
+  });
 }
 
 function splitOnMoveTo(d: string): string[] {

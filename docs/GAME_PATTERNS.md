@@ -609,6 +609,78 @@ Notes:
 
 ---
 
+## Wikimedia stroke-order SVG extractor (from game-india-deva Phase 1B)
+
+`tools/build-stroke-data-deva.ts` automates extraction of per-character stroke
+data from Wikimedia Commons stroke-order SVGs. The same pipeline works for any
+script with similarly-encoded SVGs (Bengali, Tamil, Gurmukhi if/when those
+categories exist on Commons). Reusable bits live in `tools/skeletonize.ts`.
+
+### Lessons learned (read before adding a new script)
+
+- **`inkscape:label="N"` is NOT chronological order.** Most chars use 1..N in
+  drawing order, but some (e.g. Devanagari ई) put labels at indices that don't
+  match drawing order. Sort by `transform="translate(tx, …)"` to recover true
+  chronological order. Fall back to label-N only when all groups share the
+  same tx (stacked layout — see ऐ).
+- **Multiple "grey" conventions exist.** Grey-fill markers vary across artists:
+  `#c8c8c8`, `#c9c9c9`, sometimes opacity 0.8, sometimes `fill:none`. Match by
+  R≈G≈B + brightness range (160–230) plus opacity threshold + the literal
+  "none". Don't anchor on a single hex string.
+- **Style inheritance matters.** Some artists set the grey at the parent
+  `<g style="fill:…">` level (ए) rather than per-path (अ). The walker must
+  merge parent + child styles; child overrides parent on key conflicts.
+- **Three layout types in the corpus** (auto-detected in
+  `extractStrokes()`): side-by-side per-path-grey, side-by-side per-group-grey,
+  stacked (single position, label = order). New artist contributions may add
+  a fourth — verify after scraping.
+- **Pair-averaging on outline loops fails for multi-lobe shapes** (e.g. अ's
+  "3"-shaped curl). Use raster + Zhang-Suen thinning + skeleton-trace instead
+  (`tools/skeletonize.ts`). The raster covers any closed-loop topology.
+- **BFS-longest-path skips inner pinch tips.** Y-junctions in the skeleton
+  have a short branch leading into the pinch tip (e.g. inside a "3"). Default
+  BFS picks the two outer endpoints. Fix: detect off-spine stubs and splice
+  them in as detours (`stub + reversed stub`) to ensure the centerline visits
+  the pinch.
+- **Multi-sub-path strokes** (outer perimeter + inner counters/holes) render
+  correctly via canvas's non-zero winding rule when rasterizing the entire
+  d-string. The skeleton naturally hugs the body's medial axis without
+  explicit hole-handling.
+- **`node-canvas` doesn't export `Path2D`** (as of v3). Replay the d-string
+  manually via `svgpath().abs().unarc().unshort().iterate(...)` mapping
+  segments to `ctx.moveTo/lineTo/quadraticCurveTo/bezierCurveTo`. Curves
+  preserved.
+- **MEDIAN_COUNT matters for detour visibility.** Phase 1A used 10; the
+  Y-junction stub takes a small fraction of total arc length, so with 10
+  evenly-spaced medians the detour is invisible. Bump to 15+ when shapes have
+  pinches.
+- **License-gate everything.** `tools/build-stroke-data-deva.ts` rejects any
+  Wikimedia file whose `LicenseShortName` isn't in an explicit allowlist
+  (`{cc-by-3.0, cc-by-sa-3.0, cc0, public-domain, …}`). Per-char attribution
+  is captured to `_attribution.json` for the NOTICE generator.
+- **Cache fetched assets, but commit the derived JSON.** Raw SVGs are
+  gitignored under `tools/data/wikimedia-deva-cache/`; the per-char output
+  JSON is committed under `tools/data/devanagari-strokes/` so contributors
+  don't need to re-run network fetches.
+- **CC BY-SA 3.0 share-alike obligation** means our generated JSON is a
+  derivative work and inherits the SA license. Document per-artist
+  attribution in `apps/alphaTiles/NOTICE.md`.
+
+### Reusing for a new script
+
+1. Find the Wikimedia category (e.g. `Category:Bengali stroke order (SVG)`).
+2. Copy `tools/build-stroke-data-deva.ts` → `tools/build-stroke-data-<lang>.ts`.
+   Adjust `CATEGORY` constant; adjust the codepoint range in
+   `extractCharFromTitle()` (Devanagari is U+0900–U+097F; Bengali is
+   U+0980–U+09FF).
+3. Run once. Inspect rejection log for any new SVG quirks the heuristics
+   don't yet handle. Eyeball-validate via a `spike-<lang>.tsx` route.
+4. If many chars get rejected for "inconsistent path counts" or similar, the
+   artist used a different convention; widen the heuristics rather than
+   hand-author per-char overrides.
+
+---
+
 ## Auto-start the quiz/animation when the upstream signals readiness (from game-taiwan)
 
 Libraries with internal async loading (e.g. `useHanziWriter` fetches per-character JSON) expose a memoized loaded state — for hanzi-writer that's `writer.characterClass: Character | null`. To auto-start the quiz on each new character, depend on the loaded handle in a `useEffect` and short-circuit on `null`:
