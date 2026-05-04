@@ -22,31 +22,39 @@ smoke. No real stroke-order data exists for Tibetan Uchen as of this date.
 
 5/5 base consonants generated and validated end-to-end:
 
-| char | codepoint | stroke count | source |
+| char | codepoint | stroke count | notes |
 |---|---|---|---|
-| ཀ | U+0F40 | 1 | Noto Serif Tibetan glyph (1 subpath) |
-| ཁ | U+0F41 | 2 | Noto Serif Tibetan glyph (2 subpaths) |
-| ག | U+0F42 | 2 | Noto Serif Tibetan glyph (2 subpaths) |
-| ང | U+0F44 | 1 | Noto Serif Tibetan glyph (1 subpath) |
-| ཅ | U+0F45 | 2 | Noto Serif Tibetan glyph (2 subpaths) |
+| ཀ | U+0F40 | 1 | 1 subpath in TTF |
+| ཁ | U+0F41 | 1 | 2 subpaths → 1 after hole-merge |
+| ག | U+0F42 | 1 | 2 subpaths → 1 after hole-merge |
+| ང | U+0F44 | 1 | 1 subpath in TTF |
+| ཅ | U+0F45 | 1 | 2 subpaths → 1 after hole-merge |
+
+All 5 chars collapse to a single stroke after counter-merging. TTF subpaths
+encode fill regions (outer + counter), not pen-strokes — so synthetic
+multi-stroke decomposition from font data alone is impossible. 1-stroke-per-
+char is the honest representation of "we have no real stroke data."
 
 Pipeline:
 
 1. `tools/build-stroke-data-bod.ts` loads
    `/usr/share/fonts/truetype/noto/NotoSerifTibetan-Regular.ttf` via
    `opentype.js` (newly added dep).
-2. For each char, takes the glyph's vector path and splits at every `M` →
-   one filled subpath = one synthetic stroke.
-3. Sorts subpaths top-to-bottom by post-transform bbox (Tibetan writing
-   direction).
-4. Bakes a translate→scale→translate transform to fit the glyph in the
+2. For each char, takes the glyph's vector path and splits at every `M`.
+3. Merges counter subpaths (holes) into their enclosing outer via
+   signed-area sign + bbox containment. Without this, holes render as
+   filled solid discs (canvas's nonzero-fill rule needs outer + hole
+   together to carve correctly).
+4. Sorts strokes top-to-bottom by post-transform bbox (Tibetan writing
+   direction). Trivial for our 5 chars — all collapse to 1 stroke.
+5. Bakes a translate→scale→translate transform to fit the glyph in the
    1024×1024 MMH box with 5% padding. **No Y-flip** (opentype font paths are
    already Y-up, matching MMH; deva needed a flip because Wikimedia SVG is
    Y-down).
-5. Skeletonizes each baked subpath via existing `tools/skeletonize.ts`
+6. Skeletonizes each baked stroke via existing `tools/skeletonize.ts`
    (rasterize + Zhang-Suen + longest-path-with-detours) → 15-point medians
    in MMH coords.
-6. Emits `tools/data/uchen-strokes/<char>.json` plus `_attribution.json`
+7. Emits `tools/data/uchen-strokes/<char>.json` plus `_attribution.json`
    with the synthetic warning baked into the file.
 
 Spike validation:
@@ -54,10 +62,12 @@ Spike validation:
 - `apps/alphaTiles/app/spike-bod.tsx` — clone of `spike-deva.tsx` with the
   5-char button row, lazy-imports `@jamsch/react-native-hanzi-writer`
   inside `useEffect` (web SSR rule).
-- Web smoke (`/tmp/pup/bod-full.mjs`): all 5 chars render, button switching
-  works, animate fires, 0 page errors, 0 console errors. Path count matches
-  stroke decomposition (1-stroke chars → 4 paths, 2-stroke chars → 7 paths,
-  including outline + character + gridlines).
+- Web smoke (`/tmp/pup/bod-test.mjs` + manual eyeball): all 5 chars render
+  with correct glyph shape (no filled-disc artifacts on holes), button
+  switching works, animate fires, 0 page errors, 0 console errors.
+- Manual stroke-order check: FAILS — bbox-Y heuristic does not match
+  written Tibetan order for any of the 5 chars per user inspection
+  2026-05-04. Pending native-Tibetan-speaker review.
 
 `apps/alphaTiles/NOTICE.md` updated with OFL attribution + synthetic warning.
 
@@ -135,34 +145,49 @@ openspec/changes/game-bod-uchen/
 package.json                        ← + opentype.js, @types/opentype.js
 ```
 
+## Status — investigation parked, awaiting Tibetan-speaker review
+
+Per user 2026-05-04: the synthetic 1-stroke-per-char output is locked in as
+the answer the toolchain can give from font data alone. Code-side investigation
+is complete. User plans to ask a Tibetan speaker to author canonical stroke
+order for the 5 base consonants; once that hand-authored data is in our
+hands we work it in (re-import path TBD: SVG, plain JSON, or extending the
+skeletonize output).
+
 ## Hand-off to next agent
 
 Next likely tasks (in priority order):
 
-1. **Find a license-clean Uchen source.** Synthetic data is not shippable.
-   Concrete leads to chase:
+1. **Wait for user to deliver Tibetan-speaker-verified stroke order** for
+   ཀ ཁ ག ང ཅ. Format negotiable — easiest is per-char ordered list of
+   median polylines (same shape as our skeletonize output) plus per-stroke
+   d-strings. If they hand back paper sketches we have to vectorize, but
+   that's a content-team task, not code.
+2. **When real data lands:** wire it into `tools/data/uchen-strokes/<char>.json`
+   replacing the synthetic JSON. The format consumer (`spike-bod.tsx`,
+   eventually `feature-game-bod-uchen`) does not care about provenance.
+   Drop the "FABRICATED" warning from `spike-bod.tsx` and `NOTICE.md`.
+3. **Find a license-clean OSS Uchen source for Phase 2 (ਨ+ chars).** Hand
+   authoring 5 is feasible; 30+ is content-team scale. Concrete leads:
    - Email longlong@iscas.ac.cn asking whether MRG-OHTC could be re-licensed
-     CC BY-SA for educational use. Worth a polite ask — the data shape is
-     ideal (pen trajectories per char per writer).
-   - Watch BDRC / OpenPecha for any future stroke-order corpus. They have
-     the community to author one but no funding for it as of now.
+     CC BY-SA for educational use. Data shape is ideal (pen trajectories
+     per char per writer).
+   - Watch BDRC / OpenPecha for any future stroke-order corpus.
    - If a contributor authors a Wikimedia Commons Category for "Tibetan
      stroke order (SVG)", the existing `tools/build-stroke-data-deva.ts`
      extractor is mostly script-agnostic (only `extractCharFromTitle()`'s
      codepoint range needs to change to U+0F00–U+0FFF). The Phase 1B
-     skeletonization already works for Tibetan curves — see Checkpoint 5
-     output as proof.
-
-2. **(Stretch) Generalise the deva + bod extractors into a shared core.**
+     skeletonization already works for Tibetan curves.
+4. **(Stretch) Generalise the deva + bod extractors into a shared core.**
    Per PROMPT.md stretch goal. Three extractors now share: parse → license
    gate (where applicable) → cache → bbox → scale-to-1024 → skeletonize.
    Script-specific bits: Wikimedia category name OR font path, codepoint
    range, Y-flip flag, sort heuristic. ~200 LoC of shared code.
-
-3. **Do NOT clone `feature-game-taiwan` → `feature-game-bod-uchen` yet.**
-   Per PROMPT.md "What NOT to do": we generalise to a shared
+5. **Do NOT clone `feature-game-taiwan` → `feature-game-bod-uchen` yet.**
+   Per PROMPT.md "What NOT to do": generalise to a shared
    `feature-game-stroke` lib only when we have a third script confirmed
-   shippable. Tibetan synthetic data does NOT count as shippable.
+   shippable. Tibetan synthetic data does NOT count as shippable; wait
+   until step 1+2 deliver real data.
 
 ## Hard constraints (carry forward)
 
@@ -178,15 +203,20 @@ Next likely tasks (in priority order):
   `useEffect` — same worklets-TDZ workaround as `game-taiwan` and
   `game-india-deva`.
 
-## Open questions for the user
+## Resolved questions
 
-1. **Synthetic vs wait for real source?** Should we ship the synthetic data
-   to unblock UI/UX work, with a loud "FABRICATED STROKE ORDER" warning in
-   the game shell? Or keep this on the shelf until a real corpus surfaces?
-2. **Approach the MRG-OHTC authors?** They've published 5+ years of papers
-   off this dataset. A polite ask for a CC BY-SA re-license for a literacy
-   nonprofit might land.
-3. **Crowdsource via OpenPecha?** They have a content community. Funding
-   them to author 30 base consonants + 4 vowels of canonical stroke-order
-   SVGs would unblock Tibetan permanently. Out of scope here, but worth a
-   conversation with PM.
+1. ~~Synthetic vs wait for real source?~~ User 2026-05-04: park, ask a
+   Tibetan speaker to verify+author canonical stroke order for the 5
+   chars, work it in later.
+
+## Open questions
+
+1. **Approach the MRG-OHTC authors?** Polite ask for a CC BY-SA re-license
+   for a literacy nonprofit might land — they've published 5+ years off
+   this dataset.
+2. **Crowdsource Phase 2 via OpenPecha?** They have a content community;
+   funding them to author 30 base consonants + 4 vowels of canonical
+   stroke-order SVGs would unblock Tibetan permanently. Out of scope here.
+3. **Receiving format from the Tibetan reviewer?** Easiest end-state is
+   per-stroke d-string + median polyline matching the existing JSON shape.
+   If they sketch on paper, we vectorize — content-team work.

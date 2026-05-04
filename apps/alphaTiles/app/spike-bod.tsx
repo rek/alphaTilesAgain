@@ -56,7 +56,7 @@ function SpikeInner({ mod, idx, setIdx }: { mod: HanziModule; idx: number; setId
           spike-bod (SYNTHETIC): {entry.char} — {entry.data.strokes.length} strokes
         </Text>
         <Text style={{ fontSize: 12, color: '#b71c1c' }}>
-          Stroke order is FABRICATED (top-to-bottom by glyph subpath bbox). Tooling smoke only.
+          Stroke order is FABRICATED. Pending Tibetan-speaker review. Tooling smoke only.
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
           {CHARS.map((c, i) => (

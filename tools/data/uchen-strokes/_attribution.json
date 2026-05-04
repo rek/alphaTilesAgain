@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-04T10:15:06.291Z",
+  "generatedAt": "2026-05-04T12:29:54.848Z",
   "source": {
     "font": "Noto Serif Tibetan (Regular)",
     "path": "/usr/share/fonts/truetype/noto/NotoSerifTibetan-Regular.ttf",
@@ -18,13 +18,13 @@
       "character": "ཁ",
       "codepoint": "U+0F41",
       "glyphName": "uni0F41",
-      "strokeCount": 2
+      "strokeCount": 1
     },
     {
       "character": "ག",
       "codepoint": "U+0F42",
       "glyphName": "uni0F42",
-      "strokeCount": 2
+      "strokeCount": 1
     },
     {
       "character": "ང",
@@ -36,7 +36,7 @@
       "character": "ཅ",
       "codepoint": "U+0F45",
       "glyphName": "uni0F45",
-      "strokeCount": 2
+      "strokeCount": 1
     }
   ]
 }

@@ -25,14 +25,19 @@
  * Pipeline:
  *   1. Load Noto Serif Tibetan (OFL, system font on Linux/Debian/Ubuntu).
  *   2. For each char, get the glyph's vector path via opentype.js.
- *   3. Split d-string at each `M` command → one filled subpath = one
- *      synthetic "stroke".
- *   4. Sort subpaths top-to-bottom (Tibetan writes top-to-bottom).
+ *   3. Split d-string at each `M` command, then merge holes (counter
+ *      subpaths with opposite winding) into their enclosing outer subpath.
+ *      Each resulting stroke is one disjoint glyph component, possibly
+ *      containing multiple subpaths (outer + holes) that render correctly
+ *      via canvas's nonzero-fill rule. For our 5 base consonants this
+ *      collapses to 1 stroke per char — TTF subpaths encode fill regions,
+ *      not pen-strokes, so 1-stroke-per-char is the honest answer.
+ *   4. Sort strokes top-to-bottom (Tibetan writes top-to-bottom).
  *   5. Compute global bbox; scale to 1024×1024 with 5% padding; centered.
  *      No Y-flip — opentype glyph paths use Y-up convention which matches
  *      the MMH output convention (unlike Wikimedia SVG → deva, which is
  *      Y-down and DOES need a flip).
- *   6. Skeletonize each baked subpath → MMH medians via existing
+ *   6. Skeletonize each baked stroke → MMH medians via existing
  *      `tools/skeletonize.ts` pipeline.
  *   7. Emit per-character JSON; write attribution + synthetic-data warning.
  *
@@ -171,8 +176,15 @@ function extractStrokesFromGlyphPath(dRaw: string): ExtractResult {
     return { strokes: [], medians: [], error: 'no subpaths after split' };
   }
 
-  // Compute global bbox over all subpaths.
-  const bboxes = subpaths.map(measureBbox);
+  // Merge counters (holes) into their enclosing outer subpath. TTF glyphs
+  // encode holes as separate subpaths with opposite winding; if we treat each
+  // subpath as its own stroke, the hole renders as a filled solid (since
+  // nonzero-fill on a single closed contour fills the whole interior). The
+  // outer + hole together render correctly via canvas's nonzero winding rule.
+  const merged = mergeHolesIntoParents(subpaths);
+
+  // Compute global bbox over all merged strokes.
+  const bboxes = merged.map(measureBbox);
   const union = unionOf(bboxes);
   const w = Math.max(1e-6, union.maxX - union.minX);
   const h = Math.max(1e-6, union.maxY - union.minY);
@@ -184,10 +196,10 @@ function extractStrokesFromGlyphPath(dRaw: string): ExtractResult {
 
   // Bake transform: input is Y-up (opentype font convention), MMH output is
   // also Y-up — no flip. translate(-minX,-minY) → scale(s,s) → translate(off).
-  // Per-subpath ordering within the array matters for stroke order; we sort
-  // by post-transform bbox top (max Y in MMH-Y-up convention).
-  type Stroke = { d: string; topY: number; bboxIdx: number };
-  const transformed: Stroke[] = subpaths.map((d, i) => {
+  // Per-stroke ordering matters: sort by post-transform bbox top (max Y in
+  // MMH Y-up convention) so the topmost stroke is index 0.
+  type Stroke = { d: string; topY: number };
+  const transformed: Stroke[] = merged.map((d) => {
     const baked = svgpath(d)
       .translate(-union.minX, -union.minY)
       .scale(scale, scale)
@@ -196,17 +208,103 @@ function extractStrokesFromGlyphPath(dRaw: string): ExtractResult {
       .round(ROUND_PRECISION)
       .toString();
     const localBb = measureBbox(baked);
-    return { d: baked, topY: localBb.maxY, bboxIdx: i };
+    return { d: baked, topY: localBb.maxY };
   });
 
-  // Tibetan writes top-to-bottom. In MMH Y-up convention, "top" = larger Y.
-  // Sort descending so the topmost subpath is stroke 0.
   transformed.sort((a, b) => b.topY - a.topY);
 
   const finalStrokes = transformed.map((t) => t.d);
   const finalMedians = finalStrokes.map((d) => sampleCenterlineMedians(d, MEDIAN_COUNT));
 
   return { strokes: finalStrokes, medians: finalMedians };
+}
+
+/**
+ * TTF glyphs encode counters (holes) as separate subpaths whose winding is
+ * opposite to the enclosing outer subpath. Splitting at every `M` would put
+ * the hole on its own as a separate "stroke", but a hole rendered alone as
+ * a filled path becomes a solid disc — there's no outer to subtract from.
+ *
+ * Detection: signed area sign (CCW vs CW) plus bbox containment. The
+ * dominant sign across subpaths is "outer"; subpaths with opposite sign
+ * whose bbox lies inside an outer's bbox are holes attached to that outer.
+ *
+ * Output: one entry per outer subpath, with its hole d-strings concatenated
+ * in. Canvas's default nonzero-fill renders these correctly.
+ */
+function mergeHolesIntoParents(subpaths: string[]): string[] {
+  if (subpaths.length <= 1) return subpaths;
+
+  type Sub = { d: string; bb: BBox; signedArea: number };
+  const subs: Sub[] = subpaths.map((d) => ({
+    d,
+    bb: measureBbox(d),
+    signedArea: signedArea(d),
+  }));
+
+  // Dominant sign = sign of the subpath with the largest absolute area.
+  // (For glyphs with one outer + one hole this is always the outer.)
+  let maxAbs = 0;
+  let dominantSign = 1;
+  for (const s of subs) {
+    if (Math.abs(s.signedArea) > maxAbs) {
+      maxAbs = Math.abs(s.signedArea);
+      dominantSign = s.signedArea >= 0 ? 1 : -1;
+    }
+  }
+
+  const outers: Sub[] = [];
+  const holes: Sub[] = [];
+  for (const s of subs) {
+    const sign = s.signedArea >= 0 ? 1 : -1;
+    if (sign === dominantSign) outers.push(s);
+    else holes.push(s);
+  }
+
+  if (outers.length === 0) return subpaths; // bail — keep as-is
+
+  const outerWithHoles = outers.map((o) => ({ d: o.d, bb: o.bb }));
+  for (const h of holes) {
+    // Smallest enclosing outer by bbox area.
+    let bestIdx = -1;
+    let bestArea = Infinity;
+    for (let i = 0; i < outerWithHoles.length; i++) {
+      const o = outerWithHoles[i];
+      if (
+        h.bb.minX >= o.bb.minX &&
+        h.bb.maxX <= o.bb.maxX &&
+        h.bb.minY >= o.bb.minY &&
+        h.bb.maxY <= o.bb.maxY
+      ) {
+        const area = (o.bb.maxX - o.bb.minX) * (o.bb.maxY - o.bb.minY);
+        if (area < bestArea) {
+          bestArea = area;
+          bestIdx = i;
+        }
+      }
+    }
+    if (bestIdx >= 0) {
+      outerWithHoles[bestIdx].d = `${outerWithHoles[bestIdx].d} ${h.d}`;
+    }
+    // If a hole somehow doesn't fit any outer (shouldn't happen for real
+    // glyphs), drop it. Better to lose the counter than render a phantom disc.
+  }
+
+  return outerWithHoles.map((o) => o.d);
+}
+
+function signedArea(d: string, samples = 512): number {
+  const props = svgPathProperties(d);
+  const len = props.getTotalLength();
+  if (!Number.isFinite(len) || len === 0) return 0;
+  let area = 0;
+  let prev = props.getPointAtLength(0);
+  for (let i = 1; i <= samples; i++) {
+    const p = props.getPointAtLength((i / samples) * len);
+    area += prev.x * p.y - p.x * prev.y;
+    prev = p;
+  }
+  return area / 2;
 }
 
 function splitOnMoveTo(d: string): string[] {
