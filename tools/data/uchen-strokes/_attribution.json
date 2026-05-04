@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-05-04T10:15:06.291Z",
+  "source": {
+    "font": "Noto Serif Tibetan (Regular)",
+    "path": "/usr/share/fonts/truetype/noto/NotoSerifTibetan-Regular.ttf",
+    "license": "SIL Open Font License 1.1",
+    "licenseUrl": "https://scripts.sil.org/OFL"
+  },
+  "warning": "SYNTHETIC STROKE ORDER. Subpaths sorted top-to-bottom by bbox; real Tibetan stroke order per chris fynn writing guide is not encoded. Use for tooling-smoke ONLY, not for learner-facing release.",
+  "entries": [
+    {
+      "character": "ཀ",
+      "codepoint": "U+0F40",
+      "glyphName": "uni0F40",
+      "strokeCount": 1
+    },
+    {
+      "character": "ཁ",
+      "codepoint": "U+0F41",
+      "glyphName": "uni0F41",
+      "strokeCount": 2
+    },
+    {
+      "character": "ག",
+      "codepoint": "U+0F42",
+      "glyphName": "uni0F42",
+      "strokeCount": 2
+    },
+    {
+      "character": "ང",
+      "codepoint": "U+0F44",
+      "glyphName": "uni0F44",
+      "strokeCount": 1
+    },
+    {
+      "character": "ཅ",
+      "codepoint": "U+0F45",
+      "glyphName": "uni0F45",
+      "strokeCount": 2
+    }
+  ]
+}

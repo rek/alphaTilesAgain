@@ -37,6 +37,27 @@ Files are extracted by `tools/build-stroke-data-deva.ts` and committed to
   [User:Saurmandal](https://commons.wikimedia.org/wiki/User:Saurmandal):
   ऄ अ आ इ ई उ ऊ ऋ ए ऐ ओ औ झ.
 
+## Tibetan Uchen stroke data — Noto Serif Tibetan (SYNTHETIC, NOT SHIPPABLE)
+
+The `game-bod-uchen` change explores Tibetan Uchen stroke validation. All four
+license-clean OSS data sources we evaluated for Uchen failed (see
+`openspec/changes/game-bod-uchen/STATUS.md`). To smoke-test the toolchain we
+generate synthetic stroke data from Noto Serif Tibetan via
+`tools/build-stroke-data-bod.ts` → `tools/data/uchen-strokes/<char>.json`.
+
+- **Font:** Noto Serif Tibetan (Regular). System-installed at
+  `/usr/share/fonts/truetype/noto/NotoSerifTibetan-Regular.ttf` on
+  Debian/Ubuntu.
+- **License:** SIL Open Font License 1.1 — <https://scripts.sil.org/OFL>.
+  OFL allows derivative use of OUTPUTS (rendered text, stroke data) without
+  requiring redistribution under OFL; the font itself is not shipped.
+- **Synthetic warning:** Stroke ORDER is fabricated (subpaths sorted top-to-
+  bottom by bbox; the Tibetan stroke-order convention per chris fynn varies
+  and follows pen-lift mechanics, not glyph-subpath geometry). NOT shippable
+  to learners. Used only to validate that `<HanziWriter>` accepts U+0F00
+  codepoints and that the rasterize+thin+trace pipeline handles Tibetan
+  glyph topologies.
+
 ## Hanzi quiz mechanic — @jamsch/react-native-hanzi-writer
 
 The stroke-tracing mechanic is implemented on top of
