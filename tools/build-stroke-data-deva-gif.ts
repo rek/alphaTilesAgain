@@ -33,6 +33,8 @@ import {
   thinZhangSuen,
   traceSkeleton,
   samplePolyline,
+  dilate,
+  traceBoundary,
 } from './skeletonize';
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -342,28 +344,45 @@ export function extractFromGif(buf: Buffer): ExtractResult {
     }
   }
 
-  // Per segment: union the new-pixel masks → skeletonize → trace → polyline.
-  const strokesPolyline: [number, number][][] = [];
+  // Per segment: union the new-pixel masks. Dilate slightly to smooth jagged
+  // edges from the low-resolution GIF rasters. Then derive TWO outputs from
+  // the same union mask:
+  //   - centerline (skeleton trace) → medians for quiz scoring
+  //   - boundary contour → SVG path d-string for fill rendering by
+  //     <HanziWriter.Character>. Without the boundary, strokes render as
+  //     1-px lines and the glyph is unrecognisable.
+  interface StrokePolys {
+    centerline: [number, number][];
+    boundary: [number, number][];
+  }
+  const strokes: StrokePolys[] = [];
   for (const seg of segments) {
-    const union = new Uint8Array(w * h);
+    let union = new Uint8Array(w * h);
     for (const f of seg) {
       for (let j = 0; j < w * h; j++) if (f.newMask[j]) union[j] = 1;
     }
-    // Skeleton sample directly in pixel coords. Use a generous sample count
-    // here; we'll re-sample to MEDIAN_COUNT after coord normalization.
-    thinZhangSuen(union, w, h);
-    const trace = traceSkeleton(union, w, h);
-    if (trace.length < 2) continue;
-    strokesPolyline.push(trace);
+    // Dilate by 1px before boundary trace to fill tiny pixel gaps; centerline
+    // pipeline operates on a copy so dilation doesn't bias the skeleton.
+    const dilated = dilate(union, w, h, 1);
+    const boundary = traceBoundary(dilated, w, h);
+    if (boundary.length < 4) continue;
+
+    const centerlineMask = new Uint8Array(union); // copy
+    thinZhangSuen(centerlineMask, w, h);
+    const centerline = traceSkeleton(centerlineMask, w, h);
+    if (centerline.length < 2) continue;
+
+    strokes.push({ centerline, boundary });
   }
-  if (strokesPolyline.length === 0) {
+  if (strokes.length === 0) {
     return { strokes: [], medians: [], error: 'no strokes after skeletonization' };
   }
 
-  // Compute global bbox in pixel coords, rescale to TARGET_BOX with Y-flip.
+  // Compute global bbox in pixel coords across all strokes, rescale to
+  // TARGET_BOX with Y-flip to MMH.
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const poly of strokesPolyline) {
-    for (const [x, y] of poly) {
+  for (const s of strokes) {
+    for (const [x, y] of s.boundary) {
       if (x < minX) minX = x;
       if (x > maxX) maxX = x;
       if (y < minY) minY = y;
@@ -386,16 +405,21 @@ export function extractFromGif(buf: Buffer): ExtractResult {
 
   const finalStrokes: string[] = [];
   const finalMedians: number[][][] = [];
-  for (const poly of strokesPolyline) {
-    const remapped: [number, number][] = poly.map(([x, y]) => remap(x, y));
-    // Re-sample to MEDIAN_COUNT.
-    const medians = samplePolyline(remapped, MEDIAN_COUNT);
+  for (const s of strokes) {
+    // Boundary → closed-polygon d-string for fill.
+    const boundaryRemapped = s.boundary.map(([x, y]) => remap(x, y));
+    let bd = '';
+    for (let i = 0; i < boundaryRemapped.length; i++) {
+      const [x, y] = boundaryRemapped[i];
+      bd += `${i === 0 ? 'M' : ' L'} ${x} ${y}`;
+    }
+    bd += ' Z';
+    finalStrokes.push(bd);
+
+    // Centerline → medians for quiz scoring.
+    const centerlineRemapped = s.centerline.map(([x, y]) => remap(x, y));
+    const medians = samplePolyline(centerlineRemapped, MEDIAN_COUNT);
     finalMedians.push(medians.map(([x, y]) => [Math.round(x), Math.round(y)]));
-    // d-string: dense polyline (the trace itself is already pixel-fine).
-    const d = remapped
-      .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`)
-      .join(' ');
-    finalStrokes.push(d);
   }
 
   return {

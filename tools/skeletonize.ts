@@ -321,6 +321,95 @@ export function traceSkeleton(skeleton: Uint8Array, w: number, h: number): [numb
 }
 
 /**
+ * Dilate a binary mask by `radius` pixels (8-neighborhood). Smooths jagged
+ * edges from low-resolution rasters before boundary tracing.
+ */
+export function dilate(mask: Uint8Array, w: number, h: number, radius: number): Uint8Array {
+  let cur = mask;
+  for (let r = 0; r < radius; r++) {
+    const next = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (cur[y * w + x]) {
+          next[y * w + x] = 1;
+          continue;
+        }
+        for (let dy = -1; dy <= 1 && !next[y * w + x]; dy++) {
+          const ny = y + dy;
+          if (ny < 0 || ny >= h) continue;
+          for (let dx = -1; dx <= 1; dx++) {
+            const nx = x + dx;
+            if (nx < 0 || nx >= w) continue;
+            if (cur[ny * w + nx]) { next[y * w + x] = 1; break; }
+          }
+        }
+      }
+    }
+    cur = next;
+  }
+  return cur;
+}
+
+/**
+ * Moore-neighbour boundary trace. Returns the outer perimeter of a binary
+ * region as an ordered list of pixel coords (closed loop). Used to convert a
+ * pen-trail mask into a closed-polygon SVG path string for `<HanziWriter>`'s
+ * fill-based rendering.
+ *
+ * Limitations: traces only the outermost connected component. Holes and
+ * additional components are ignored.
+ */
+export function traceBoundary(
+  mask: Uint8Array,
+  w: number,
+  h: number,
+): [number, number][] {
+  // Find leftmost-topmost 1-pixel as the start.
+  let start = -1;
+  for (let i = 0; i < mask.length; i++) {
+    if (mask[i]) { start = i; break; }
+  }
+  if (start === -1) return [];
+
+  // Moore-neighbor clockwise traversal. Direction codes 0..7 for (dx,dy):
+  //   0=N, 1=NE, 2=E, 3=SE, 4=S, 5=SW, 6=W, 7=NW
+  const DX = [0, 1, 1, 1, 0, -1, -1, -1];
+  const DY = [-1, -1, 0, 1, 1, 1, 0, -1];
+  const out: [number, number][] = [];
+  let cur = start;
+  // Came from "S" (4); start scanning from S+1=SW.
+  let lastDir = 4;
+  const MAX_STEPS = w * h * 8;
+  for (let step = 0; step < MAX_STEPS; step++) {
+    const cx = cur % w;
+    const cy = (cur - cx) / w;
+    out.push([cx, cy]);
+    // Search for next boundary pixel: start at (lastDir+2) mod 8, scan
+    // clockwise through 7 of the 8 neighbours.
+    const startDir = (lastDir + 6) % 8; // back-step then search clockwise
+    let found = -1;
+    let foundDir = -1;
+    for (let i = 0; i < 8; i++) {
+      const d = (startDir + i) % 8;
+      const nx = cx + DX[d];
+      const ny = cy + DY[d];
+      if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+      const ni = ny * w + nx;
+      if (mask[ni]) {
+        found = ni;
+        foundDir = d;
+        break;
+      }
+    }
+    if (found === -1) break;
+    if (found === start && step > 0) break;
+    cur = found;
+    lastDir = foundDir;
+  }
+  return out;
+}
+
+/**
  * One-shot pipeline for callers that already have a binary mask (e.g. from
  * GIF frame-diff). Skips the SVG rasterize step and returns medians in the
  * mask's pixel coordinate space — caller is responsible for mapping back.
