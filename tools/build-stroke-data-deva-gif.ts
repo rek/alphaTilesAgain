@@ -29,14 +29,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { GifReader } from 'omggif';
+import { createCanvas } from 'canvas';
+import potrace from 'potrace';
+import svgpath from 'svgpath';
 import {
   thinZhangSuen,
   traceSkeleton,
   samplePolyline,
-  dilate,
-  traceBoundary,
-  findHoles,
-  smoothPolyline,
 } from './skeletonize';
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -124,7 +123,7 @@ async function main(): Promise<void> {
     }
 
     const buf = fs.readFileSync(cachePath);
-    const result = extractFromGif(buf);
+    const result = await extractFromGif(buf);
     if (result.error) {
       rejected.push({ title, reason: result.error });
       continue;
@@ -264,7 +263,7 @@ interface ExtractResult {
   error?: string;
 }
 
-export function extractFromGif(buf: Buffer): ExtractResult {
+export async function extractFromGif(buf: Buffer): Promise<ExtractResult> {
   const reader = new GifReader(buf);
   const w = reader.width;
   const h = reader.height;
@@ -346,135 +345,82 @@ export function extractFromGif(buf: Buffer): ExtractResult {
     }
   }
 
-  // Per segment: union the new-pixel masks. Dilate slightly to smooth jagged
-  // edges from the low-resolution GIF rasters. Then derive TWO outputs from
-  // the same union mask:
-  //   - centerline (skeleton trace) → medians for quiz scoring
-  //   - boundary contour → SVG path d-string for fill rendering by
-  //     <HanziWriter.Character>. Without the boundary, strokes render as
-  //     1-px lines and the glyph is unrecognisable.
-  interface StrokePolys {
-    centerline: [number, number][];
-    boundary: [number, number][];
-    holes: [number, number][][];
-  }
-  const strokes: StrokePolys[] = [];
+  // Per segment: union the new-pixel masks. Render to a high-res PNG and
+  // run potrace to vectorize → smooth Bézier path. Holes (counters) come for
+  // free since potrace emits multi-subpath SVG with proper winding.
+  // Centerline (skeleton-trace) is kept for medians (quiz scoring); only the
+  // d-string output changes.
+  const strokes: Array<{ centerline: [number, number][]; svgPath: string }> = [];
   for (const seg of segments) {
-    let union = new Uint8Array(w * h);
+    const union = new Uint8Array(w * h);
     for (const f of seg) {
       for (let j = 0; j < w * h; j++) if (f.newMask[j]) union[j] = 1;
     }
-    // Dilate by 1px before boundary trace to fill tiny pixel gaps; centerline
-    // pipeline operates on a copy so dilation doesn't bias the skeleton.
-    const dilated = dilate(union, w, h, 1);
-    const boundary = traceBoundary(dilated, w, h);
-    if (boundary.length < 4) continue;
+    let count = 0;
+    for (let j = 0; j < union.length; j++) if (union[j]) count++;
+    if (count < 4) continue;
 
-    // Find interior holes (counters) — 0-pixel regions enclosed by the
-    // stroke. Each hole becomes a separate sub-path in the d-string with
-    // OPPOSITE winding so SVG even-odd / non-zero fill leaves them as holes.
-    const holesMask = findHoles(dilated, w, h);
-    const holePolys: [number, number][][] = [];
-    // Trace each hole component separately by extracting + clearing one at a
-    // time. A hole big enough to render is ≥ 4 connected px (3x3 minus center).
-    const holeWork = new Uint8Array(holesMask);
-    while (true) {
-      // Find a remaining hole pixel.
-      let start = -1;
-      for (let i = 0; i < holeWork.length; i++) {
-        if (holeWork[i]) { start = i; break; }
-      }
-      if (start === -1) break;
-      // Flood-fill this hole component to identify its pixels, then trace.
-      const comp = new Uint8Array(w * h);
-      const queue = [start];
-      comp[start] = 1; holeWork[start] = 0;
-      let head = 0;
-      while (head < queue.length) {
-        const idx = queue[head++];
-        const cx = idx % w; const cy = (idx - cx) / w;
-        for (let dy = -1; dy <= 1; dy++) {
-          const ny = cy + dy; if (ny < 0 || ny >= h) continue;
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            const nx = cx + dx; if (nx < 0 || nx >= w) continue;
-            const ni = ny * w + nx;
-            if (holeWork[ni]) {
-              comp[ni] = 1; holeWork[ni] = 0; queue.push(ni);
-            }
-          }
-        }
-      }
-      let count = 0;
-      for (let j = 0; j < comp.length; j++) if (comp[j]) count++;
-      if (count < 4) continue; // tiny hole = aliasing artifact
-      const holeBoundary = traceBoundary(comp, w, h);
-      if (holeBoundary.length >= 4) holePolys.push(holeBoundary);
-    }
+    const svgPath = await maskToPotraceSvg(union, w, h);
+    if (!svgPath) continue;
 
     const centerlineMask = new Uint8Array(union); // copy
     thinZhangSuen(centerlineMask, w, h);
     const centerline = traceSkeleton(centerlineMask, w, h);
     if (centerline.length < 2) continue;
 
-    strokes.push({ centerline, boundary, holes: holePolys });
+    strokes.push({ centerline, svgPath });
   }
   if (strokes.length === 0) {
     return { strokes: [], medians: [], error: 'no strokes after skeletonization' };
   }
 
-  // Compute global bbox in pixel coords across all strokes, rescale to
-  // TARGET_BOX with Y-flip to MMH.
+  // Compute global bbox in pixel coords across all stroke masks (cheap pass
+  // — we already have skeletons from each stroke's union).
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const s of strokes) {
-    for (const [x, y] of s.boundary) {
+    for (const [x, y] of s.centerline) {
       if (x < minX) minX = x;
       if (x > maxX) maxX = x;
       if (y < minY) minY = y;
       if (y > maxY) maxY = y;
     }
   }
+  // Pad bbox by a few px so stroke widths don't get cropped at the edge.
+  const PAD = 4;
+  minX -= PAD; minY -= PAD; maxX += PAD; maxY += PAD;
   const bbW = Math.max(1e-6, maxX - minX);
   const bbH = Math.max(1e-6, maxY - minY);
   const scale = Math.min(TARGET_BOX / bbW, TARGET_BOX / bbH);
   const offsetX = (TARGET_BOX - bbW * scale) / 2;
   const offsetY = (TARGET_BOX - bbH * scale) / 2;
-  const remap = (px: number, py: number): [number, number] => {
-    const nx = (px - minX) * scale + offsetX;
-    const ny = TARGET_BOX - ((py - minY) * scale + offsetY);
-    return [
-      Math.max(0, Math.min(TARGET_BOX, round(nx, ROUND_PRECISION))),
-      Math.max(0, Math.min(TARGET_BOX, round(ny, ROUND_PRECISION))),
-    ];
-  };
+  // svgpath transform chain (rightmost applied first to coords):
+  //   translate(offsetX, TARGET_BOX - offsetY)   ← center within MMH box
+  //   scale(scale, -scale)                       ← scale + Y-flip to MMH
+  //   translate(-minX, -minY)                    ← bbox to origin
+  const applyTransform = (d: string): string =>
+    svgpath(d)
+      .translate(-minX, -minY)
+      .scale(scale, -scale)
+      .translate(offsetX, TARGET_BOX - offsetY)
+      .abs()
+      .round(ROUND_PRECISION)
+      .toString();
 
   const finalStrokes: string[] = [];
   const finalMedians: number[][][] = [];
   for (const s of strokes) {
-    // Boundary → closed polygon. Smooth via Chaikin (2 passes) to soften
-    // the pixel-resolution stair-step aliasing.
-    const smoothBoundary = smoothPolyline(
-      s.boundary.map(([x, y]) => remap(x, y) as [number, number]),
-      2,
-      true,
-    );
-    let bd = polylineToPath(smoothBoundary);
+    finalStrokes.push(applyTransform(s.svgPath));
 
-    // Each hole is a reverse-wound sub-path. SVG `fill-rule: evenodd` (or
-    // `nonzero` with opposite winding) treats them as holes in the outer
-    // polygon — leaves the counter empty.
-    for (const hole of s.holes) {
-      const remappedHole = hole.map(([x, y]) => remap(x, y) as [number, number]);
-      const smoothed = smoothPolyline(remappedHole, 2, true);
-      // Reverse to get opposite winding from the outer.
-      smoothed.reverse();
-      bd += ' ' + polylineToPath(smoothed);
-    }
-    finalStrokes.push(bd);
-
-    // Centerline → medians for quiz scoring.
-    const centerlineRemapped = s.centerline.map(([x, y]) => remap(x, y));
-    const medians = samplePolyline(centerlineRemapped, MEDIAN_COUNT);
+    // Medians: remap centerline pixel coords → MMH coords (same transform).
+    const cm = s.centerline.map(([x, y]) => {
+      const nx = (x - minX) * scale + offsetX;
+      const ny = TARGET_BOX - ((y - minY) * scale + offsetY);
+      return [
+        Math.max(0, Math.min(TARGET_BOX, Math.round(nx))),
+        Math.max(0, Math.min(TARGET_BOX, Math.round(ny))),
+      ] as [number, number];
+    });
+    const medians = samplePolyline(cm, MEDIAN_COUNT);
     finalMedians.push(medians.map(([x, y]) => [Math.round(x), Math.round(y)]));
   }
 
@@ -509,15 +455,50 @@ function round(x: number, decimals: number): number {
   return Math.round(x * k) / k;
 }
 
-function polylineToPath(pts: [number, number][]): string {
-  if (pts.length === 0) return '';
-  let s = '';
-  for (let i = 0; i < pts.length; i++) {
-    const [x, y] = pts[i];
-    s += `${i === 0 ? 'M' : ' L'} ${round(x, ROUND_PRECISION)} ${round(y, ROUND_PRECISION)}`;
+/**
+ * Vectorize a binary mask via potrace → smooth Bézier SVG path.
+ *
+ * Pipeline: render mask to a 4× upsampled PNG (black-on-white) → potrace
+ * with curve optimisation → extract the `d=` attribute. Holes (counters)
+ * are emitted by potrace as additional sub-paths with reverse winding,
+ * which SVG fill-rule renders as holes for free.
+ *
+ * 4× upsample makes potrace's curve fit cleaner on low-res GIF rasters
+ * (217×181 source); cost is ~16× pixels, but potrace is fast.
+ */
+async function maskToPotraceSvg(
+  mask: Uint8Array,
+  w: number,
+  h: number,
+): Promise<string | null> {
+  const SCALE = 4;
+  const canvas = createCanvas(w * SCALE, h * SCALE);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, w * SCALE, h * SCALE);
+  ctx.fillStyle = 'black';
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (mask[y * w + x]) ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+    }
   }
-  s += ' Z';
-  return s;
+  const png = canvas.toBuffer('image/png');
+
+  return new Promise((resolve) => {
+    potrace.trace(
+      png,
+      { threshold: 128, turdSize: 4, optCurve: true, optTolerance: 0.4 },
+      (err: unknown, svg: string) => {
+        if (err) { resolve(null); return; }
+        const m = svg.match(/d="([^"]+)"/);
+        if (!m) { resolve(null); return; }
+        // Coords are in upsampled space (SCALE×). Pre-scale back so callers
+        // can think in original mask pixel coords.
+        const dStr = svgpath(m[1]).scale(1 / SCALE).abs().toString();
+        resolve(dStr);
+      },
+    );
+  });
 }
 
 /**
