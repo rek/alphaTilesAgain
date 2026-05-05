@@ -36,6 +36,7 @@ import {
   thinZhangSuen,
   traceSkeleton,
   samplePolyline,
+  flipHoleWindings,
 } from './skeletonize';
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -73,8 +74,29 @@ async function main(): Promise<void> {
   ensureDir(CACHE_DIR);
   ensureDir(OUT_DIR);
 
-  const files = await listCategoryFiles(CATEGORY);
-  console.log(`[build-stroke-data-deva-gif] category lists ${files.length} files`);
+  const allFiles = await listCategoryFiles(CATEGORY);
+  // The category contains TWO uploads per character: an older small (~60×60)
+  // version named "Devanagari <ipa> <char>.gif" by JackPotte, and a newer
+  // larger (>200×200) version named "Deva-<char>-order.gif" by Opiaterein.
+  // Prefer the BIG version when both exist — it's higher fidelity and
+  // matches the resolution क already uses.
+  const byChar = new Map<string, string[]>();
+  for (const t of allFiles) {
+    const ch = extractCharFromTitle(t);
+    if (!ch) continue;
+    if (!byChar.has(ch)) byChar.set(ch, []);
+    byChar.get(ch)!.push(t);
+  }
+  const files: string[] = [];
+  for (const [, titles] of byChar) {
+    titles.sort((a, b) => {
+      const aBig = /Deva-.+-order\.gif/i.test(a) ? 0 : 1;
+      const bBig = /Deva-.+-order\.gif/i.test(b) ? 0 : 1;
+      return aBig - bBig;
+    });
+    files.push(titles[0]);
+  }
+  console.log(`[build-stroke-data-deva-gif] category lists ${allFiles.length} files; ${files.length} after dedup`);
 
   const attribution: Attribution[] = [];
   const covered: string[] = [];
@@ -426,7 +448,8 @@ export async function extractFromGif(buf: Buffer): Promise<ExtractResult> {
       ] as [number, number];
     });
     const medians = samplePolyline(cm, MEDIAN_COUNT);
-    finalMedians.push(medians.map(([x, y]) => [Math.round(x), Math.round(y)]));
+    const rounded = medians.map(([x, y]) => [Math.round(x), Math.round(y)] as [number, number]);
+    finalMedians.push(enforceWritingDirection(rounded).map(([x, y]) => [x, y]));
   }
 
   return {
@@ -458,6 +481,28 @@ function stripHtml(s: string | undefined): string | undefined {
 function round(x: number, decimals: number): number {
   const k = Math.pow(10, decimals);
   return Math.round(x * k) / k;
+}
+
+/**
+ * Same direction-enforcement as the SVG extractor (build-stroke-data-deva.ts):
+ * horizontal-dominant strokes go left→right; vertical-dominant strokes go
+ * top→bottom (in MMH coords, top = larger Y, so top→bottom means dy < 0).
+ * traceSkeleton's endpoint pick is order-arbitrary, so without this many
+ * GIF strokes end up backwards.
+ */
+function enforceWritingDirection(medians: [number, number][]): [number, number][] {
+  if (medians.length < 2) return medians;
+  const [sx, sy] = medians[0];
+  const [ex, ey] = medians[medians.length - 1];
+  const dx = ex - sx;
+  const dy = ey - sy;
+  let reverse = false;
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    if (dx < 0) reverse = true;
+  } else {
+    if (dy > 0) reverse = true;
+  }
+  return reverse ? [...medians].reverse() : medians;
 }
 
 /**
@@ -528,7 +573,10 @@ async function maskToPotraceSvg(
         const m = svg.match(/d="([^"]+)"/);
         if (!m) { resolve(null); return; }
         // Coords are in upsampled space (SCALE×). Pre-scale back to mask px.
-        const dStr = svgpath(m[1]).scale(1 / SCALE).abs().toString();
+        const scaled = svgpath(m[1]).scale(1 / SCALE).abs().toString();
+        // potrace emits fill-rule="evenodd"; react-native-svg's <Path> defaults
+        // to nonzero. Reverse holes so they wind opposite to the outer subpath.
+        const dStr = flipHoleWindings(scaled);
         resolve(dStr);
       },
     );

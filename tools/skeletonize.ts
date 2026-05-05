@@ -508,6 +508,122 @@ export function skeletonizeMask(
   return samplePolyline(path, totalSamples);
 }
 
+/**
+ * Multi-subpath SVG path → reverse hole windings so the path renders correctly
+ * under fill-rule="nonzero" (react-native-svg's default).
+ *
+ * potrace emits with fill-rule="evenodd" — outer + holes alternate but may
+ * share winding. nonzero requires holes to wind opposite to outer. We compute
+ * signed area of each subpath via shoelace on its anchor points; the largest-
+ * |area| subpath is treated as outer; any other subpath with the same sign
+ * gets reversed.
+ *
+ * Path-reversal rule for cubic Bézier paths (M Pn, C c1a c1b P1, ..., Z):
+ *   forward:  P0 → C(c1a, c1b) → P1 → C(c2a, c2b) → P2 → ... → Pn → close
+ *   reversed: Pn → C(cnB, cnA) → P(n-1) → ... → C(c1B, c1A) → P0 → close
+ * (control points within each cubic swap; segment list reverses.)
+ *
+ * Input must be normalised to absolute cubics + Z (use svgpath().abs() first).
+ */
+export function flipHoleWindings(d: string): string {
+  const subs = splitSubpaths(d);
+  if (subs.length < 2) return d;
+  const areas = subs.map(signedAreaOfSubpath);
+  let outerIdx = 0;
+  for (let i = 1; i < subs.length; i++) {
+    if (Math.abs(areas[i]) > Math.abs(areas[outerIdx])) outerIdx = i;
+  }
+  const outerSign = Math.sign(areas[outerIdx]);
+  const out: string[] = [];
+  for (let i = 0; i < subs.length; i++) {
+    const sub = subs[i];
+    if (i !== outerIdx && Math.sign(areas[i]) === outerSign) {
+      out.push(reverseSubpath(sub));
+    } else {
+      out.push(serializeSubpath(sub));
+    }
+  }
+  return out.join(' ');
+}
+
+interface Subpath {
+  start: [number, number];
+  segs: Array<{ c1: [number, number]; c2: [number, number]; end: [number, number] }>;
+  closed: boolean;
+}
+
+function splitSubpaths(d: string): Subpath[] {
+  const subs: Subpath[] = [];
+  let cur: Subpath | null = null;
+  // Normalise to absolute, expand shorthand, decompose to cubics. svgpath
+  // doesn't have a "to-cubic" so iterate handles 'C' and 'L' separately.
+  // potrace emits only M/C/Z — so this is mostly safe; we still degrade L→C by
+  // setting both control points equal to the segment endpoints (still cubic).
+  svgpath(d).abs().unshort().iterate((seg, _i, x, y) => {
+    const cmd = seg[0];
+    if (cmd === 'M') {
+      const sx = seg[1] as number;
+      const sy = seg[2] as number;
+      cur = { start: [sx, sy], segs: [], closed: false };
+      subs.push(cur);
+    } else if (cmd === 'C' && cur) {
+      cur.segs.push({
+        c1: [seg[1] as number, seg[2] as number],
+        c2: [seg[3] as number, seg[4] as number],
+        end: [seg[5] as number, seg[6] as number],
+      });
+    } else if (cmd === 'L' && cur) {
+      const ex = seg[1] as number;
+      const ey = seg[2] as number;
+      cur.segs.push({ c1: [x, y], c2: [ex, ey], end: [ex, ey] });
+    } else if ((cmd === 'Z' || cmd === 'z') && cur) {
+      cur.closed = true;
+    }
+  });
+  return subs;
+}
+
+function signedAreaOfSubpath(sub: Subpath): number {
+  // Shoelace on anchor points (start + each segment endpoint). Approximate but
+  // sign is what we need.
+  const pts: [number, number][] = [sub.start, ...sub.segs.map((s) => s.end)];
+  let a = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const [x1, y1] = pts[i];
+    const [x2, y2] = pts[(i + 1) % pts.length];
+    a += x1 * y2 - x2 * y1;
+  }
+  return a / 2;
+}
+
+function fmt(n: number): string {
+  return Number.isFinite(n) ? +n.toFixed(3) + '' : '0';
+}
+
+function serializeSubpath(sub: Subpath): string {
+  const parts: string[] = [`M ${fmt(sub.start[0])} ${fmt(sub.start[1])}`];
+  for (const s of sub.segs) {
+    parts.push(`C ${fmt(s.c1[0])} ${fmt(s.c1[1])} ${fmt(s.c2[0])} ${fmt(s.c2[1])} ${fmt(s.end[0])} ${fmt(s.end[1])}`);
+  }
+  if (sub.closed) parts.push('Z');
+  return parts.join(' ');
+}
+
+function reverseSubpath(sub: Subpath): string {
+  // Reversed anchor sequence: end, end-1, ..., start.
+  const anchors: [number, number][] = [sub.start, ...sub.segs.map((s) => s.end)];
+  const n = sub.segs.length;
+  const parts: string[] = [`M ${fmt(anchors[n][0])} ${fmt(anchors[n][1])}`];
+  for (let i = n - 1; i >= 0; i--) {
+    const seg = sub.segs[i];
+    parts.push(
+      `C ${fmt(seg.c2[0])} ${fmt(seg.c2[1])} ${fmt(seg.c1[0])} ${fmt(seg.c1[1])} ${fmt(anchors[i][0])} ${fmt(anchors[i][1])}`,
+    );
+  }
+  if (sub.closed) parts.push('Z');
+  return parts.join(' ');
+}
+
 /** Sample N points uniformly along arc length of an ordered pixel polyline. */
 export function samplePolyline(pts: [number, number][], n: number): [number, number][] {
   if (pts.length === 0) return [];
