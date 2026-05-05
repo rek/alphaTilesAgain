@@ -124,12 +124,19 @@ function SpikeInner({ mod, idx, setIdx }: { mod: HanziModule; idx: number; setId
     }),
   });
   const quizActive = writer.quiz.useStore((s) => s.active);
+  const quizIndex = writer.quiz.useStore((s) => s.index);
+  const quizMistakeCount = writer.quiz.useStore((s) =>
+    Object.values(s.mistakes).reduce((a: number, b) => a + (b as number), 0),
+  );
 
   return (
     <GestureHandlerRootView style={styles.root}>
       <View style={styles.col}>
         <Text style={styles.title}>
           spike-deva: {entry.char} — {entry.data.strokes.length} strokes
+        </Text>
+        <Text style={styles.title} aria-label="quiz-state">
+          quiz active={String(quizActive)} index={quizIndex} mistakes={quizMistakeCount}
         </Text>
         <View style={styles.btnRow}>
           {CHARS.map((c, i) => (
