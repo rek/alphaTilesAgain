@@ -101,7 +101,12 @@ async function main(): Promise<void> {
 
     const cachePath = path.join(CACHE_DIR, `${ch}.gif`);
     if (!fs.existsSync(cachePath)) {
-      const buf = await fetchBinary(meta.url);
+      // Wikimedia's API returns `info.url` with `?utm_source=…` query params,
+      // and that query string makes Commons serve a downscaled thumbnail
+      // (e.g. 69×61 for क instead of the full 217×181). Strip the query
+      // string to get the original-resolution file.
+      const cleanUrl = meta.url.split('?')[0];
+      const buf = await fetchBinary(cleanUrl);
       if (!buf) {
         rejected.push({ title, reason: 'failed to download GIF' });
         continue;

@@ -64,21 +64,55 @@ async function main(): Promise<void> {
   console.log('[poc] labeling font pixels by stroke ownership…');
   const labels = labelFontPixels(fontMask.mask, FONT_RENDER, gif.strokes, gif.w, gif.h, align);
 
-  // Step 5: per stroke, extract labeled pixels → potrace → d-string.
-  console.log('[poc] potracing per stroke…');
-  const finalStrokes: string[] = [];
+  // Step 5: per stroke, extract labeled pixels.
+  console.log('[poc] extracting per-stroke font regions…');
+  const strokeMasks: Array<{ subMask: Uint8Array; pixelCount: number }> = [];
   for (let k = 0; k < gif.strokes.length; k++) {
     const subMask = new Uint8Array(FONT_RENDER * FONT_RENDER);
-    for (let i = 0; i < labels.length; i++) {
-      if (labels[i] === k + 1) subMask[i] = 1;
-    }
     let count = 0;
-    for (let i = 0; i < subMask.length; i++) if (subMask[i]) count++;
-    console.log(`  stroke ${k + 1}: ${count} font px labeled`);
-    if (count < 16) {
-      console.warn(`  stroke ${k + 1}: only ${count} px labeled; skipping`);
-      continue;
+    for (let i = 0; i < labels.length; i++) {
+      if (labels[i] === k + 1) { subMask[i] = 1; count++; }
     }
+    strokeMasks.push({ subMask, pixelCount: count });
+  }
+
+  // Compute the GLYPH bbox so the final output fits the 0..1024 MMH box with
+  // padding. Using FONT_RENDER coords as-is leaves the glyph at ~half size
+  // (it occupies only the middle of the 1024×1024 canvas).
+  const PAD = 64; // px in the MMH 1024 frame
+  const fontBb = fontMask.bbox;
+  const bbW = Math.max(1e-6, fontBb.maxX - fontBb.minX);
+  const bbH = Math.max(1e-6, fontBb.maxY - fontBb.minY);
+  const fitScale = Math.min((TARGET_BOX - 2 * PAD) / bbW, (TARGET_BOX - 2 * PAD) / bbH);
+  const fitOffsetX = (TARGET_BOX - bbW * fitScale) / 2;
+  const fitOffsetY = (TARGET_BOX - bbH * fitScale) / 2;
+  // svgpath chain (right→left applied to coords):
+  //   translate(fitOffsetX, TARGET_BOX - fitOffsetY)  ← center + Y-base
+  //   scale(fitScale, -fitScale)                       ← scale + Y-flip
+  //   translate(-fontBb.minX, -fontBb.minY)            ← bbox to origin
+  const remapD = (d: string): string =>
+    svgpath(d)
+      .translate(-fontBb.minX, -fontBb.minY)
+      .scale(fitScale, -fitScale)
+      .translate(fitOffsetX, TARGET_BOX - fitOffsetY)
+      .abs()
+      .round(1)
+      .toString();
+  const remapPoint = (fx: number, fy: number): [number, number] => {
+    const nx = (fx - fontBb.minX) * fitScale + fitOffsetX;
+    const ny = TARGET_BOX - ((fy - fontBb.minY) * fitScale + fitOffsetY);
+    return [
+      Math.max(0, Math.min(TARGET_BOX, Math.round(nx))),
+      Math.max(0, Math.min(TARGET_BOX, Math.round(ny))),
+    ];
+  };
+
+  const finalStrokes: string[] = [];
+  const finalMedians: number[][][] = [];
+  for (let k = 0; k < strokeMasks.length; k++) {
+    const { subMask, pixelCount } = strokeMasks[k];
+    console.log(`  stroke ${k + 1}: ${pixelCount} font px labeled`);
+    if (pixelCount < 16) continue;
     // Save debug PNG for inspection.
     {
       const dbg = createCanvas(FONT_RENDER, FONT_RENDER);
@@ -94,31 +128,23 @@ async function main(): Promise<void> {
       fs.writeFileSync(`/tmp/poc-stroke-${k + 1}.png`, dbg.toBuffer('image/png'));
     }
     const d = await maskToPotraceSvg(subMask, FONT_RENDER, FONT_RENDER);
-    if (!d) { console.warn(`  stroke ${k + 1}: potrace returned null`); continue; }
-    // Coords are in FONT_RENDER pixel space (origin top-left, Y down).
-    // Remap to MMH 0..1024 with Y-flip.
-    const remapped = svgpath(d)
-      .scale(TARGET_BOX / FONT_RENDER, -TARGET_BOX / FONT_RENDER)
-      .translate(0, TARGET_BOX)
-      .abs()
-      .round(1)
-      .toString();
-    finalStrokes.push(remapped);
-    console.log(`  stroke ${k + 1}: ${count} font px → ${remapped.length} chars d-string`);
-  }
+    if (!d) continue;
+    finalStrokes.push(remapD(d));
 
-  // Step 6: medians from GIF centerlines, mapped through align.
-  const finalMedians: number[][][] = gif.strokes.map((s) => {
-    const fontCenterline = s.centerline.map(([x, y]) => align.apply(x, y));
-    const remapped = fontCenterline.map(([fx, fy]) => {
-      // fx,fy in font canvas coords (0..FONT_RENDER, Y down).
-      // Map to MMH (0..1024, Y up).
-      const nx = Math.round(fx * TARGET_BOX / FONT_RENDER);
-      const ny = Math.round(TARGET_BOX - fy * TARGET_BOX / FONT_RENDER);
-      return [Math.max(0, Math.min(TARGET_BOX, nx)), Math.max(0, Math.min(TARGET_BOX, ny))] as [number, number];
-    });
-    return samplePolyline(remapped, MEDIAN_COUNT).map(([x, y]) => [Math.round(x), Math.round(y)]);
-  }).filter((_, i) => i < finalStrokes.length);
+    // Medians from the GIF CENTERLINE (the artist's actual pen motion),
+    // mapped through the GIF→font affine and then the font→MMH remap.
+    // Skeletonising the BFS-labeled region instead would fork wherever
+    // segmentation bleed put two stroke parts in the same label, producing
+    // a centerline that doesn't trace the real writing motion.
+    const gifStroke = gif.strokes[k];
+    const centerlineInFont = gifStroke.centerline.map(([x, y]) => align.apply(x, y));
+    const remapped = centerlineInFont.map(([fx, fy]) => remapPoint(fx, fy));
+    const medians = samplePolyline(remapped, MEDIAN_COUNT).map(([x, y]) => [
+      Math.round(x), Math.round(y),
+    ]);
+    finalMedians.push(medians);
+    console.log(`  stroke ${k + 1}: ${pixelCount} font px → ${finalStrokes[finalStrokes.length - 1].length} chars d-string, ${medians.length} medians`);
+  }
 
   fs.writeFileSync(
     OUT_PATH,
@@ -314,22 +340,22 @@ function labelFontPixels(
   fontMask: Uint8Array,
   fontSize: number,
   strokes: Array<{ mask: Uint8Array; centerline: [number, number][] }>,
-  gifW: number,
-  gifH: number,
+  _gifW: number,
+  _gifH: number,
   align: Affine,
 ): Uint8Array {
-  // Project each stroke's mask into font coords as a 1-pixel-wide trail.
+  // BFS seeds = each stroke's CENTERLINE (1-pixel-wide skeleton from the
+  // GIF). Using the full pen-trail mask as seeds bleeds across strokes
+  // when adjacent strokes overlap; centerlines are sparser and stay closer
+  // to the true pen motion.
   const projected: Uint8Array[] = strokes.map((s) => {
     const m = new Uint8Array(fontSize * fontSize);
-    for (let y = 0; y < gifH; y++) {
-      for (let x = 0; x < gifW; x++) {
-        if (!s.mask[y * gifW + x]) continue;
-        const [fx, fy] = align.apply(x, y);
-        const ix = Math.round(fx);
-        const iy = Math.round(fy);
-        if (ix >= 0 && ix < fontSize && iy >= 0 && iy < fontSize) {
-          m[iy * fontSize + ix] = 1;
-        }
+    for (const [x, y] of s.centerline) {
+      const [fx, fy] = align.apply(x, y);
+      const ix = Math.round(fx);
+      const iy = Math.round(fy);
+      if (ix >= 0 && ix < fontSize && iy >= 0 && iy < fontSize) {
+        m[iy * fontSize + ix] = 1;
       }
     }
     return m;
