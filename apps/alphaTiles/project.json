@@ -98,6 +98,13 @@
     "prebuild-lang": {
       "executor": "nx:noop"
     },
+    "android-eng": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "APP_LANG=eng cd apps/alphaTiles && npx expo run:android",
+        "cwd": "{workspaceRoot}"
+      }
+    },
     "start-web-eng": {
       "executor": "nx:run-commands",
       "continuous": true,

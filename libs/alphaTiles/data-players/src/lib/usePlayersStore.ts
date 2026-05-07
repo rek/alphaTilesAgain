@@ -12,6 +12,14 @@ import { persist } from 'zustand/middleware';
 import type { Player } from './Player';
 import { rnStorage } from './rnStorage';
 
+const randomUUID = (): string => {
+  const hex = () => Math.floor(Math.random() * 16).toString(16);
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.floor(Math.random() * 16);
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+};
+
 type PlayersState = {
   players: Player[];
   activePlayerId: string | null;
@@ -35,7 +43,7 @@ export const usePlayersStore = create<PlayersState & PlayersActions>()(
 
       createPlayer({ name, avatarIndex }) {
         const newPlayer: Player = {
-          id: crypto.randomUUID(),
+          id: randomUUID(),
           name,
           avatarIndex,
           createdAt: Date.now(),
