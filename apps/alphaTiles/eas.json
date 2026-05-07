@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 16.24.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "production": {
+      "autoIncrement": true
+    },
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "APP_LANG": "eng"
+      }
+    },
+    "eng": {
+      "extends": "production",
+      "channel": "eng",
+      "env": {
+        "APP_LANG": "eng"
+      }
+    },
+    "yue": {
+      "extends": "production",
+      "channel": "yue",
+      "env": {
+        "APP_LANG": "yue"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

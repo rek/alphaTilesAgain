@@ -1,0 +1,46 @@
+name: EAS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Build profile
+        required: true
+        default: eng
+        type: choice
+        options:
+          - eng
+          - yue
+          - development
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    name: EAS Build (${{ github.event.inputs.profile }})
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build
+        working-directory: apps/alphaTiles
+        env:
+          APP_LANG: ${{ github.event.inputs.profile }}
+        run: eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --no-wait

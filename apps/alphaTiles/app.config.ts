@@ -49,7 +49,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   // EAS projectId — set by `eas init` (one-time developer action).
   // See docs/GETTING_STARTED.md § EAS Updates.
-  const easProjectId = process.env.EAS_PROJECT_ID ?? '';
+  const easProjectId = process.env.EAS_PROJECT_ID ?? 'a396d678-4f3e-4588-bd7f-5f79daa04c57';
   // Fail production-like builds if projectId is missing.
   if (!easProjectId && process.env.NODE_ENV !== 'test') {
     // Allow dev Metro sessions to proceed without a projectId.
@@ -100,7 +100,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   return {
     ...config,
     name: langInfo.gameNameInLocalLang || langInfo.nameInLocalLang,
-    slug: `alphatiles-${lang}`,
+    owner: 'alpha-tiles',
+    slug: 'alpha-tiles-again',
     version: config.version ?? '1.0.0',
     orientation: 'portrait',
     icon: resolvedIcon,
@@ -109,10 +110,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      bundleIdentifier: `org.alphatilesapps.alphatiles.blue.${lang}`,
+      bundleIdentifier: `org.alphatilesapp.alphatilesagain.${lang}`,
     },
     android: {
-      package: `org.alphatilesapps.alphatiles.blue.${lang}`,
+      package: `org.alphatilesapp.alphatilesagain.${lang}`,
       adaptiveIcon: {
         backgroundColor: '#E6F4FE',
         foregroundImage: './assets/images/android-icon-foreground.png',
