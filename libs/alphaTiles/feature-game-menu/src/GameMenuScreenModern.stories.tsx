@@ -49,6 +49,12 @@ const meta: Meta<typeof GameMenuScreenModern> = {
       score: 'Score',
       toggleLayout: 'Toggle layout',
     },
+    tabLabels: {
+      about: 'About',
+      share: 'Share',
+      resources: 'Library',
+      audioInstructions: 'Listen',
+    },
   },
 };
 

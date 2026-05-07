@@ -5,10 +5,14 @@ import {
   Image,
   Pressable,
   FlatList,
+  Platform,
+  SafeAreaView,
+  StatusBar,
   StyleSheet,
   useWindowDimensions,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { DoorData } from './useDoors';
 
 export type GameMenuScreenModernProps = {
@@ -33,6 +37,12 @@ export type GameMenuScreenModernProps = {
     resources: string;
     audioInstructions: string;
     score: string;
+  };
+  tabLabels: {
+    about: string;
+    share: string;
+    resources: string;
+    audioInstructions: string;
   };
 };
 
@@ -118,6 +128,7 @@ export function GameMenuScreenModern({
   onResources,
   onAudioInstructions,
   a11y,
+  tabLabels,
 }: GameMenuScreenModernProps): React.JSX.Element {
   const { width } = useWindowDimensions();
   const numColumns = getColumns(width);
@@ -125,15 +136,16 @@ export function GameMenuScreenModern({
   const cardSize = Math.floor((width - GRID_PADDING * 2 - totalGap) / numColumns);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
         <Pressable
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel={a11y.back}
-          style={styles.backButton}
+          hitSlop={8}
+          style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
         >
-          <Text style={styles.backArrow}>{'←'}</Text>
+          <Ionicons name="chevron-back" size={28} color="#1F2937" />
         </Pressable>
         {playerAvatarSrc !== null ? (
           <Image source={playerAvatarSrc} style={styles.avatar} />
@@ -161,49 +173,41 @@ export function GameMenuScreenModern({
         )}
       />
 
-      <View style={styles.utilityRow}>
+      <View style={styles.tabBar}>
         {showAbout && (
-          <Pressable
+          <TabButton
+            icon="information-circle-outline"
+            label={tabLabels.about}
+            a11yLabel={a11y.about}
             onPress={onAbout}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.about}
-            style={styles.utilityButton}
-          >
-            <Text style={styles.utilityText}>{'ℹ'}</Text>
-          </Pressable>
+          />
         )}
         {showShare && (
-          <Pressable
+          <TabButton
+            icon="share-social-outline"
+            label={tabLabels.share}
+            a11yLabel={a11y.share}
             onPress={onShare}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.share}
-            style={styles.utilityButton}
-          >
-            <Text style={styles.utilityText}>{'⤴'}</Text>
-          </Pressable>
+          />
         )}
         {showResources && (
-          <Pressable
+          <TabButton
+            icon="library-outline"
+            label={tabLabels.resources}
+            a11yLabel={a11y.resources}
             onPress={onResources}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.resources}
-            style={styles.utilityButton}
-          >
-            <Text style={styles.utilityText}>{'📚'}</Text>
-          </Pressable>
+          />
         )}
         {showAudioInstructions && (
-          <Pressable
+          <TabButton
+            icon="volume-high-outline"
+            label={tabLabels.audioInstructions}
+            a11yLabel={a11y.audioInstructions}
             onPress={onAudioInstructions}
-            accessibilityRole="button"
-            accessibilityLabel={a11y.audioInstructions}
-            style={styles.utilityButton}
-          >
-            <Text style={styles.utilityText}>{'🔊'}</Text>
-          </Pressable>
+          />
         )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -215,13 +219,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingTop: (Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 0) + 10,
+    paddingBottom: 10,
   },
   backButton: {
     marginEnd: 8,
-  },
-  backArrow: {
-    fontSize: 24,
   },
   avatar: {
     width: 36,
@@ -271,19 +273,58 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-  utilityRow: {
+  pressed: {
+    opacity: 0.55,
+  },
+  tabBar: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    alignItems: 'stretch',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#D1D5DB',
+    paddingTop: 6,
+    paddingBottom: Platform.OS === 'ios' ? 4 : 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  tab: {
+    flex: 1,
+    minHeight: 50,
     alignItems: 'center',
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+    gap: 2,
   },
-  utilityButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  utilityText: {
-    fontSize: 22,
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#4B5563',
+    letterSpacing: 0.2,
   },
 });
+
+type TabButtonProps = {
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  label: string;
+  a11yLabel: string;
+  onPress: () => void;
+};
+
+function TabButton({ icon, label, a11yLabel, onPress }: TabButtonProps): React.JSX.Element {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={a11yLabel}
+      hitSlop={6}
+      style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
+    >
+      <Ionicons name={icon} size={24} color="#374151" />
+      <Text style={styles.tabLabel} numberOfLines={1}>{label}</Text>
+    </Pressable>
+  );
+}

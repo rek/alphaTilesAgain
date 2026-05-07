@@ -93,6 +93,12 @@ export function GameMenuContainer(): React.JSX.Element {
       audioInstructions: t('menu.a11y.audio_instructions'),
       score: t('menu.score', { points: score }),
     },
+    tabLabels: {
+      about: t('menu.tabs.about'),
+      share: t('menu.tabs.share'),
+      resources: t('menu.tabs.resources'),
+      audioInstructions: t('menu.tabs.audio'),
+    },
   };
 
   return <GameMenuScreenModern {...commonProps} allDoors={allDoors} />;

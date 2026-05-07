@@ -76,6 +76,12 @@
         "resources": "Resources",
         "audio_instructions": "Play audio instructions",
         "toggle_layout": "Toggle layout"
+      },
+      "tabs": {
+        "about": "About",
+        "share": "Share",
+        "resources": "Library",
+        "audio": "Listen"
       }
     },
     "a11y": {
