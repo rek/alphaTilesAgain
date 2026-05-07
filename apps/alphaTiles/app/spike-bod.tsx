@@ -10,16 +10,15 @@
 import { useEffect, useState } from 'react';
 import { Button, Pressable, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
-type HanziModule = typeof import('@jamsch/react-native-hanzi-writer');
-
 import bodKa from '../../../tools/data/uchen-strokes/ཀ.json';
 import bodKha from '../../../tools/data/uchen-strokes/ཁ.json';
 import bodGa from '../../../tools/data/uchen-strokes/ག.json';
 import bodNga from '../../../tools/data/uchen-strokes/ང.json';
 import bodCa from '../../../tools/data/uchen-strokes/ཅ.json';
 
-const CHARS: Array<{ char: string; data: { strokes: readonly string[]; medians: readonly (readonly number[])[] } }> = [
+type HanziModule = typeof import('@jamsch/react-native-hanzi-writer');
+
+const CHARS: { char: string; data: { strokes: readonly string[]; medians: readonly (readonly number[])[] } }[] = [
   { char: 'ཀ', data: bodKa as never },
   { char: 'ཁ', data: bodKha as never },
   { char: 'ག', data: bodGa as never },

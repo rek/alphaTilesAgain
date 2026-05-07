@@ -6,9 +6,6 @@
 import { useEffect, useState } from 'react';
 import { Button, Pressable, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
-type HanziModule = typeof import('@jamsch/react-native-hanzi-writer');
-
 import c0904 from '../../../tools/data/devanagari-strokes/ऄ.json';
 import c0905 from '../../../tools/data/devanagari-strokes/अ.json';
 import c0906 from '../../../tools/data/devanagari-strokes/आ.json';
@@ -55,7 +52,9 @@ import c0937 from '../../../tools/data/devanagari-strokes/ष.json';
 import c0938 from '../../../tools/data/devanagari-strokes/स.json';
 import c0939 from '../../../tools/data/devanagari-strokes/ह.json';
 
-const CHARS: Array<{ char: string; data: { strokes: readonly string[]; medians: readonly (readonly number[])[] } }> = [
+type HanziModule = typeof import('@jamsch/react-native-hanzi-writer');
+
+const CHARS: { char: string; data: { strokes: readonly string[]; medians: readonly (readonly number[])[] } }[] = [
   { char: 'ऄ', data: c0904 as never },
   { char: 'अ', data: c0905 as never },
   { char: 'आ', data: c0906 as never },
