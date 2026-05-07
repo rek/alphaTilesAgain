@@ -99,7 +99,7 @@ function main(): void {
   const rejected: Array<{ char: string; reason: string }> = [];
 
   for (const ch of CHARS) {
-    const cp = ch.codePointAt(0)!;
+    const cp = ch.codePointAt(0) ?? 0;
     const glyph = font.charToGlyph(ch);
     if (!glyph || glyph.index === 0) {
       rejected.push({ char: ch, reason: 'glyph not found in font' });

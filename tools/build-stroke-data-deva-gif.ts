@@ -84,8 +84,9 @@ async function main(): Promise<void> {
   for (const t of allFiles) {
     const ch = extractCharFromTitle(t);
     if (!ch) continue;
-    if (!byChar.has(ch)) byChar.set(ch, []);
-    byChar.get(ch)!.push(t);
+    const arr = byChar.get(ch) ?? [];
+    byChar.set(ch, arr);
+    arr.push(t);
   }
   const files: string[] = [];
   for (const [, titles] of byChar) {
@@ -476,11 +477,6 @@ function die(msg: string): never {
 function stripHtml(s: string | undefined): string | undefined {
   if (!s) return undefined;
   return s.replace(/<[^>]+>/g, '').trim();
-}
-
-function round(x: number, decimals: number): number {
-  const k = Math.pow(10, decimals);
-  return Math.round(x * k) / k;
 }
 
 /**

@@ -668,13 +668,6 @@ function sampleCenterlineMedians(d: string, totalSamples: number): number[][] {
   });
 }
 
-function splitOnMoveTo(d: string): string[] {
-  // Split a d-string at each M/m command (top-level moveto). Preserve commands
-  // inside curves. Simple regex split — d-strings from svgpath.toString() use
-  // capital letters with absolute coords, separated by spaces.
-  const parts = d.split(/(?=\s*[Mm]\s*)/).map((s) => s.trim()).filter(Boolean);
-  return parts;
-}
 
 // ---------------------------------------------------------------------------
 // Misc
