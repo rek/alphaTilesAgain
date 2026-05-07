@@ -9,6 +9,13 @@ describe('checkGameStructure', () => {
     expect(checkGameStructure(parsed, mkInventory())).toHaveLength(0);
   });
 
+  it('accepts Taiwan as a valid country', () => {
+    const parsed = mkParsed({
+      gameRows: [mkGameRow({ door: 1, country: 'Taiwan' })],
+    });
+    expect(checkGameStructure(parsed, mkInventory()).filter((i) => i.code === 'UNKNOWN_GAME_COUNTRY')).toHaveLength(0);
+  });
+
   it('flags unknown game country', () => {
     const parsed = mkParsed({
       gameRows: [mkGameRow({ country: 'Atlantis' })],

@@ -4,7 +4,7 @@
  * Java reference: Validator.java#validateGoogleSheet — games tab block.
  *
  * Checks:
- * - Country ∈ 17 known game-class names
+ * - Country ∈ 18 known game-class names
  * - ChallengeLevel parseable as integer (parser already enforces, validator adds code)
  * - Door unique and sequential from 1
  * - InstructionAudio is a real file OR naWhileMPOnly or X
@@ -26,7 +26,7 @@ const CATEGORY = 'game-structure';
 const VALID_COUNTRIES = new Set([
   'Brazil', 'Chile', 'China', 'Colombia', 'Ecuador', 'Georgia',
   'Iraq', 'Italy', 'Japan', 'Malaysia', 'Mexico', 'Myanmar',
-  'Peru', 'Romania', 'Sudan', 'Thailand', 'UnitedStates',
+  'Peru', 'Romania', 'Sudan', 'Taiwan', 'Thailand', 'UnitedStates',
 ]);
 
 export function checkGameStructure(
