@@ -3,6 +3,7 @@
   "description": "alphaTiles NX monorepo",
   "license": "ISC",
   "private": true,
+  "packageManager": "npm@10.9.2",
   "workspaces": [
     "apps/*",
     "libs/**"
