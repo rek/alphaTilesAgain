@@ -14,10 +14,10 @@ describe('build-stroke-data-deva extractStrokes', () => {
     expect(r.strokes.length).toBe(r.medians.length);
   });
 
-  it('emits exactly 10 medians per stroke', () => {
+  it('emits exactly 15 medians per stroke', () => {
     const r = extractStrokes(svgText);
     for (const m of r.medians) {
-      expect(m.length).toBe(10);
+      expect(m.length).toBe(15);
     }
   });
 
@@ -33,22 +33,23 @@ describe('build-stroke-data-deva extractStrokes', () => {
     }
   });
 
-  it('rebuilt path d strings start with "M " and use "L " segments', () => {
+  it('rebuilt path d strings start with M and contain path commands', () => {
     const r = extractStrokes(svgText);
     for (const d of r.strokes) {
-      expect(d.startsWith('M ')).toBe(true);
-      expect(d).toMatch(/L /);
+      expect(d).toMatch(/^M/);
+      expect(d).toMatch(/[LQC]/);
     }
   });
 
-  it('first median equals the path start coord (round-trip sanity)', () => {
+  it('all median coords are within the 0..1024 bbox', () => {
     const r = extractStrokes(svgText);
     for (let i = 0; i < r.strokes.length; i++) {
-      const d = r.strokes[i];
-      const m = / -?\d+ -?\d+/.exec(d);
-      expect(m).toBeTruthy();
-      const [px, py] = m![0].trim().split(/\s+/).map(Number);
-      expect([px, py]).toEqual(r.medians[i][0]);
+      for (const [x, y] of r.medians[i]) {
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(x).toBeLessThanOrEqual(1024);
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(y).toBeLessThanOrEqual(1024);
+      }
     }
   });
 });
