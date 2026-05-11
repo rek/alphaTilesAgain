@@ -1,24 +1,25 @@
 import { pickTaiwanCharacters } from './pickTaiwanCharacters';
 
 describe('pickTaiwanCharacters', () => {
-  it('returns goalCount unique chars when pool is large enough', () => {
-    const out = pickTaiwanCharacters(['醫', '生', '護', '士', '檢', '查'], 5, mkRng([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]));
-    expect(out).toHaveLength(5);
-    expect(new Set(out).size).toBe(5);
-    out.forEach((c) => expect(['醫', '生', '護', '士', '檢', '查']).toContain(c));
+  it('returns the first goalCount chars in order at offset 0', () => {
+    const pool = ['一', '二', '三', '四', '五', '六', '七'];
+    expect(pickTaiwanCharacters(pool, 5, 0)).toEqual(['一', '二', '三', '四', '五']);
+  });
+
+  it('advances by goalCount per offset (simple → complex progression)', () => {
+    const pool = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+    expect(pickTaiwanCharacters(pool, 5, 1)).toEqual(['f', 'g', 'h', 'i', 'j']);
+  });
+
+  it('wraps around the pool when offset exceeds length', () => {
+    const pool = ['a', 'b', 'c', 'd', 'e', 'f'];
+    // offset 1 starts at index 5, wraps: f, a, b, c, d
+    expect(pickTaiwanCharacters(pool, 5, 1)).toEqual(['f', 'a', 'b', 'c', 'd']);
   });
 
   it('returns whatever is there when pool < goalCount', () => {
-    const out = pickTaiwanCharacters(['醫', '生'], 5, mkRng([0, 0, 0]));
-    expect(out).toHaveLength(2);
-    expect(new Set(out)).toEqual(new Set(['醫', '生']));
-  });
-
-  it('is deterministic with injected rng', () => {
-    const seed = [0.1, 0.5, 0.9, 0.2, 0.7, 0.3];
-    const a = pickTaiwanCharacters(['醫', '生', '護', '士'], 3, mkRng(seed));
-    const b = pickTaiwanCharacters(['醫', '生', '護', '士'], 3, mkRng(seed));
-    expect(a).toEqual(b);
+    expect(pickTaiwanCharacters(['醫', '生'], 5, 0)).toEqual(['醫', '生']);
+    expect(pickTaiwanCharacters(['醫', '生'], 5, 3)).toEqual(['醫', '生']);
   });
 
   it('returns [] when goalCount <= 0', () => {
@@ -29,9 +30,8 @@ describe('pickTaiwanCharacters', () => {
   it('returns [] when pool is empty', () => {
     expect(pickTaiwanCharacters([], 5)).toEqual([]);
   });
-});
 
-function mkRng(values: number[]): () => number {
-  let i = 0;
-  return () => values[i++ % values.length];
-}
+  it('defaults offset to 0', () => {
+    expect(pickTaiwanCharacters(['a', 'b', 'c', 'd', 'e', 'f'], 3)).toEqual(['a', 'b', 'c']);
+  });
+});

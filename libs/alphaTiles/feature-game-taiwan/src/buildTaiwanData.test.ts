@@ -3,12 +3,19 @@ import type { LangAssets } from '@alphaTiles/data-language-assets';
 
 function mkAssets(opts: {
   tileBases: string[];
-  strokeChars: string[];
+  strokeChars: string[] | Record<string, number>;
   words?: Array<{ lop: string; lwc: string; audio?: number }>;
 }): LangAssets {
   const strokes: Record<string, { character: string; strokes: string[]; medians: number[][][] }> = {};
-  for (const ch of opts.strokeChars) {
-    strokes[ch] = { character: ch, strokes: [], medians: [] };
+  const strokeEntries: Array<[string, number]> = Array.isArray(opts.strokeChars)
+    ? opts.strokeChars.map((ch) => [ch, 1])
+    : Object.entries(opts.strokeChars);
+  for (const [ch, count] of strokeEntries) {
+    strokes[ch] = {
+      character: ch,
+      strokes: new Array(count).fill('M0 0'),
+      medians: [],
+    };
   }
   const audioWords: Record<string, number> = {};
   const wordRows: Array<{ wordInLOP: string; wordInLWC: string }> = [];
@@ -31,7 +38,26 @@ describe('buildTaiwanData', () => {
       strokeChars: ['醫', '生', '護', '士'], // 檢, 查 missing
     });
     const out = buildTaiwanData(assets);
-    expect(out.availableTiles).toEqual(['醫', '生', '護', '士']);
+    expect(out.availableTiles.sort()).toEqual(['士', '護', '生', '醫'].sort());
+  });
+
+  it('sorts availableTiles by stroke count ascending (simple → complex)', () => {
+    // 大=3, 上=3, 醫=17, 護=20 — tiebreak by first-appearance order in tiles.
+    const assets = mkAssets({
+      tileBases: ['醫護 ', '大上 '],
+      strokeChars: { 醫: 17, 護: 20, 大: 3, 上: 3 },
+    });
+    const out = buildTaiwanData(assets);
+    expect(out.availableTiles).toEqual(['大', '上', '醫', '護']);
+  });
+
+  it('falls back to count 0 when stroke entry has empty strokes array', () => {
+    const assets = mkAssets({
+      tileBases: ['甲乙 '],
+      strokeChars: { 甲: 0, 乙: 1 },
+    });
+    const out = buildTaiwanData(assets);
+    expect(out.availableTiles).toEqual(['甲', '乙']);
   });
 
   it('returns empty when strokes is {} (non-Chinese pack)', () => {

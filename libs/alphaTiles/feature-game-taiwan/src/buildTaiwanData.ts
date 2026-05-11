@@ -7,7 +7,9 @@
  * the yue pack; we play the audio of the first compound containing the char).
  *
  * Returns:
- *   - availableTiles: distinct hanzi with stroke data (sorted by first appearance in tiles)
+ *   - availableTiles: distinct hanzi with stroke data, sorted ascending by
+ *     stroke count (tiebreak: first appearance in tiles). Drives simple→complex
+ *     character progression in-game (issue #20).
  *   - audioForChar:   char -> require()-id of a compound-word mp3 that contains it
  *
  * Stage-filtering is deferred to v1.1 (design Open Q #6) — for v1 every char
@@ -26,16 +28,22 @@ export type TaiwanData = {
 export function buildTaiwanData(assets: LangAssets): TaiwanData {
   const charsWithStrokes = new Set(Object.keys(assets.strokes));
 
-  const availableTiles: string[] = [];
+  const firstSeenOrder: string[] = [];
   const seen = new Set<string>();
 
   for (const tile of assets.tiles.rows) {
     for (const ch of [...tile.base.trim()]) {
       if (!charsWithStrokes.has(ch) || seen.has(ch)) continue;
       seen.add(ch);
-      availableTiles.push(ch);
+      firstSeenOrder.push(ch);
     }
   }
+
+  const strokeCount = (ch: string): number => assets.strokes[ch]?.strokes.length ?? 0;
+  const availableTiles = firstSeenOrder
+    .map((ch, idx) => ({ ch, count: strokeCount(ch), idx }))
+    .sort((a, b) => a.count - b.count || a.idx - b.idx)
+    .map((e) => e.ch);
 
   const audioForChar: Record<string, string> = {};
   for (const word of assets.words.rows) {

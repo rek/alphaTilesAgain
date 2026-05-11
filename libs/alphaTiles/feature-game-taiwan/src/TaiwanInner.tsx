@@ -71,9 +71,7 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
 
   const roundChars = useMemo(
-    () => pickTaiwanCharacters(taiwanData.availableTiles, GOAL_COUNT),
-    // roundSeed deliberately included so a new round picks new chars.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    () => pickTaiwanCharacters(taiwanData.availableTiles, GOAL_COUNT, roundSeed),
     [taiwanData.availableTiles, roundSeed],
   );
 
