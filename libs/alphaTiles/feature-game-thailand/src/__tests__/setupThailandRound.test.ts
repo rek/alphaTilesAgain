@@ -195,11 +195,8 @@ describe('setupThailandRound', () => {
     expect(unique.size).toBe(4);
   });
 
-  describe('freshness (verifyFreshTile parity)', () => {
-    it('skips a recent ref word (WORD ref → WORD choice)', () => {
-      // Force the picker through a deterministic order; the first word
-      // should be skipped when listed as recent.
-      const ordered = () => 0; // shuffle becomes a no-op
+  describe('fixed question order (issue #17)', () => {
+    it('roundIndex 0 selects the first eligible word in WORDS order', () => {
       const result = setupThailandRound({
         refType: 'WORD_TEXT',
         choiceType: 'WORD_TEXT',
@@ -207,20 +204,35 @@ describe('setupThailandRound', () => {
         tiles: TILES,
         words: WORDS,
         syllables: SYLLABLES,
-        recentRefStrings: [WORDS[0].wordInLOP],
-        rng: ordered,
+        roundIndex: 0,
+        rng: seededRng,
       });
       expect('error' in result).toBe(false);
       if ('error' in result) return;
-      // Ref must NOT be the recent one — should be the next freshest word.
       if (result.ref.kind === 'word') {
-        expect(result.ref.wordRow.wordInLOP).not.toBe(WORDS[0].wordInLOP);
+        expect(result.ref.wordRow.wordInLOP).toBe(WORDS[0].wordInLOP);
       }
     });
 
-    it('falls back to first when every candidate is recent (>25 retries)', () => {
-      // All 8 words listed as recent; pickWithRetries falls back to pool[0].
-      const recent = WORDS.map((w) => w.wordInLOP);
+    it('successive roundIndex values walk the wordlist in order', () => {
+      const refs = [0, 1, 2, 3].map((roundIndex) => {
+        const r = setupThailandRound({
+          refType: 'WORD_TEXT',
+          choiceType: 'WORD_TEXT',
+          distractorStrategy: 1,
+          tiles: TILES,
+          words: WORDS,
+          syllables: SYLLABLES,
+          roundIndex,
+          rng: seededRng,
+        });
+        if ('error' in r) throw new Error('unexpected error');
+        return r.ref.kind === 'word' ? r.ref.wordRow.wordInLOP : '';
+      });
+      expect(refs).toEqual([WORDS[0].wordInLOP, WORDS[1].wordInLOP, WORDS[2].wordInLOP, WORDS[3].wordInLOP]);
+    });
+
+    it('wraps to the start of the pool when roundIndex exceeds length', () => {
       const result = setupThailandRound({
         refType: 'WORD_TEXT',
         choiceType: 'WORD_TEXT',
@@ -228,12 +240,14 @@ describe('setupThailandRound', () => {
         tiles: TILES,
         words: WORDS,
         syllables: SYLLABLES,
-        recentRefStrings: recent,
+        roundIndex: WORDS.length, // wrap → index 0
         rng: seededRng,
       });
-      // Must NOT error — small pool fallback is the whole point of the
-      // freshChecks > 25 escape (Java 424-435).
       expect('error' in result).toBe(false);
+      if ('error' in result) return;
+      if (result.ref.kind === 'word') {
+        expect(result.ref.wordRow.wordInLOP).toBe(WORDS[0].wordInLOP);
+      }
     });
   });
 

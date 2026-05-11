@@ -19,7 +19,6 @@ import type {
 
 type RouteParams = Record<string, string | string[] | undefined>;
 
-const MAX_RECENT = 3;
 const ADVANCE_DELAY_MS = 1200;
 const MAX_INCORRECT_TRACKED = 3;
 
@@ -101,7 +100,10 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
   const [error, setError] = useState<'insufficient-content' | null>(null);
   const [refColor, setRefColor] = useState<string>('#1565C0');
-  const recentRefStrings = useRef<string[]>([]);
+  // Round counter drives fixed question order per door (issue #17). Resets
+  // to 0 on each entry to the door (`useState` re-init), so the same door
+  // always starts on the same question.
+  const roundIndexRef = useRef<number>(0);
   // Java 618-630 parity: per-round set of distinct wrong-answer texts (cap 3).
   // Resets each round. We also keep a running level counter for diagnostics.
   const incorrectAnswersSelected = useRef<string[]>([]);
@@ -136,7 +138,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
       tiles: assets.tiles.rows,
       words: assets.words.rows,
       syllables: assets.syllables.rows,
-      recentRefStrings: recentRefStrings.current,
+      roundIndex: roundIndexRef.current,
     });
 
     if ('error' in result) {
@@ -144,14 +146,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
       return;
     }
 
-    const refKey =
-      result.ref.kind === 'tile'
-        ? result.ref.tileRow.base
-        : result.ref.kind === 'word'
-        ? result.ref.wordRow.wordInLOP
-        : result.ref.syllableRow.syllable;
-
-    recentRefStrings.current = [refKey, ...recentRefStrings.current].slice(0, MAX_RECENT);
+    roundIndexRef.current += 1;
 
     // Java 140: refColor = colorList[rand.nextInt(4)] — random of first 4 entries.
     const palette = assets.colors?.hexByIndex ?? [];

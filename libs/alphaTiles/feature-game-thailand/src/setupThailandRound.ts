@@ -1,7 +1,6 @@
 import type { LangAssets } from '@alphaTiles/data-language-assets';
 import type { ThailandType } from './decodeThailandChallengeLevel';
 import { firstAudibleTile } from './firstAudibleTile';
-import { verifyFreshTile } from './verifyFreshTile';
 
 // Java 258, 279: CL1 rejects ref tiles whose typeOfThisTileInstance matches
 // these regex patterns (T = tone mark, AD/D = diacritic, PC = placeholder
@@ -37,7 +36,9 @@ type SetupThailandRoundOpts = {
   tiles: TileRow[];
   words: WordRow[];
   syllables: SyllableRow[];
-  recentRefStrings?: string[];
+  /** Zero-based round counter. Drives sequential ref selection for fixed
+   *  question order per door (issue #17). Distractors remain randomized. */
+  roundIndex?: number;
   rng?: () => number;
 };
 
@@ -283,23 +284,22 @@ function returnFourSyllableChoices(
 }
 
 /**
- * Pick the first item from `pool` for which `accept(item, retries)` returns
- * true. `retries` starts at 0 and increments per scanned candidate so the
- * acceptor (typically `verifyFreshTile`) can give up after 25 attempts —
- * matching Java's `freshChecks > 25` escape (Thailand.java 424-435).
+ * Filter `pool` by `accept`, then pick by `roundIndex` modulo the filtered
+ * length. Falls back to the first unfiltered pool item when nothing matches.
+ *
+ * Replaces the Java random + freshness retry loop (Thailand.java 424-435) to
+ * deliver fixed question order per door (issue #17). Sequential walk through
+ * the filtered list inherently avoids same-round repeats for `len` rounds.
  */
-function pickWithRetries<T>(
+function pickSequential<T>(
   pool: T[],
-  accept: (item: T, freshChecks: number) => boolean,
+  accept: (item: T) => boolean,
+  roundIndex: number,
 ): T | null {
-  let freshChecks = 0;
-  for (const item of pool) {
-    if (accept(item, freshChecks)) return item;
-    freshChecks++;
-  }
-  // Past 25 attempts the acceptor short-circuits; fall back to first item
-  // so we never deadlock on a small content pool.
-  return pool[0] ?? null;
+  const filtered = pool.filter(accept);
+  if (filtered.length === 0) return pool[0] ?? null;
+  const idx = ((roundIndex % filtered.length) + filtered.length) % filtered.length;
+  return filtered[idx];
 }
 
 export function setupThailandRound(
@@ -312,13 +312,9 @@ export function setupThailandRound(
     tiles,
     words,
     syllables,
-    recentRefStrings = [],
+    roundIndex = 0,
     rng = Math.random,
   } = opts;
-
-  const shuffledTiles = shuffle(tiles, rng);
-  const shuffledWords = shuffle(words, rng);
-  const shuffledSyllables = shuffle(syllables, rng);
 
   let ref: ThailandRef | null = null;
   let rawChoiceItems: (TileRow | WordRow | SyllableRow)[] = [];
@@ -333,23 +329,21 @@ export function setupThailandRound(
     // require the chosen tile to be a Consonant or Vowel (`CorV`), and CL1
     // rejects T|AD|C|PC.
     const needsCorV = refType === 'TILE_LOWER' || refType === 'TILE_AUDIO';
-    const refTile = pickWithRetries(shuffledTiles, (t, freshChecks) => {
+    const refTile = pickSequential(tiles, (t) => {
       if (needsCorV && !COR_V.test(t.type)) return false;
       if (cl1Reject(t, CL1_REJECT_STANDALONE_TILE)) return false;
-      return verifyFreshTile(t.base, recentRefStrings, freshChecks);
-    });
+      return true;
+    }, roundIndex);
     if (!refTile) return { error: 'insufficient-content' };
     ref = { kind: 'tile', tileRow: refTile, display: refType };
     rawChoiceItems = returnFourTileChoices(refTile, distractorStrategy, tiles, choiceType, rng);
   } else if (isTileBased(refType) && isWordBased(choiceType)) {
-    // Word-based ref tile (Java 146-211): pick a word whose firstAudibleTile
-    // satisfies CL1 rejection (T|AD|D|PC) and freshness.
-    const refWord = pickWithRetries(shuffledWords, (w, freshChecks) => {
+    const refWord = pickSequential(words, (w) => {
       const tile = firstAudibleTile(w, tiles);
       if (!tile) return false;
       if (cl1Reject(tile, CL1_REJECT_REF_TILE)) return false;
-      return verifyFreshTile(tile.base, recentRefStrings, freshChecks);
-    });
+      return true;
+    }, roundIndex);
     if (!refWord) return { error: 'insufficient-content' };
     const refTileBase = getFirstTileBase(refWord, tiles);
     ref = {
@@ -359,33 +353,25 @@ export function setupThailandRound(
     };
     rawChoiceItems = returnFourWordChoices(refWord, refTileBase, distractorStrategy, tiles, words, rng);
   } else if (isWordBased(refType) && isWordBased(choiceType)) {
-    const refWord = pickWithRetries(shuffledWords, (w, freshChecks) =>
-      verifyFreshTile(w.wordInLOP, recentRefStrings, freshChecks),
-    );
+    const refWord = pickSequential(words, () => true, roundIndex);
     if (!refWord) return { error: 'insufficient-content' };
     const refTileBase = getFirstTileBase(refWord, tiles);
     ref = { kind: 'word', wordRow: refWord, display: refType };
     rawChoiceItems = returnFourWordChoices(refWord, refTileBase, distractorStrategy, tiles, words, rng);
   } else if (isWordBased(refType) && isTileBased(choiceType)) {
-    const refWord = pickWithRetries(shuffledWords, (w, freshChecks) =>
-      verifyFreshTile(w.wordInLOP, recentRefStrings, freshChecks),
-    );
+    const refWord = pickSequential(words, () => true, roundIndex);
     if (!refWord) return { error: 'insufficient-content' };
     const refTileBase = getFirstTileBase(refWord, tiles);
     const refTileRow = tiles.find((t) => t.base === refTileBase) ?? tiles[0];
     ref = { kind: 'word', wordRow: refWord, display: refType };
     rawChoiceItems = returnFourTileChoices(refTileRow, distractorStrategy, tiles, choiceType, rng);
   } else if (isSyllableBased(refType) && isSyllableBased(choiceType)) {
-    const refSyllable = pickWithRetries(shuffledSyllables, (s, freshChecks) =>
-      verifyFreshTile(s.syllable, recentRefStrings, freshChecks),
-    );
+    const refSyllable = pickSequential(syllables, () => true, roundIndex);
     if (!refSyllable) return { error: 'insufficient-content' };
     ref = { kind: 'syllable', syllableRow: refSyllable, display: refType };
     rawChoiceItems = returnFourSyllableChoices(refSyllable.syllable, syllables, distractorStrategy, rng);
   } else if (isSyllableBased(refType) && isWordBased(choiceType)) {
-    const refSyllable = pickWithRetries(shuffledSyllables, (s, freshChecks) =>
-      verifyFreshTile(s.syllable, recentRefStrings, freshChecks),
-    );
+    const refSyllable = pickSequential(syllables, () => true, roundIndex);
     if (!refSyllable) return { error: 'insufficient-content' };
     ref = { kind: 'syllable', syllableRow: refSyllable, display: refType };
     rawChoiceItems = returnFourSyllableWordChoices(
