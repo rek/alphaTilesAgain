@@ -52,7 +52,7 @@ export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
         <HanziWriter.Svg>
           {outlineVisible ? <HanziWriter.Outline color="#bdbdbd" /> : null}
           {characterVisible ? <HanziWriter.Character color="#1565c0" radicalColor="#2e7d32" /> : null}
-          <HanziWriter.QuizStrokes />
+          <HanziWriter.QuizStrokes color="#1565c0" radicalColor="#2e7d32" />
           <HanziWriter.QuizMistakeHighlighter color="#e53935" strokeDuration={400} />
         </HanziWriter.Svg>
       </HanziWriter>
