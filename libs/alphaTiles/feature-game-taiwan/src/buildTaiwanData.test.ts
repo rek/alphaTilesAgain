@@ -38,7 +38,8 @@ describe('buildTaiwanData', () => {
       strokeChars: ['醫', '生', '護', '士'], // 檢, 查 missing
     });
     const out = buildTaiwanData(assets);
-    expect(out.availableTiles.sort()).toEqual(['士', '護', '生', '醫'].sort());
+    // All strokeCount==1 → stable sort + idx tiebreak preserves first-appearance order.
+    expect(out.availableTiles).toEqual(['醫', '生', '護', '士']);
   });
 
   it('sorts availableTiles by stroke count ascending (simple → complex)', () => {
