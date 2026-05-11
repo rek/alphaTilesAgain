@@ -130,7 +130,8 @@ function returnFourTileChoices(
     }
   }
 
-  return shuffle(result, rng);
+  // NB: caller shuffles and tracks correctIndex (issue #15). Do NOT shuffle here.
+  return result;
 }
 
 function returnFourWordChoices(
@@ -180,7 +181,8 @@ function returnFourWordChoices(
     if (!fillFrom(hardShuffled)) { if (!fillFrom(modShuffled)) { fillFrom(easyShuffled); } }
   }
 
-  return shuffle(result, rng);
+  // NB: caller shuffles and tracks correctIndex (issue #15). Do NOT shuffle here.
+  return result;
 }
 
 function returnFourSyllableWordChoices(
@@ -237,7 +239,8 @@ function returnFourSyllableWordChoices(
     }
   }
 
-  return shuffle(result, rng);
+  // NB: caller shuffles and tracks correctIndex (issue #15). Do NOT shuffle here.
+  return result;
 }
 
 function returnFourSyllableChoices(
@@ -280,7 +283,8 @@ function returnFourSyllableChoices(
     }
   }
 
-  return shuffle(result, rng);
+  // NB: caller shuffles and tracks correctIndex (issue #15). Do NOT shuffle here.
+  return result;
 }
 
 /**
@@ -402,8 +406,12 @@ export function setupThailandRound(
     };
   };
 
+  // Each returnFour*Choices helper returns the correct item at index 0,
+  // un-shuffled. Capture it here, then shuffle for visual position randomness,
+  // and recompute correctIndex so gameplay matches what the player sees
+  // (issue #15).
   const correctRawItem = rawChoiceItems[0];
-  const fourChoiceItems = rawChoiceItems.slice(0, 4);
+  const fourChoiceItems = shuffle(rawChoiceItems.slice(0, 4), rng);
   const choices = fourChoiceItems.map(buildChoice) as [
     ThailandChoice,
     ThailandChoice,

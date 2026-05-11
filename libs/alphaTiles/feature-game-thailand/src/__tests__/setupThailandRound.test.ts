@@ -117,6 +117,69 @@ describe('setupThailandRound', () => {
     expect(result.choices).toHaveLength(4);
   });
 
+  describe('correctIndex points at the actual correct choice (issue #15)', () => {
+    it('word-ref / word-choice: choices[correctIndex] matches the ref word', () => {
+      for (let trial = 0; trial < 50; trial++) {
+        const result = setupThailandRound({
+          refType: 'WORD_TEXT',
+          choiceType: 'WORD_TEXT',
+          distractorStrategy: 1,
+          tiles: TILES,
+          words: WORDS,
+          syllables: SYLLABLES,
+          roundIndex: trial,
+        });
+        if ('error' in result) continue;
+        if (result.ref.kind !== 'word') continue;
+        const chosen = result.choices[result.correctIndex];
+        expect(chosen.kind).toBe('word');
+        if (chosen.kind === 'word') {
+          expect(chosen.wordRow.wordInLOP).toBe(result.ref.wordRow.wordInLOP);
+        }
+      }
+    });
+
+    it('tile-ref / tile-choice: choices[correctIndex] matches the ref tile', () => {
+      for (let trial = 0; trial < 50; trial++) {
+        const result = setupThailandRound({
+          refType: 'TILE_LOWER',
+          choiceType: 'TILE_LOWER',
+          distractorStrategy: 1,
+          tiles: TILES,
+          words: WORDS,
+          syllables: SYLLABLES,
+          roundIndex: trial,
+        });
+        if ('error' in result) continue;
+        if (result.ref.kind !== 'tile') continue;
+        const chosen = result.choices[result.correctIndex];
+        expect(chosen.kind).toBe('tile');
+        if (chosen.kind === 'tile') {
+          expect(chosen.tileRow.base).toBe(result.ref.tileRow.base);
+        }
+      }
+    });
+
+    it('correctIndex is not always 0 across many trials', () => {
+      const indices = new Set<number>();
+      for (let trial = 0; trial < 100; trial++) {
+        const result = setupThailandRound({
+          refType: 'WORD_TEXT',
+          choiceType: 'WORD_TEXT',
+          distractorStrategy: 1,
+          tiles: TILES,
+          words: WORDS,
+          syllables: SYLLABLES,
+          roundIndex: trial,
+        });
+        if ('error' in result) continue;
+        indices.add(result.correctIndex);
+      }
+      // Random shuffle across 100 trials should produce >1 distinct correctIndex.
+      expect(indices.size).toBeGreaterThan(1);
+    });
+  });
+
   it('correctIndex is within [0,3]', () => {
     const result = setupThailandRound({
       refType: 'TILE_LOWER',
