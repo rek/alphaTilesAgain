@@ -374,7 +374,8 @@ function main(): void {
   const review: ReviewEntry[] = [];
   const durationsMs = new Map<string, number>();
   for (const char of orderedChars) {
-    const pick = picks.get(char)!;
+    const pick = picks.get(char);
+    if (!pick) die(`no source pick for character ${char}`);
     const src = path.join(WORDS_AUDIO_DIR, `${pick.word.englishLwc}.mp3`);
     if (!fs.existsSync(src)) die(`missing source audio: ${src}`);
     const out = path.join(SYLL_AUDIO_DIR, `${char}.mp3`);
@@ -384,8 +385,10 @@ function main(): void {
       splitPath = 'verbatim';
       if (!dryRun) copyTrimmed(src, out);
     } else {
-      splitPath = wordSplitPath.get(pick.word.englishLwc)!;
-      const range = pieceRange.get(`${pick.word.englishLwc}#${pick.charIndex}`)!;
+      const wordPath = wordSplitPath.get(pick.word.englishLwc);
+      const range = pieceRange.get(`${pick.word.englishLwc}#${pick.charIndex}`);
+      if (!wordPath || !range) die(`missing split result for ${pick.word.englishLwc}#${pick.charIndex}`);
+      splitPath = wordPath;
       if (!dryRun) cutPiece(src, out, range[0], range[1]);
     }
 
