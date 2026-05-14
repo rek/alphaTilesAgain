@@ -29,6 +29,10 @@ const BASE_PROPS = {
   privacyLabel: 'Privacy Policy',
   onEmailTap: jest.fn(),
   onPrivacyTap: jest.fn(),
+  websiteLabel: 'Project website',
+  onWebsiteTap: jest.fn(),
+  reportIssueLabel: 'Report an issue',
+  onReportIssueTap: jest.fn(),
 };
 
 describe('AboutScreen', () => {
@@ -89,6 +93,32 @@ describe('AboutScreen', () => {
     );
     fireEvent.press(getByText('Privacy Policy'));
     expect(onPrivacyTap).toHaveBeenCalledTimes(1);
+  });
+
+  it('always renders the project website and report-issue links', () => {
+    const { getByText } = render(
+      <AboutScreen {...BASE_PROPS} showEmail={false} showPrivacy={false} />,
+    );
+    expect(getByText('Project website')).toBeTruthy();
+    expect(getByText('Report an issue')).toBeTruthy();
+  });
+
+  it('calls onWebsiteTap when the website link is pressed', () => {
+    const onWebsiteTap = jest.fn();
+    const { getByText } = render(
+      <AboutScreen {...BASE_PROPS} onWebsiteTap={onWebsiteTap} />,
+    );
+    fireEvent.press(getByText('Project website'));
+    expect(onWebsiteTap).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onReportIssueTap when the report-issue link is pressed', () => {
+    const onReportIssueTap = jest.fn();
+    const { getByText } = render(
+      <AboutScreen {...BASE_PROPS} onReportIssueTap={onReportIssueTap} />,
+    );
+    fireEvent.press(getByText('Report an issue'));
+    expect(onReportIssueTap).toHaveBeenCalledTimes(1);
   });
 
   it('renders single-name form when langPlusCountry has same-name format', () => {

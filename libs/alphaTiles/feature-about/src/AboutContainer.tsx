@@ -10,16 +10,35 @@
 
 import React from 'react';
 import * as Application from 'expo-application';
+import Constants from 'expo-constants';
 import * as WebBrowser from 'expo-web-browser';
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useTranslation } from '@shared/util-i18n';
 import { useTrackScreenMount } from '@shared/util-analytics';
 import { AboutScreen } from './AboutScreen';
 
+/** AlphaTiles project home page — same for every language pack. */
+const PROJECT_URL = 'https://rek.github.io/alphaTilesAgain/';
+/** Public issue tracker for bug reports and feedback. */
+const ISSUES_URL = 'https://github.com/rek/alphaTilesAgain/issues';
+
 function isAbsent(value: string | undefined): boolean {
   return value === undefined || value === '' || value.toLowerCase() === 'none';
+}
+
+/**
+ * Opens an external URL. Native gets the in-app browser; web uses
+ * Linking (a plain new tab) since expo-web-browser opens a popup
+ * window that browsers commonly block.
+ */
+function openUrl(url: string): void {
+  if (Platform.OS === 'web') {
+    void Linking.openURL(url);
+  } else {
+    void WebBrowser.openBrowserAsync(url);
+  }
 }
 
 export function AboutContainer(): React.JSX.Element {
@@ -51,12 +70,14 @@ export function AboutContainer(): React.JSX.Element {
     ? `${localLangName} (${country})`
     : `${localLangName} / ${englishName} (${country})`;
 
-  const version = Application.nativeApplicationVersion ?? '—';
+  // nativeApplicationVersion is null on web — fall back to the Expo config version.
+  const version =
+    Constants.expoConfig?.version ?? Application.nativeApplicationVersion ?? '—';
   const versionLabel = t('chrome:about.version', { version });
 
   const onPrivacyTap = (): void => {
     if (privacyUrl) {
-      void WebBrowser.openBrowserAsync(privacyUrl);
+      openUrl(privacyUrl);
     }
   };
 
@@ -65,6 +86,9 @@ export function AboutContainer(): React.JSX.Element {
       void Linking.openURL(`mailto:${email}`);
     }
   };
+
+  const onWebsiteTap = (): void => { openUrl(PROJECT_URL); };
+  const onReportIssueTap = (): void => { openUrl(ISSUES_URL); };
 
   return (
     <AboutScreen
@@ -82,6 +106,10 @@ export function AboutContainer(): React.JSX.Element {
       privacyLabel={t('chrome:about.privacy')}
       onEmailTap={onEmailTap}
       onPrivacyTap={onPrivacyTap}
+      websiteLabel={t('chrome:about.website')}
+      onWebsiteTap={onWebsiteTap}
+      reportIssueLabel={t('chrome:about.reportIssue')}
+      onReportIssueTap={onReportIssueTap}
     />
   );
 }

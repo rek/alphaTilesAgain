@@ -11,6 +11,7 @@
     "@shared/util-analytics": "*",
     "@shared/util-i18n": "*",
     "expo-application": "*",
+    "expo-constants": "*",
     "expo-web-browser": "*",
     "react": "*",
     "react-native": "*",

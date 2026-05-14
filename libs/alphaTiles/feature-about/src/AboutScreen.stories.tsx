@@ -20,6 +20,10 @@ const meta: Meta<typeof AboutScreen> = {
     privacyLabel: 'Privacy Policy',
     onEmailTap: () => undefined,
     onPrivacyTap: () => undefined,
+    websiteLabel: 'Project website',
+    onWebsiteTap: () => undefined,
+    reportIssueLabel: 'Report an issue',
+    onReportIssueTap: () => undefined,
   },
 };
 

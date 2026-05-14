@@ -39,6 +39,14 @@ export interface AboutScreenProps {
   onEmailTap: () => void;
   /** Called when user taps the privacy policy link */
   onPrivacyTap: () => void;
+  /** Translated label: "Project website" */
+  websiteLabel: string;
+  /** Called when user taps the project website link */
+  onWebsiteTap: () => void;
+  /** Translated label: "Report an issue" */
+  reportIssueLabel: string;
+  /** Called when user taps the report-an-issue link */
+  onReportIssueTap: () => void;
 }
 
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
@@ -59,6 +67,10 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
     privacyLabel,
     onEmailTap,
     onPrivacyTap,
+    websiteLabel,
+    onWebsiteTap,
+    reportIssueLabel,
+    onReportIssueTap,
   } = props;
 
   return (
@@ -112,6 +124,24 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
           <Text style={styles.link}>{privacyLabel}</Text>
         </Pressable>
       ) : null}
+
+      <Pressable
+        onPress={onWebsiteTap}
+        accessibilityRole="link"
+        accessibilityLabel={websiteLabel}
+        hitSlop={HIT_SLOP}
+      >
+        <Text style={styles.link}>{websiteLabel}</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={onReportIssueTap}
+        accessibilityRole="link"
+        accessibilityLabel={reportIssueLabel}
+        hitSlop={HIT_SLOP}
+      >
+        <Text style={styles.link}>{reportIssueLabel}</Text>
+      </Pressable>
     </ScrollView>
     </View>
   );
