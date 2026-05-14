@@ -2,7 +2,32 @@
 
 Living doc. Updated after each game is archived. Read before proposing or implementing any `game-*` change.
 
-Latest entry: **all 17 Java games archived** (2026-04-26). Final batch closed: chile, japan, mexico, romania, thailand, united-states.
+Latest entry: **yue-syllable-game archived** (2026-05-14) — first reuse of an existing game class for a new pack-data feature; Georgia S-mode gained isolated-syllable playback.
+
+---
+
+## Reusing a game class for a new pack feature (from yue-syllable-game)
+
+A "new game" for the player can be **a new `aa_games.txt` door on an existing class** plus the pack data it needs — no new `feature-game-*` lib. `yue-syllable-game` shipped a Cantonese syllable game purely as: a Door 9 row (`Georgia / CL1 / SyllOrTile=S`), a populated `aa_syllables.txt` + `audio/syllables/*.mp3`, and a small additive tweak to the existing container.
+
+Check before proposing a new lib: does an archived class already implement the mechanic? Georgia S-mode is the 6/12/18-choice listen-and-tap; China is the sliding-syllable puzzle; etc. A door + data is far cheaper than a lib.
+
+### Additive container tweaks must be variant-gated
+
+`yue-syllable-game` added isolated-syllable playback to `GeorgiaContainer` — but **only inside the `isSyllable` branch** of `startRound`. T-mode bytes are untouched, so existing tests/stories/behaviour are unaffected. When extending an archived game, gate the change on the existing variant discriminator and leave every other path byte-identical; the spec delta is then a clean `## MODIFIED Requirements` on the one requirement that changed.
+
+### Deferred audio after a clip: timer-ref, not chained promise
+
+`audio.playWord` / `playSyllable` resolve when playback *starts*, not ends. To play clip B after clip A, schedule `setTimeout(getXDuration(a) ?? FALLBACK_MS)`, store the id in a `useRef`, and clear it at the top of `startRound` **and** in the unmount cleanup — same shape as the Italy auto-advance timer. `getWordDuration` is the real measured ms (from the loaded handle), not the `aa_wordlist.txt` duration column.
+
+## Per-pack audio generation tooling (from yue-syllable-game)
+
+`tools/split-syllable-audio.ts` cuts the yue word recordings into per-character syllable clips via `ffmpeg silencedetect`. Reusable lessons for any future pack-audio tool:
+
+- **Connected speech often has no inter-syllable silence.** A `silencedetect` sweep on the real recordings is mandatory before trusting it — the yue corpus needed an aggressive `-16dB / 0.06s` floor and *still* only landed ~75/139 cuts on a real gap. Always ship an **equal-duration fallback** for the rest plus a review report; don't block on perfect cuts.
+- **Dedup source selection matters.** One clip per unique unit: prefer a standalone-word recording (cleanest), then a word-initial cut, then a mid-word cut (clipped onset). Group multi-unit source words so each is cut once.
+- **Raw non-ASCII filenames work** end-to-end (`醫.mp3`) through `fs`, Metro `require()`, the manifest generator, and the validator. `SyllableAudioName` = the character itself.
+- **`Has syllable audio: TRUE` makes the validator demand every `aa_syllables.txt` row resolve to a non-empty file** — generate the index and the audio together, never a partial set.
 
 ---
 
