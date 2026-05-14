@@ -61,6 +61,9 @@ tools/data/wikimedia-deva-cache/_attribution.json
 # Devanagari Wikimedia GIF cache — re-fetchable from Wikimedia
 tools/data/wikimedia-deva-gif-cache/*.gif
 tools/data/wikimedia-deva-gif-cache/_attribution.json
+
+# yue syllable-cut review report — diagnostic artefact, re-generatable
+tools/data/yue-syllable-cuts/
 ## Nested node_modules
 
 node_modules/

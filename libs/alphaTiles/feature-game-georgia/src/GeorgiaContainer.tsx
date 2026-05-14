@@ -58,6 +58,10 @@ const PALETTE_FALLBACK = [
   '#8E24AA',
 ];
 
+/** S-mode: fallback delay before the isolated syllable plays, used when the
+ *  word clip's measured duration is unavailable. */
+const SYLLABLE_AFTER_WORD_FALLBACK_MS = 1200;
+
 function isHardBand(level: number): boolean {
   // Hard bands: 4–6 (T-CL4-6) and 10–12 (T-CL10-12). For S, hard band is 4–6.
   return (level >= 4 && level <= 6) || (level >= 10 && level <= 12);
@@ -109,6 +113,9 @@ function GeorgiaGame({
   // each round start.
   const syllablePoolRef = useRef<SyllableRow[]>([]);
   const isMountedRef = useRef(true);
+  // S-mode: pending timer that plays the isolated first-syllable clip after
+  // the word clip. Cleared on each round start and on unmount.
+  const syllableTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const corVTexts = useMemo(
     () => new Set(data.corV.map((t) => t.base)),
@@ -130,6 +137,10 @@ function GeorgiaGame({
   );
 
   const startRound = useCallback(() => {
+    if (syllableTimerRef.current !== null) {
+      clearTimeout(syllableTimerRef.current);
+      syllableTimerRef.current = null;
+    }
     shell.setInteractionLocked(false);
     wrongPicksRef.current = [];
 
@@ -205,6 +216,16 @@ function GeorgiaGame({
       });
       // Java line 161: playActiveWordClip(false).
       audio.playWord(chosen.word.wordInLWC);
+      // S-mode only: after the word clip, play the isolated first-syllable
+      // clip so the learner hears the sound the round is asking for.
+      const wordMs =
+        audio.getWordDuration(chosen.word.wordInLWC) ??
+        SYLLABLE_AFTER_WORD_FALLBACK_MS;
+      syllableTimerRef.current = setTimeout(() => {
+        syllableTimerRef.current = null;
+        if (!isMountedRef.current) return;
+        audio.playSyllable(correctText);
+      }, wordMs);
       return;
     }
 
@@ -295,6 +316,10 @@ function GeorgiaGame({
     startRound();
     return () => {
       isMountedRef.current = false;
+      if (syllableTimerRef.current !== null) {
+        clearTimeout(syllableTimerRef.current);
+        syllableTimerRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
