@@ -29,6 +29,7 @@
     "share.title": "Share",
     "share.instructions": "Scan this QR code to share this app",
     "share.button": "Share via...",
+    "share.copied": "Link copied!",
     "share.qrAlt": "QR code linking to the Play Store",
     "share.unavailable": "Sharing not configured for this pack",
     "resources": "Other Resources In This Language",
