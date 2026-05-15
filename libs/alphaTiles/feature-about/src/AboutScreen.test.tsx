@@ -4,6 +4,7 @@
  * Tests cover the fallback matrix from design.md §D7:
  * - Full pack (all optional fields present)
  * - Missing email → email surface hidden
+ * - Empty privacy URL → privacy surface hidden
  * - Same-name pack → langPlusCountry has single name form
  *
  * Presenter tests: no providers required.
@@ -25,6 +26,9 @@ const BASE_PROPS = {
   showEmail: true,
   emailLabel: 'Email us',
   onEmailTap: jest.fn(),
+  showPrivacy: true,
+  privacyLabel: 'Privacy Policy',
+  onPrivacyTap: jest.fn(),
   websiteLabel: 'Project website',
   onWebsiteTap: jest.fn(),
   reportIssueLabel: 'Report an issue',
@@ -45,6 +49,7 @@ describe('AboutScreen', () => {
     expect(getByText('Some credits text here')).toBeTruthy();
     expect(getByText('Secondary credits')).toBeTruthy();
     expect(getByText('Email us')).toBeTruthy();
+    expect(getByText('Privacy Policy')).toBeTruthy();
   });
 
   it('hides email link when showEmail is false', () => {
@@ -52,6 +57,13 @@ describe('AboutScreen', () => {
       <AboutScreen {...BASE_PROPS} showEmail={false} />,
     );
     expect(queryByText('Email us')).toBeNull();
+  });
+
+  it('hides privacy link when showPrivacy is false', () => {
+    const { queryByText } = render(
+      <AboutScreen {...BASE_PROPS} showPrivacy={false} />,
+    );
+    expect(queryByText('Privacy Policy')).toBeNull();
   });
 
   it('hides secondary credits when showSecondaryCredits is false', () => {
@@ -74,9 +86,18 @@ describe('AboutScreen', () => {
     expect(onEmailTap).toHaveBeenCalledTimes(1);
   });
 
+  it('calls onPrivacyTap when privacy link is pressed', () => {
+    const onPrivacyTap = jest.fn();
+    const { getByText } = render(
+      <AboutScreen {...BASE_PROPS} onPrivacyTap={onPrivacyTap} />,
+    );
+    fireEvent.press(getByText('Privacy Policy'));
+    expect(onPrivacyTap).toHaveBeenCalledTimes(1);
+  });
+
   it('always renders the project website and report-issue links', () => {
     const { getByText } = render(
-      <AboutScreen {...BASE_PROPS} showEmail={false} />,
+      <AboutScreen {...BASE_PROPS} showEmail={false} showPrivacy={false} />,
     );
     expect(getByText('Project website')).toBeTruthy();
     expect(getByText('Report an issue')).toBeTruthy();

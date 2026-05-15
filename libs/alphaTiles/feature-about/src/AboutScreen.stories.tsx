@@ -17,6 +17,9 @@ const meta: Meta<typeof AboutScreen> = {
     showEmail: true,
     emailLabel: 'contact@alphatilesapps.org',
     onEmailTap: () => undefined,
+    showPrivacy: true,
+    privacyLabel: 'Privacy Policy',
+    onPrivacyTap: () => undefined,
     websiteLabel: 'Project website',
     onWebsiteTap: () => undefined,
     reportIssueLabel: 'Report an issue',
@@ -40,5 +43,6 @@ export const WithSecondaryCredits: Story = {
 export const NoOptionalLinks: Story = {
   args: {
     showEmail: false,
+    showPrivacy: false,
   },
 };

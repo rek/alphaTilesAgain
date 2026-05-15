@@ -33,6 +33,12 @@ export interface AboutScreenProps {
   emailLabel: string;
   /** Called when user taps the email link */
   onEmailTap: () => void;
+  /** Whether to show the privacy policy link */
+  showPrivacy: boolean;
+  /** Translated label: "Privacy Policy" */
+  privacyLabel: string;
+  /** Called when user taps the privacy policy link */
+  onPrivacyTap: () => void;
   /** Translated label: "Project website" */
   websiteLabel: string;
   /** Called when user taps the project website link */
@@ -58,6 +64,9 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
     showEmail,
     emailLabel,
     onEmailTap,
+    showPrivacy,
+    privacyLabel,
+    onPrivacyTap,
     websiteLabel,
     onWebsiteTap,
     reportIssueLabel,
@@ -102,6 +111,17 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
           hitSlop={HIT_SLOP}
         >
           <Text style={styles.link}>{emailLabel}</Text>
+        </Pressable>
+      ) : null}
+
+      {showPrivacy ? (
+        <Pressable
+          onPress={onPrivacyTap}
+          accessibilityRole="link"
+          accessibilityLabel={privacyLabel}
+          hitSlop={HIT_SLOP}
+        >
+          <Text style={styles.link}>{privacyLabel}</Text>
         </Pressable>
       ) : null}
 

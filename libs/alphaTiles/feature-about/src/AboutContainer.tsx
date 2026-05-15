@@ -23,6 +23,8 @@ import { AboutScreen } from './AboutScreen';
 const PROJECT_URL = 'https://rek.github.io/alphaTilesAgain/';
 /** Public issue tracker for bug reports and feedback. */
 const ISSUES_URL = 'https://github.com/rek/alphaTilesAgain/issues';
+/** Project-wide privacy policy. Empty string hides the link. */
+const PRIVACY_URL = '';
 
 function isAbsent(value: string | undefined): boolean {
   return value === undefined || value === '' || value.toLowerCase() === 'none';
@@ -59,6 +61,7 @@ export function AboutContainer(): React.JSX.Element {
 
   // Visibility flags per design.md §D7
   const showEmail = !isAbsent(email);
+  const showPrivacy = PRIVACY_URL !== '';
   const showSecondaryCredits = !isAbsent(secondaryCreditsText);
 
   // Mirroring Java About.java names_plus_countryA vs B:
@@ -81,6 +84,7 @@ export function AboutContainer(): React.JSX.Element {
 
   const onWebsiteTap = (): void => { openUrl(PROJECT_URL); };
   const onReportIssueTap = (): void => { openUrl(ISSUES_URL); };
+  const onPrivacyTap = (): void => { openUrl(PRIVACY_URL); };
 
   return (
     <AboutScreen
@@ -95,6 +99,9 @@ export function AboutContainer(): React.JSX.Element {
       showEmail={showEmail}
       emailLabel={t('chrome:about.email')}
       onEmailTap={onEmailTap}
+      showPrivacy={showPrivacy}
+      privacyLabel={t('chrome:about.privacy')}
+      onPrivacyTap={onPrivacyTap}
       websiteLabel={t('chrome:about.website')}
       onWebsiteTap={onWebsiteTap}
       reportIssueLabel={t('chrome:about.reportIssue')}
