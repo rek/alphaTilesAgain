@@ -16,10 +16,7 @@ const meta: Meta<typeof AboutScreen> = {
     secondaryCredits: '',
     showEmail: true,
     emailLabel: 'contact@alphatilesapps.org',
-    showPrivacy: true,
-    privacyLabel: 'Privacy Policy',
     onEmailTap: () => undefined,
-    onPrivacyTap: () => undefined,
     websiteLabel: 'Project website',
     onWebsiteTap: () => undefined,
     reportIssueLabel: 'Report an issue',
@@ -43,6 +40,5 @@ export const WithSecondaryCredits: Story = {
 export const NoOptionalLinks: Story = {
   args: {
     showEmail: false,
-    showPrivacy: false,
   },
 };

@@ -56,11 +56,9 @@ export function AboutContainer(): React.JSX.Element {
   const creditsText = langInfo.find('Audio and image credits') ?? '';
   const secondaryCreditsText = langInfo.find('Audio and image credits (lang 2)') ?? '';
   const email = langInfo.find('Email');
-  const privacyUrl = langInfo.find('Privacy Policy');
 
   // Visibility flags per design.md §D7
   const showEmail = !isAbsent(email);
-  const showPrivacy = !isAbsent(privacyUrl);
   const showSecondaryCredits = !isAbsent(secondaryCreditsText);
 
   // Mirroring Java About.java names_plus_countryA vs B:
@@ -74,12 +72,6 @@ export function AboutContainer(): React.JSX.Element {
   const version =
     Constants.expoConfig?.version ?? Application.nativeApplicationVersion ?? '—';
   const versionLabel = t('chrome:about.version', { version });
-
-  const onPrivacyTap = (): void => {
-    if (privacyUrl) {
-      openUrl(privacyUrl);
-    }
-  };
 
   const onEmailTap = (): void => {
     if (email) {
@@ -102,10 +94,7 @@ export function AboutContainer(): React.JSX.Element {
       secondaryCredits={secondaryCreditsText}
       showEmail={showEmail}
       emailLabel={t('chrome:about.email')}
-      showPrivacy={showPrivacy}
-      privacyLabel={t('chrome:about.privacy')}
       onEmailTap={onEmailTap}
-      onPrivacyTap={onPrivacyTap}
       websiteLabel={t('chrome:about.website')}
       onWebsiteTap={onWebsiteTap}
       reportIssueLabel={t('chrome:about.reportIssue')}
