@@ -216,7 +216,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#2196F3',
     alignItems: 'center',
+    justifyContent: 'center',
     minWidth: 60,
+    minHeight: 48,
   },
   chromeButtonGray: {
     backgroundColor: '#9E9E9E',

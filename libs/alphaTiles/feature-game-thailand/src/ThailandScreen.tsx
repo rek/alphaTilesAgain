@@ -4,10 +4,9 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
-import type { ImageSourcePropType } from 'react-native';
+import type { ImageSourcePropType, LayoutChangeEvent } from 'react-native';
 import type { ThailandType } from './decodeThailandChallengeLevel';
 
 // Java 588-595 correct-feedback parity: when the player taps the correct
@@ -192,14 +191,32 @@ export function ThailandScreen({
   accessibilityRefLabel,
   accessibilityChoiceLabels,
 }: ThailandScreenProps): React.JSX.Element {
-  const { width, height } = useWindowDimensions();
-  const cellSize = Math.max(60, Math.min(Math.floor(width / 3), Math.floor(height * 0.25)));
+  // Measure the slot we actually occupy (between ScoreBar and chrome footer)
+  // instead of useWindowDimensions, which previously caused content to overflow
+  // behind the footer because cellSize≈height/4 consumed the full window.
+  const [layout, setLayout] = React.useState<{ w: number; h: number } | null>(null);
+  const onLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    if (!layout || layout.w !== width || layout.h !== height) {
+      setLayout({ w: width, h: height });
+    }
+  };
+  // Vertical layout: ref (2*cell) + gap(16) + row(cell) + gap(10) + row(cell) = 4*cell + 26
+  // Horizontal: cap at width/3 (conservative, matches prior heuristic).
+  // Account for paddingHorizontal: 12 on root (24 total).
+  const availW = (layout?.w ?? 0) - 24;
+  const availH = (layout?.h ?? 0) - 26;
+  const cellSize = layout
+    ? Math.max(60, Math.min(Math.floor(availW / 3), Math.floor(availH / 4)))
+    : 0;
 
   const feedbackFor = (i: 0 | 1 | 2 | 3): ThailandChoiceFeedback =>
     correctIndex !== null && choiceFeedback ? choiceFeedback[i] : null;
 
   return (
-    <View style={styles.root}>
+    <View style={styles.root} onLayout={onLayout}>
+      {cellSize > 0 && (
+        <>
       <RefDisplay
         refDisplay={refDisplay}
         cellSize={cellSize}
@@ -235,6 +252,8 @@ export function ThailandScreen({
           ))}
         </View>
       </View>
+        </>
+      )}
     </View>
   );
 }
