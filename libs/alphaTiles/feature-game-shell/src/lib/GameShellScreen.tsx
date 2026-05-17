@@ -197,6 +197,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   contentLocked: {
     opacity: 0.6,
@@ -210,6 +211,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
+    backgroundColor: '#fff',
   },
   chromeButton: {
     padding: 8,
