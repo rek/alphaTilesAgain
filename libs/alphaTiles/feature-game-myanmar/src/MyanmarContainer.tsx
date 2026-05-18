@@ -317,7 +317,10 @@ function MyanmarGame({
 
 export function MyanmarContainer(props: RouteParams): React.JSX.Element {
   const assets = useLangAssets();
-  const gameNumber = parseInt((props.gameNumber as string) ?? '1', 10);
+  const gameNumber = parseInt(
+    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
+    10,
+  );
   const rawLevel = parseInt((props.challengeLevel as string) ?? '1', 10);
   const challengeLevel = (rawLevel >= 1 && rawLevel <= 3 ? rawLevel : 1) as ChallengeLevel;
   const game = assets.games.rows[gameNumber - 1];

@@ -82,6 +82,28 @@ export function <Name>Container() {
 - All i18n via `useTranslation` — pass translated strings down as props.
 - `<GameShellContainer>` is always the outer wrapper.
 
+### URL params: `doorIndex` is the only authoritative pointer
+
+The menu push (`feature-game-menu/GameMenuContainer.onDoorPress`) sends exactly `{ classKey, doorIndex, challengeLevel }` — and per `openspec/specs/game-menu/spec.md` "Door-press navigation contract" the target screen MUST resolve all other per-door state from `useLangAssets()`. Read `assets.games.rows[doorIndex - 1]` and derive `syllOrTile`, `instructionAudio`, `stagesIncluded`, `country`, etc. from that row.
+
+```ts
+const rowIndex = parseInt(
+  (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
+  10,
+);
+const game = assets.games.rows[rowIndex - 1];
+const syllableGame =
+  (props.syllableGame as string) ?? (game?.syllOrTile === 'S' ? 'S' : '');
+```
+
+Why both keys: `props.doorIndex` is what the menu actually pushes, but legacy code (and the shell container) reads `props.gameNumber`. Accepting either lets the container work for both menu navigation and direct URL hits. The override branch (`props.syllableGame ??`) is only there for ad-hoc URL testing — production traffic goes through the row lookup.
+
+**Failure mode if you skip this:** default `gameNumber=1, syllableGame=''` → reads row 0 (usually Thailand) for instruction audio + runs the Tile branch even for S-mode doors. Yue/Cantonese door 9 (Georgia · S) regressed exactly this way: T-branch ran against a `corV` precompute that was empty because yue tiles all have `Type=X`, so every word failed the CorV filter and the screen rendered a single `"?"` placeholder.
+
+Applied in every game container (Brazil, Chile, China, Colombia, Ecuador, Georgia, Iraq, Italy, Japan, Malaysia, Mexico, Myanmar, Peru, Romania, Sudan, Thailand, United-States) and in `GameShellContainer` itself. Apply the same shape any time you add a new game or touch route-param extraction.
+
+`GameShellContainer` follows the same rule: it reads only `doorIndex`/`gameNumber` and `challengeLevel` from URL params, then derives `country`, `syllOrTile` (→ `syllableGame`), `stagesIncluded` (→ `stage`) from `assets.games.rows[doorIndex - 1]`, and `playerId` from `useActivePlayer()`. The progress-key (`buildGameUniqueId`) and next-game navigation both flow from those derived values. Do not add new params to the menu push or the shell's `useLocalSearchParams` — the menu spec's "Door-press navigation contract" caps it at three.
+
 ---
 
 ## Presenter pattern

@@ -402,10 +402,16 @@ export function ColombiaContainer(props: RouteParams): React.JSX.Element {
   const router = useRouter();
   const assets = useLangAssets();
 
-  const gameNumber = parseInt((props.gameNumber as string) ?? '1', 10);
+  const rowIndex = parseInt(
+    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
+    10,
+  );
   const rawLevel = parseInt((props.challengeLevel as string) ?? '1', 10);
   const challengeLevel = (rawLevel >= 1 && rawLevel <= 4 ? rawLevel : 1) as ChallengeLevel;
-  const variant = ((props.syllableGame as string) === 'S' ? 'S' : 'T') as ColombiaVariant;
+  const gameRow = assets.games.rows[rowIndex - 1];
+  const resolvedVariant =
+    (props.syllableGame as string) ?? (gameRow?.syllOrTile === 'S' ? 'S' : '');
+  const variant = (resolvedVariant === 'S' ? 'S' : 'T') as ColombiaVariant;
 
   // S-CL4 is unsupported per Java line 78. Bounce immediately.
   useEffect(() => {
@@ -423,8 +429,7 @@ export function ColombiaContainer(props: RouteParams): React.JSX.Element {
     return <></>;
   }
 
-  const game = assets.games.rows[gameNumber - 1];
-  const instructionAudioId = game?.instructionAudio;
+  const instructionAudioId = gameRow?.instructionAudio;
   const hasInstruction =
     !!instructionAudioId && instructionAudioId in assets.audio.instructions;
 

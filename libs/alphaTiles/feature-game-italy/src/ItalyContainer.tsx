@@ -261,9 +261,13 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
 
 export function ItalyContainer(props: RouteParams): React.JSX.Element {
   const assets = useLangAssets();
-  const gameNumber = parseInt((props.gameNumber as string) ?? '1', 10);
-  const syllableGame = (props.syllableGame as string) ?? '';
-  const game = assets.games.rows[gameNumber - 1];
+  const rowIndex = parseInt(
+    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
+    10,
+  );
+  const game = assets.games.rows[rowIndex - 1];
+  const syllableGame =
+    (props.syllableGame as string) ?? (game?.syllOrTile === 'S' ? 'S' : '');
   const instructionAudioId = game?.instructionAudio;
   const hasInstruction =
     !!instructionAudioId && instructionAudioId in assets.audio.instructions;

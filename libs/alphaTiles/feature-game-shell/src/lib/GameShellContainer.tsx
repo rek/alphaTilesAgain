@@ -25,6 +25,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
+import { useActivePlayer } from '@alphaTiles/data-players';
 import {
   useProgressStore,
   useProgressEntry,
@@ -75,31 +76,36 @@ export function GameShellContainer({
   const router = useRouter();
   const { t } = useTranslation('chrome');
 
-  // Route params — mirror GameActivity.java:163-174 (getIntent().getIntExtra etc.)
+  // Route params — only what the menu pushes per game-menu spec
+  // (classKey, doorIndex, challengeLevel). All per-door state below is
+  // derived from useLangAssets() + useActivePlayer().
+  // `gameNumber` accepted as legacy alias for `doorIndex`.
   const params = useLocalSearchParams<{
     gameNumber: string;
+    doorIndex: string;
     challengeLevel: string;
-    stage: string;
-    syllableGame: string;
-    country: string;
-    playerId: string;
   }>();
 
-  const gameNumber = parseInt(params.gameNumber ?? '1', 10);
+  const gameNumber = parseInt(params.gameNumber ?? params.doorIndex ?? '1', 10);
   const challengeLevel = parseInt(params.challengeLevel ?? '1', 10);
-  const stage = parseInt(params.stage ?? '1', 10);
-  const syllableGame = params.syllableGame ?? '';
-  const country = params.country ?? '';
-  const playerId = params.playerId ?? '';
+
+  const assets = useLangAssets();
+  const audio = useAudio();
+  const activePlayer = useActivePlayer();
+
+  const gameRow = assets.games.rows[gameNumber - 1];
+  const country = gameRow?.country ?? '';
+  const syllableGame = gameRow?.syllOrTile === 'S' ? 'S' : '';
+  const stage = gameRow?.stagesIncluded === '-' || !gameRow
+    ? 1
+    : parseInt(gameRow.stagesIncluded, 10) || 1;
+  const playerId = activePlayer?.id ?? '';
 
   // Unique ID — mirrors GameActivity.java:175 uniqueGameLevelPlayerModeStageID
   const gameUniqueId = useMemo(
     () => buildGameUniqueId({ country, challengeLevel, playerId, syllableGame, stage }),
     [country, challengeLevel, playerId, syllableGame, stage],
   );
-
-  const assets = useLangAssets();
-  const audio = useAudio();
 
   // Progress store
   const { incrementPoints, incrementTracker, markChecked12 } = useProgressStore.getState();
@@ -238,14 +244,11 @@ export function GameShellContainer({
         );
         if (nextGame) {
           router.push({
-            pathname: '/game',
+            pathname: '/games/[classKey]',
             params: {
-              gameNumber: String(nextGame.gameNumber),
+              classKey: nextGame.country.toLowerCase(),
+              doorIndex: String(nextGame.gameNumber),
               challengeLevel: String(nextGame.challengeLevel),
-              stage: String(nextGame.stage),
-              syllableGame: nextGame.syllableGame,
-              country: nextGame.country,
-              playerId,
             },
           } as Parameters<typeof router.push>[0]);
         } else {
