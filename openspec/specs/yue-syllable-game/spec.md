@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Yue Syllable Game Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Syllable-audio splitting tool
 
@@ -70,8 +75,9 @@ The `yue` pack SHALL define one game door that launches the Georgia class in syl
 
 - **GIVEN** `languages/yue/aa_games.txt` has a row with `Country=Georgia`, `ChallengeLevel=1`, `SyllOrTile=S`
 - **WHEN** the game menu is built by `useDoors`
-- **THEN** a door appears with `classKey='georgia'`, `challengeLevel=1`, `syllableGame='S'`
-- **AND** selecting it routes to the existing `apps/alphaTiles/app/games/georgia.tsx` route
+- **THEN** a door appears with `classKey='georgia'` and `challengeLevel=1`
+- **AND** selecting it routes to `apps/alphaTiles/app/games/georgia.tsx` with `doorIndex` set to the row's 1-based index
+- **AND** `GeorgiaContainer` resolves `syllableGame='S'` by reading `assets.games.rows[doorIndex - 1].syllOrTile`
 
 #### Scenario: Syllable door is a six-choice round
 

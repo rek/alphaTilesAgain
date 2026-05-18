@@ -1,8 +1,9 @@
-# Capability: Thailand Game
+# Thailand Specification
 
+## Purpose
 Thailand is a fixed 4-choice identification game where a reference item (tile, word, or syllable — in text, image, or audio form) is matched to one of four choice buttons. The mechanic is heavily parameterised via a 3-digit `challengeLevel` code XYZ where X = distractor strategy, Y = refType index, Z = choiceType index.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Challenge Level Decoding
 

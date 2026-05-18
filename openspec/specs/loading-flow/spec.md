@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Loading Flow Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Single boot-time async orchestration surface
 

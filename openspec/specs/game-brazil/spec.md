@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Game Brazil Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Choice Pool by Challenge Level
 

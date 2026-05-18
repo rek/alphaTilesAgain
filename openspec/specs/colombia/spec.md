@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Colombia Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Keyboard Composition by Variant and Challenge Level
 

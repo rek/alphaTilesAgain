@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Pairing Spelling Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Board setup with tile pairs and randomized correct slot
 

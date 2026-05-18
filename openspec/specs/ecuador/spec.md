@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Ecuador Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: 8-Tile Scatter Round
 

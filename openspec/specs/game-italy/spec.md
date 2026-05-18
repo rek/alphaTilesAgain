@@ -1,8 +1,9 @@
-# Capability: game-italy
+# Game Italy Specification
 
+## Purpose
 Italy is a Lotería-style 4×4 word-bingo game. A caller advances through a shuffled deck; the player taps the matching tile on the board to drop a bean; first row, column, or diagonal of 4 beans wins.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Setup
 
@@ -75,6 +76,12 @@ If a tap matches but no winning sequence is yet complete, the game MUST play `pl
 
 If the player taps a cell whose text does not equal the current call, the game MUST play the incorrect sound and take no other action — no cover, no caller advance, no score change.
 
+#### Scenario: Tap a non-matching cell
+- **GIVEN** the current call is `apple` and the player taps a cell whose text is `banana`
+- **WHEN** the cell is tapped
+- **THEN** `playIncorrect()` fires
+- **AND** no cell is covered, the caller does not advance, and the score is unchanged
+
 ### Requirement: Deck Exhaustion
 
 When `deckIndex` reaches the last deck position without a lotería and the caller is advanced, the game MUST play the incorrect sound twice and then reset (re-shuffle, rebuild board, clear beans, reset `deckIndex`).
@@ -94,10 +101,30 @@ The game SHALL support two variants driven by the `syllableGame` route param.
 
 The repeat button MUST replay the current call's audio in both variants. Because the shell's default `replayWord` only plays words, the container SHALL register an `onRepeat` handler via `setOnRepeat` so the S variant plays a syllable clip rather than a non-existent word clip.
 
+#### Scenario: T variant call
+- **GIVEN** `syllableGame === "T"` and the current call is a word row
+- **WHEN** the call advances
+- **THEN** the cell renders `wordInLOP` text and the audio plays via `playWord`
+
+#### Scenario: S variant call
+- **GIVEN** `syllableGame === "S"` and the current call is a syllable row
+- **WHEN** the call advances
+- **THEN** the cell renders the syllable text and the audio plays via `playSyllable`
+
 ### Requirement: Reset After Lotería
 
 Once a lotería is registered, the next press of the advance arrow MUST start a fresh round (re-shuffle, rebuild board, clear beans, reset `deckIndex` and `won`).
 
+#### Scenario: Advance after a win
+- **GIVEN** `won === true`
+- **WHEN** the user presses advance
+- **THEN** the board is rebuilt, the deck re-shuffled, beans cleared, `deckIndex` reset to 0, and `won` reset to false
+
 ### Requirement: Container / Presenter Split
 
 `<ItalyContainer>` SHALL own all hooks (game shell, language assets, audio, router, i18n) and all state (`board`, `deck`, `deckIndex`, `won`, `insufficient`). `<ItalyScreen>` SHALL be a pure props→JSX presenter with no hooks and no `react-i18next` import.
+
+#### Scenario: Screen has no hooks
+- **WHEN** `<ItalyScreen>` is inspected
+- **THEN** it imports no React hooks and no `react-i18next`
+- **AND** all dynamic values come from props supplied by `<ItalyContainer>`

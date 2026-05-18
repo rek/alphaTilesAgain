@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Game Mexico Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Memory matching grid with challenge-level scaling
 

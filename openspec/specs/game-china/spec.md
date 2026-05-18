@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Game China Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: 4x4 sliding-tile board with 3 four-tile + 1 three-tile target words
 

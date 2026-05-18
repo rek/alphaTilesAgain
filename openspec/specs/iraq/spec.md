@@ -1,8 +1,9 @@
-# Capability: Iraq Game (Tile Explorer)
+# Iraq Specification
 
+## Purpose
 Iraq is a non-scored tile reference. Tiles are listed alphabetically and paginated; tapping a tile plays its audio and briefly displays a word containing that tile. Iraq is in `NO_TRACKER_COUNTRIES` and MUST NOT increment points.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Tile List Composition
 

@@ -1,8 +1,9 @@
-# Capability: Sudan Game (Tile/Syllable Audio Browser)
+# Sudan Specification
 
+## Purpose
 Sudan is a non-scored audio browser. It paginates tiles (or syllables when `syllableGame === "S"`); tapping plays that tile/syllable's audio. Sudan is in `NO_TRACKER_COUNTRIES` and MUST NOT increment points.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Variants and Page Sizes
 

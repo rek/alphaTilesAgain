@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Game Menu Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Door grid derived from `aa_games.txt`
 

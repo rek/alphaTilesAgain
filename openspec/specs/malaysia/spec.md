@@ -1,8 +1,9 @@
-# Capability: Malaysia Game (Word Browser)
+# Malaysia Specification
 
+## Purpose
 Malaysia is a non-scored word browser. Words from the current stage are paginated 11 per page; tapping a row plays that word's audio. Malaysia is in `NO_TRACKER_COUNTRIES` and MUST NOT increment points.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Source and Pagination
 

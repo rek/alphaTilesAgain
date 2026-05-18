@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Game Myanmar Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Grid and Word Constraints
 
@@ -127,3 +132,13 @@ There SHALL be one image slot per placed word (up to 7), shown to the right of t
 ### Requirement: Selection Method Read From Settings
 
 The `Selection Method for Word Search` value SHALL be read from `aa_settings.txt` via `assets.settings.findInt('Selection Method for Word Search', 1)`. Values other than `1` or `2` SHALL fall back to `1`.
+
+#### Scenario: Setting absent falls back to 1
+- **GIVEN** `aa_settings.txt` has no `Selection Method for Word Search` row
+- **WHEN** the container reads the setting
+- **THEN** the resolved value is `1`
+
+#### Scenario: Out-of-range value falls back to 1
+- **GIVEN** `aa_settings.txt` has `Selection Method for Word Search` set to `7`
+- **WHEN** the container reads the setting
+- **THEN** the resolved value is `1`

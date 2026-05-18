@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Chile Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Guess Row Count Scales With Challenge Level
 

@@ -1,4 +1,7 @@
-# Romania Scanning Game Specification
+# Romania Specification
+
+## Purpose
+Romania scanning game — non-tracker mechanic that scans words for matches against a current tile.
 
 ## Requirements
 
@@ -35,7 +38,7 @@ The game SHALL bold the focus tile within each word when `boldInitialFocusTiles`
 
 ### Requirement: Word-by-word navigation
 
-The player advances through the word list one word at a time by tapping the word or a "Next" button.
+The player SHALL advance through the word list one word at a time by tapping the word or a "Next" button.
 
 #### Scenario: Advancing to next word
 - **GIVEN** `wordIndex` is 0 and `wordsForTile` has 3 words

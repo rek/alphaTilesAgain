@@ -1,8 +1,9 @@
-# Capability: Japan Game (Syllable Segmentation)
+# Japan Specification
 
+## Purpose
 Japan is a tile-linking game where players group a word's tiles into their correct syllable units by tapping link buttons between adjacent tiles.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Tile Row With Interleaved Link Buttons
 

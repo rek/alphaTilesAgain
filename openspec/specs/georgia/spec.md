@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Georgia Specification
+
+## Purpose
+TBD - imported from archived change. Update Purpose after archive.
+
+## Requirements
 
 ### Requirement: Choice Count by Challenge Level
 
@@ -29,6 +34,8 @@ Java reference: `Georgia.java:112–127` (switch on challengeLevel sets `visible
 - **THEN** 12 choices are visible
 
 ### Requirement: Correct Target per Band
+
+The mechanic SHALL compute the `correct` target as follows.
 
 For tile variant:
 
