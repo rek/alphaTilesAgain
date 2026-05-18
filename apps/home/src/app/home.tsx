@@ -1,4 +1,14 @@
-const LANGUAGES = [
+type Language = {
+  id: string;
+  name: string;
+  fixture: string;
+  icon: string;
+  color: string;
+  description: string;
+  guideHref?: string;
+};
+
+const LANGUAGES: Language[] = [
   {
     id: 'eng',
     name: 'English',
@@ -13,7 +23,8 @@ const LANGUAGES = [
     fixture: 'yueCantonese',
     icon: '粵',
     color: 'bg-red-100 text-red-600',
-    description: 'Master Jyutping and traditional characters in our Cantonese literacy module.',
+    description: 'Hong Kong–variety Cantonese with traditional characters. Listening, reading, and stroke-order practice.',
+    guideHref: '#/cantonese-games',
   },
 ];
 
@@ -88,10 +99,15 @@ export function Home() {
                 <p className="text-slate-500 text-sm mb-8 leading-relaxed">
                   {lang.description}
                 </p>
-                <div className="mt-auto w-full">
+                <div className="mt-auto w-full space-y-2">
                   <a href={`./${lang.fixture}/`} className="block w-full bg-slate-50 text-slate-700 font-semibold py-3 rounded-xl border border-slate-100 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors text-center">
                     Launch Build
                   </a>
+                  {lang.guideHref && (
+                    <a href={lang.guideHref} className="block w-full text-primary text-sm font-medium py-2 hover:underline text-center">
+                      View game guide →
+                    </a>
+                  )}
                 </div>
               </div>
             ))}
