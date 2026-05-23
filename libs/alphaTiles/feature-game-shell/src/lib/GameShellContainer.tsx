@@ -34,6 +34,7 @@ import {
 import {
   shouldIncrementTracker,
   displayChallengeLevel,
+  countryToClassKey,
 } from '@alphaTiles/util-scoring';
 import { GameShellContextProvider } from './GameShellContext';
 import { GameShellScreen } from './GameShellScreen';
@@ -246,7 +247,7 @@ export function GameShellContainer({
           router.push({
             pathname: '/games/[classKey]',
             params: {
-              classKey: nextGame.country.toLowerCase(),
+              classKey: countryToClassKey(nextGame.country),
               doorIndex: String(nextGame.gameNumber),
               challengeLevel: String(nextGame.challengeLevel),
             },

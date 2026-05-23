@@ -1,5 +1,6 @@
 import { addPoint } from './addPoint';
 import { computeTrackerCount } from './computeTrackerCount';
+import { countryToClassKey } from './countryToClassKey';
 import { displayChallengeLevel } from './displayChallengeLevel';
 import { isGameMastered } from './isGameMastered';
 import { NO_TRACKER_COUNTRIES, shouldIncrementTracker } from './noTrackerCountries';
@@ -95,5 +96,20 @@ describe('displayChallengeLevel', () => {
 
   it('China unchanged', () => {
     expect(displayChallengeLevel('China', 1)).toBe(1);
+  });
+});
+
+describe('countryToClassKey', () => {
+  it.each([
+    ['Brazil', 'brazil'],
+    ['China', 'china'],
+    ['Thailand', 'thailand'],
+    ['Taiwan', 'taiwan'],
+  ])('single-token %s → %s', (country, expected) => {
+    expect(countryToClassKey(country)).toBe(expected);
+  });
+
+  it('PascalCase UnitedStates → united-states', () => {
+    expect(countryToClassKey('UnitedStates')).toBe('united-states');
   });
 });
