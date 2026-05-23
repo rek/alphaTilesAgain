@@ -5,4 +5,3 @@ export { computeTrackerCount } from './lib/computeTrackerCount';
 export { isGameMastered } from './lib/isGameMastered';
 export { pointsForStage } from './lib/pointsForStage';
 export { displayChallengeLevel } from './lib/displayChallengeLevel';
-export { countryToClassKey } from './lib/countryToClassKey';

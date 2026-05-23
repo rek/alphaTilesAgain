@@ -33,6 +33,15 @@ describe('parseGames', () => {
       expect(parseGames(src).rows[0].country).toBe('Romania');
     });
 
+    it('derives classKey kebab-case for every row', () => {
+      if (!src) return;
+      const result = parseGames(src);
+      const us = result.rows.find((r) => r.country === 'UnitedStates');
+      expect(us?.classKey).toBe('united-states');
+      const romania = result.rows.find((r) => r.country === 'Romania');
+      expect(romania?.classKey).toBe('romania');
+    });
+
     it('all SyllOrTile values are T or S', () => {
       if (!src) return;
       const result = parseGames(src);

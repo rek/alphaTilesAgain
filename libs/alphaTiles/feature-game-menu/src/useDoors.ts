@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { buildGameUniqueId } from '@alphaTiles/data-progress';
-import { countryToClassKey } from '@alphaTiles/util-scoring';
 import { deriveVisual } from './deriveVisual';
 import { useTrackerCounts } from './useTrackerCounts';
 import type { LangAssets } from '@alphaTiles/data-language-assets';
@@ -49,11 +48,11 @@ export function buildDoors({
   const doorsPerPage = Math.min(MAX_DOORS_PER_PAGE, Math.max(MIN_DOORS_PER_PAGE, doorsPerPageSetting));
 
   const filteredRows = isGameEnabled
-    ? gameRows.filter((g) => isGameEnabled(countryToClassKey(g.country)))
+    ? gameRows.filter((g) => isGameEnabled(g.classKey))
     : gameRows;
 
   const allDoors: DoorData[] = filteredRows.map((game, i) => {
-    const classKey = countryToClassKey(game.country);
+    const { classKey } = game;
     const colorIndex = parseInt(game.color, 10) || 0;
     const colorHex = colorsHex[colorIndex] ?? '#666666';
     const noRightWrong = NO_RIGHT_WRONG_FALLBACK.includes(classKey);

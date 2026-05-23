@@ -5,6 +5,10 @@ import { splitRow } from './internal/splitRow';
 const FILE = 'aa_games.txt';
 const EXPECTED_COLS = 8;
 
+function toKebabCase(pascal: string): string {
+  return pascal.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
 /**
  * Parse aa_games.txt — eight columns:
  * Door, Country, ChallengeLevel, Color, InstructionAudio, AudioDuration, SyllOrTile, StagesIncluded.
@@ -62,9 +66,13 @@ export function parseGames(src: string) {
     }
     const syllOrTile = syllOrTileRaw as 'T' | 'S';
 
+    const country = row[1];
     return {
       door,                            // col 0 — Door
-      country: row[1],                 // col 1 — Country
+      country,                         // col 1 — Country (PascalCase, e.g. UnitedStates)
+      // Kebab-case route segment derived once here so consumers never call
+      // `country.toLowerCase()` and silently produce `unitedstates`.
+      classKey: toKebabCase(country),
       challengeLevel,                  // col 2 — ChallengeLevel
       color: row[3],                   // col 3 — Color (string; cast to int at call site)
       instructionAudio: row[4],        // col 4 — InstructionAudio

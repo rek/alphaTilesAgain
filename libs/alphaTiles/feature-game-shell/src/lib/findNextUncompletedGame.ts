@@ -13,6 +13,7 @@ import type { ProgressEntry } from '@alphaTiles/data-progress';
 type GameRow = {
   door: number;
   country: string;
+  classKey: string;
   challengeLevel: number;
   syllOrTile: 'T' | 'S';
   stagesIncluded: string;
@@ -21,6 +22,7 @@ type GameRow = {
 type NextGameResult = {
   gameNumber: number; // 1-based
   country: string;
+  classKey: string;
   challengeLevel: number;
   syllableGame: string;
   stage: number;
@@ -55,6 +57,7 @@ export function findNextUncompletedGame(
       return {
         gameNumber: current,
         country: game.country,
+        classKey: game.classKey,
         challengeLevel: game.challengeLevel,
         syllableGame,
         stage,

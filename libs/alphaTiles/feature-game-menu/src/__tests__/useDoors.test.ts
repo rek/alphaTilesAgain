@@ -4,6 +4,7 @@ function makeGame(i: number) {
   return {
     door: i + 1,
     country: `Country${i}`,
+    classKey: `country${i}`,
     challengeLevel: 1,
     color: '0',
     instructionAudio: '',
@@ -78,7 +79,7 @@ describe('buildDoors', () => {
   it('noRightWrong countries get in-process visual and black textColorHex', () => {
     const result = buildDoors({
       ...baseOpts,
-      gameRows: [{ ...makeGame(0), country: 'Romania' }],
+      gameRows: [{ ...makeGame(0), country: 'Romania', classKey: 'romania' }],
       doorsPerPageSetting: 20,
     });
     expect(result.pageDoors[0].visual).toBe('in-process');
