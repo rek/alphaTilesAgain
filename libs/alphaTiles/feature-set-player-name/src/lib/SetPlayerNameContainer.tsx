@@ -111,7 +111,7 @@ export function SetPlayerNameContainer(): React.JSX.Element {
       selectPlayer(editingPlayer.id);
     }
 
-    router.replace('/menu' as Parameters<typeof router.replace>[0]);
+    router.replace('/menu');
   }
 
   function handleCancel() {

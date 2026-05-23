@@ -78,7 +78,7 @@ export function LoadingContainer(): React.JSX.Element {
       awaitHydration: awaitPlayersHydrated,
     })
       .then(() => {
-        router.replace(resolveEntryRoute() as Parameters<typeof router.replace>[0]);
+        router.replace(resolveEntryRoute());
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err : new Error(String(err)));

@@ -52,12 +52,12 @@ export function ChoosePlayerContainer(): React.JSX.Element {
     selectPlayer(id);
     identify(id, { avatarIndex: players.find((p) => p.id === id)?.avatarIndex });
     track('screen_viewed', { screenName: 'menu' });
-    router.replace('/menu' as Parameters<typeof router.replace>[0]);
+    router.replace('/menu');
   }
 
   function handleAddPlayer() {
     track('screen_viewed', { screenName: 'set-player-name' });
-    router.push('/set-player-name?mode=create' as Parameters<typeof router.push>[0]);
+    router.push('/set-player-name?mode=create');
   }
 
   function handleRequestDelete(id: string) {
