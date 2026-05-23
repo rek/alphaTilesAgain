@@ -33,7 +33,9 @@ import { checkWin } from './checkWin';
 
 const CARDS_ON_BOARD = 16;
 const DEFAULT_DECK_SIZE = 54;
-const ADVANCE_DELAY_MS = 800;
+const CHIME_MS = 400;
+const POST_REPLAY_GAP_MS = 200;
+const FALLBACK_REPLAY_MS = 800;
 
 type Word = LangAssets['words']['rows'][number];
 type Syllable = LangAssets['syllables']['rows'][number];
@@ -92,6 +94,14 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
       } else {
         audio.playSyllable(item.syllable.audioName);
       }
+    },
+    [audio],
+  );
+
+  const getCallDurationMs = useCallback(
+    (item: SourceItem): number | undefined => {
+      if (item.kind === 'word') return audio.getWordDuration(item.word.wordInLWC);
+      return audio.getSyllableDuration(item.syllable.audioName);
     },
     [audio],
   );
@@ -214,13 +224,15 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
       audio.playCorrect().then(() => {
         if (isMountedRef.current) playCallAudio(currentCall);
       });
-      // Auto-advance to the next call after a brief delay so the user hears the chime.
+      // Auto-advance after chime + measured replay duration + a small gap, so the
+      // next call's audio doesn't overlap the current replay (issue #24).
+      const replayMs = getCallDurationMs(currentCall) ?? FALLBACK_REPLAY_MS;
       if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
       advanceTimerRef.current = setTimeout(() => {
         if (isMountedRef.current) advanceCaller();
-      }, ADVANCE_DELAY_MS);
+      }, CHIME_MS + replayMs + POST_REPLAY_GAP_MS);
     },
-    [won, shell, board, currentCall, audio, playCallAudio, advanceCaller],
+    [won, shell, board, currentCall, audio, playCallAudio, getCallDurationMs, advanceCaller],
   );
 
   const callerLabel = t('replay');

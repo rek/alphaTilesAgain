@@ -39,7 +39,9 @@ import type { BrazilData } from './brazilPreProcess';
 
 const COLOR_FALLBACK = ['#E91E63', '#3F51B5', '#009688', '#FF9800', '#9C27B0'];
 
-const ADVANCE_DELAY_MS = 1200;
+const CHIME_MS = 400;
+const POST_REPLAY_GAP_MS = 200;
+const FALLBACK_REPLAY_MS = 1000;
 
 type WordRow = LangAssets['words']['rows'][number];
 type SyllableRow = LangAssets['syllables']['rows'][number];
@@ -284,9 +286,13 @@ function BrazilGame({
           if (!isMountedRef.current) return;
           audio.playWord(round.word.wordInLWC);
         });
+        // Schedule advance after chime + measured replay duration + a small gap,
+        // so the next round's audio doesn't overlap the replay (issue #24).
+        const replayMs = audio.getWordDuration(round.word.wordInLWC) ?? FALLBACK_REPLAY_MS;
+        if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
         advanceTimerRef.current = setTimeout(() => {
           if (isMountedRef.current) startRound();
-        }, ADVANCE_DELAY_MS);
+        }, CHIME_MS + replayMs + POST_REPLAY_GAP_MS);
       } else {
         // Wrong: lock buttons, flash red on the picked choice, play incorrect.
         const updated = round.choices.map((c, i) => ({

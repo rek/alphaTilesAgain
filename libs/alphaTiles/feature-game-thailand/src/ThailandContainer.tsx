@@ -19,7 +19,9 @@ import type {
 
 type RouteParams = Record<string, string | string[] | undefined>;
 
-const ADVANCE_DELAY_MS = 1200;
+const CHIME_MS = 400;
+const POST_REPLAY_GAP_MS = 200;
+const FALLBACK_REPLAY_MS = 1000;
 const MAX_INCORRECT_TRACKED = 3;
 
 function buildRefDisplay(
@@ -109,10 +111,12 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   const incorrectAnswersSelected = useRef<string[]>([]);
   const incorrectOnLevel = useRef<number>(0);
   const isMountedRef = useRef(true);
+  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
+      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     };
   }, []);
 
@@ -130,7 +134,21 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     [audio, shell],
   );
 
+  const getRefDurationMs = useCallback(
+    (ref: ThailandRef): number | undefined => {
+      if (ref.kind === 'tile') return audio.getTileDuration(ref.tileRow.audioName);
+      if (ref.kind === 'word') return audio.getWordDuration(ref.wordRow.wordInLWC);
+      return audio.getSyllableDuration(ref.syllableRow.audioName);
+    },
+    [audio],
+  );
+
   const startRound = useCallback(() => {
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current);
+      advanceTimerRef.current = null;
+    }
+
     const result = setupThailandRound({
       refType,
       choiceType,
@@ -181,16 +199,20 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
         shell.setInteractionLocked(true);
         shell.incrementPointsAndTracker(true);
         audio.playCorrect().then(() => {
+          if (!isMountedRef.current) return;
           playRefAudio(round.ref);
         });
 
-        const timer = setTimeout(() => {
-          if (isMountedRef.current) {
-            shell.setInteractionLocked(false);
-            startRound();
-          }
-        }, ADVANCE_DELAY_MS);
-        return () => clearTimeout(timer);
+        // Schedule advance after chime + measured replay duration + a small gap,
+        // so the next round's ref audio doesn't overlap with the replay (issue #24).
+        const replayMs = getRefDurationMs(round.ref) ?? FALLBACK_REPLAY_MS;
+        if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+        advanceTimerRef.current = setTimeout(() => {
+          if (!isMountedRef.current) return;
+          shell.setInteractionLocked(false);
+          startRound();
+        }, CHIME_MS + replayMs + POST_REPLAY_GAP_MS);
+        return;
       }
 
       // Java 618-630: incorrect tap -> chime, incorrectOnLevel++, distinct
@@ -209,7 +231,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
         incorrectAnswersSelected.current = [...list, chosenText];
       }
     },
-    [round, shell, audio, playRefAudio, startRound, correctIndex],
+    [round, shell, audio, playRefAudio, getRefDurationMs, startRound, correctIndex],
   );
 
   const onRefPress = useCallback(() => {
