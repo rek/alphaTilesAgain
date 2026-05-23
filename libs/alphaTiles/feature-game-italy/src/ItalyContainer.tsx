@@ -123,7 +123,7 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
     if ('error' in result) {
       setInsufficient(true);
       // Italy.java:209 — navigate back to country menu / earth.
-      router.replace('/earth' as Parameters<typeof router.replace>[0]);
+      router.replace('/menu');
       return;
     }
     setBoard(buildBoardCells(result.board));
