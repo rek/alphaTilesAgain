@@ -5,7 +5,27 @@ import { splitRow } from './internal/splitRow';
 const FILE = 'aa_games.txt';
 const EXPECTED_COLS = 8;
 
+/**
+ * Convert a clean PascalCase token to kebab-case.
+ *
+ * Supports inputs matching `^[A-Z][a-z]+([A-Z][a-z]+)*$` only — single-word
+ * (`Thailand`) or PascalCase compounds (`UnitedStates`). Acronyms like
+ * `USA`, `iOS`, or `XMLParser` would mis-convert silently, so they throw
+ * here instead. A future Country with an acronym needs an explicit mapping,
+ * not a regex tweak.
+ */
 function toKebabCase(pascal: string): string {
+  if (!/^[A-Z][a-z]+([A-Z][a-z]+)*$/.test(pascal)) {
+    throw new LangPackParseError({
+      file: FILE,
+      line: 0,
+      column: 'Country',
+      reason:
+        `Country "${pascal}" is not clean PascalCase. ` +
+        `toKebabCase supports single tokens or PascalCase compounds only ` +
+        `(e.g. Thailand, UnitedStates). Acronyms need a dedicated mapping.`,
+    });
+  }
   return pascal.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 }
 

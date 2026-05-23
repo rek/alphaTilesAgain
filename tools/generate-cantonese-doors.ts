@@ -32,7 +32,7 @@ const { rows } = parseGames(fs.readFileSync(SRC, 'utf8'));
 const entries = rows
   .map((row, i) => {
     const index = i + 1;
-    return `  { index: ${index}, country: ${JSON.stringify(row.country)}, challengeLevel: ${row.challengeLevel}, syllOrTile: ${JSON.stringify(row.syllOrTile)} },`;
+    return `  { index: ${index}, classKey: ${JSON.stringify(row.classKey)}, challengeLevel: ${row.challengeLevel}, syllOrTile: ${JSON.stringify(row.syllOrTile)} },`;
   })
   .join('\n');
 
@@ -42,7 +42,7 @@ const body = `// AUTO-GENERATED — DO NOT EDIT.
 
 export type YueGameRow = {
   index: number;
-  country: string;
+  classKey: string;
   challengeLevel: number;
   syllOrTile: 'T' | 'S';
 };
@@ -51,9 +51,13 @@ export const YUE_GAME_ROWS: readonly YueGameRow[] = [
 ${entries}
 ];
 
-/** Stable key for joining hand-authored content to a game row. */
-export function doorContentKey(row: { country: string; challengeLevel: number; syllOrTile: 'T' | 'S' }): string {
-  return \`\${row.country}-\${row.challengeLevel}-\${row.syllOrTile}\`;
+/**
+ * Stable key for joining hand-authored content to a game row.
+ * Uses the parser-derived classKey (kebab-case) so a future Country rename
+ * upstream doesn't silently invalidate every content entry.
+ */
+export function doorContentKey(row: { classKey: string; challengeLevel: number; syllOrTile: 'T' | 'S' }): string {
+  return \`\${row.classKey}-\${row.challengeLevel}-\${row.syllOrTile}\`;
 }
 `;
 

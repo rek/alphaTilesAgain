@@ -133,6 +133,8 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
     if ('error' in result) {
       setInsufficient(true);
       // Italy.java:209 — navigate back to country menu / earth.
+      // ("earth" is the Java port's name for the country-selection / main
+      // menu screen; in the TS port that screen lives at /menu.)
       router.replace('/menu');
       return;
     }

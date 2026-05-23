@@ -14,63 +14,63 @@ type DoorContent = {
 // If yue adds a row whose key is not in this map, the page renders an explicit
 // "missing description" placeholder so the gap is visible to the next dev.
 const DOOR_CONTENT: Record<string, DoorContent> = {
-  'Thailand-165-T': {
+  'thailand-165-T': {
     title: 'Word listening — Easy',
     difficulty: 'Easy',
     mechanic: 'Thailand · listen-and-pick',
     what: 'Plays a Cantonese word aloud. The student picks the matching picture from four options. Distractor pictures are loosely related.',
     good: 'First exposure to spoken Cantonese vocabulary. Use this with students who are brand new.',
   },
-  'Thailand-265-T': {
+  'thailand-265-T': {
     title: 'Word listening — Medium',
     difficulty: 'Medium',
     mechanic: 'Thailand · listen-and-pick',
     what: 'Same format as the easy version — hear a word, pick the picture — but distractors share more features with the correct answer.',
     good: 'Students who are comfortable with the basic vocabulary and ready to listen more carefully.',
   },
-  'Thailand-365-T': {
+  'thailand-365-T': {
     title: 'Word listening — Hard',
     difficulty: 'Hard',
     mechanic: 'Thailand · listen-and-pick',
     what: 'Same hear-a-word, pick-a-picture format with the hardest distractors. The distractors sound or look similar to the correct answer.',
     good: 'Students who can already pick out the easy pairs and need a real listening challenge.',
   },
-  'Thailand-234-T': {
+  'thailand-234-T': {
     title: 'Listen and read',
     difficulty: 'Medium',
     mechanic: 'Thailand · audio → written word',
     what: 'Plays a Cantonese word aloud. The student picks its written form from four choices (no picture cue).',
     good: 'Reading practice with an audio prompt — easier than the picture-to-writing door because the student hears the word.',
   },
-  'Thailand-344-T': {
+  'thailand-344-T': {
     title: 'Picture to writing — Hard',
     difficulty: 'Hard',
     mechanic: 'Thailand · picture → written word',
     what: 'Shows a picture. The student picks the written form of that word from four choices (no audio cue).',
     good: 'Reading practice. Students must recognise the Chinese characters without hearing the word.',
   },
-  'Taiwan-1-T': {
+  'taiwan-1-T': {
     title: 'Stroke order — Guided',
     difficulty: 'Easy',
     mechanic: 'Taiwan · stroke writing',
     what: 'The character outline is shown with numbered start dots. The student traces each stroke with finger or mouse. Forgiving accuracy.',
     good: 'First time learning to write a character. Maximum scaffolding.',
   },
-  'Taiwan-2-T': {
+  'taiwan-2-T': {
     title: 'Stroke order — Outline',
     difficulty: 'Medium',
     mechanic: 'Taiwan · stroke writing',
     what: 'The character outline is still shown but the numbered start dots are removed. Default stroke accuracy.',
     good: 'Students who remember the stroke sequence but still need the shape to copy.',
   },
-  'Taiwan-3-T': {
+  'taiwan-3-T': {
     title: 'Stroke order — From memory',
     difficulty: 'Hard',
     mechanic: 'Taiwan · stroke writing',
     what: 'No outline shown. The student writes the character from memory on a blank canvas. Strict stroke matching.',
     good: 'Production-level writing. Students who already know the character and want to prove it.',
   },
-  'Georgia-1-S': {
+  'georgia-1-S': {
     title: 'First-syllable identification',
     difficulty: 'Medium',
     mechanic: 'Georgia · syllable choice',

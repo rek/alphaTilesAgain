@@ -88,4 +88,26 @@ describe('parseGames', () => {
       expect(() => parseGames('')).toThrow(LangPackParseError);
     });
   });
+
+  describe('classKey derivation (PascalCase → kebab-case)', () => {
+    const header =
+      'Door\tCountry\tChallengeLevel\tColor\tInstructionAudio\tAudioDuration\tSyllOrTile\tStagesIncluded\n';
+    const validRow = (country: string) =>
+      header + `1\t${country}\t1\t5\tzzz_x\t1999\tT\t-`;
+
+    it.each([
+      ['Thailand', 'thailand'],
+      ['UnitedStates', 'united-states'],
+    ])('%s → %s', (country, expected) => {
+      const result = parseGames(validRow(country));
+      expect(result.rows[0].classKey).toBe(expected);
+    });
+
+    it.each(['USA', 'iOS', 'XMLParser', 'lowercase', '123Numeric', ''])(
+      'rejects malformed Country "%s"',
+      (country) => {
+        expect(() => parseGames(validRow(country))).toThrow(LangPackParseError);
+      },
+    );
+  });
 });
