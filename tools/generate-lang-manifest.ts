@@ -18,7 +18,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { parseGames, parseGametiles, parseSyllables, parseWordlist } from '../libs/shared/util-lang-pack-parser/src';
+import { parseGametiles, parseSyllables, parseWordlist } from '../libs/shared/util-lang-pack-parser/src';
+import { assertRoutesForGames } from './assertRoutesForGames';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -400,39 +401,10 @@ function main(): void {
   );
 
   generateManifest(lang, langDir, outPath);
-  assertRoutesForGames(repoRoot, langDir);
-}
-
-/**
- * Verify every classKey in this pack's aa_games.txt has a corresponding
- * `apps/alphaTiles/app/games/<classKey>.tsx` route file. Catches typos and
- * missing routes at build time instead of after-12-trackers in production.
- *
- * Does NOT count the dynamic `[classKey].tsx` catch-all — that file masks
- * missing routes with a "not yet implemented" screen, which is exactly the
- * silent-drift failure mode we want to surface.
- */
-function assertRoutesForGames(repoRoot: string, langDir: string): void {
-  const gamesPath = path.join(langDir, 'aa_games.txt');
-  if (!fs.existsSync(gamesPath)) return;
-
-  const games = parseGames(fs.readFileSync(gamesPath, 'utf8'));
-  const requiredKeys = new Set(games.rows.map((r) => r.classKey));
-
-  const routesDir = path.join(repoRoot, 'apps', 'alphaTiles', 'app', 'games');
-  const routeFiles = listFiles(routesDir)
-    .filter((f) => f.endsWith('.tsx'))
-    .map((f) => f.replace(/\.tsx$/, ''))
-    .filter((stem) => !stem.startsWith('['));
-  const presentKeys = new Set(routeFiles);
-
-  const missing = [...requiredKeys].filter((k) => !presentKeys.has(k));
-  if (missing.length > 0) {
-    die(
-      `aa_games.txt references classKey(s) with no matching route file:\n` +
-        missing.map((k) => `  - apps/alphaTiles/app/games/${k}.tsx (missing)`).join('\n') +
-        `\n\nAdd the route file(s) or fix the Country column in aa_games.txt.`,
-    );
+  try {
+    assertRoutesForGames(repoRoot, langDir);
+  } catch (e) {
+    die((e as Error).message);
   }
 }
 
