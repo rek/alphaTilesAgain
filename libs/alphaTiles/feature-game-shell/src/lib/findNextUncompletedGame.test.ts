@@ -73,4 +73,40 @@ describe('findNextUncompletedGame', () => {
     expect(next?.classKey).toBe('united-states');
     expect(next?.classKey).not.toBe('unitedstates');
   });
+
+  // Multi-stage rows: stage flows into the storage key
+  // (buildGameUniqueId pattern: country + cl + playerId + syll + stage).
+  // A row with stagesIncluded='2' must read progress at `<country>1p12`,
+  // not `<country>1p11`, or stage-2 mastery is invisible to the selector.
+  describe('stage handling', () => {
+    const STAGED_GAMES = [
+      row(1, 'Thailand', 'thailand', { stagesIncluded: '2' }),
+      row(2, 'Taiwan', 'taiwan'),
+    ];
+
+    it("uses stagesIncluded='2' when building the progress lookup key", () => {
+      // Door 1 mastered at stage 2, NOT stage 1 — selector must respect it.
+      const next = findNextUncompletedGame(
+        STAGED_GAMES,
+        2,
+        { Thailand1p12: mastered() },
+        'p1',
+      );
+      expect(next?.gameNumber).toBe(2); // wrapped past door 1, since it's done
+      expect(next?.classKey).toBe('taiwan');
+    });
+
+    it("does NOT consume stage-1 mastery for a stagesIncluded='2' row", () => {
+      // Stage-1 entry shouldn't fool a stage-2 selector — it should still
+      // see door 1 as not-yet-mastered.
+      const next = findNextUncompletedGame(
+        STAGED_GAMES,
+        2,
+        { Thailand1p11: mastered() },
+        'p1',
+      );
+      expect(next?.gameNumber).toBe(1);
+      expect(next?.stage).toBe(2);
+    });
+  });
 });

@@ -19,7 +19,7 @@ type GameRow = {
   stagesIncluded: string;
 };
 
-type NextGameResult = {
+export type NextGameResult = {
   gameNumber: number; // 1-based
   country: string;
   classKey: string;

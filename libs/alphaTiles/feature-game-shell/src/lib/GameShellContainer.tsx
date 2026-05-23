@@ -39,6 +39,7 @@ import { GameShellContextProvider } from './GameShellContext';
 import { GameShellScreen } from './GameShellScreen';
 import type { GameShellScreenProps, GameShellIcons } from './GameShellScreen';
 import { findNextUncompletedGame } from './findNextUncompletedGame';
+import { buildNextGameHref } from './buildNextGameHref';
 
 // Java timing constants — preserved verbatim (GameActivity.java:342, 412)
 const CELEBRATION_DELAY_MS = 1800; // correctSoundDuration + this before celebration shows
@@ -242,18 +243,7 @@ export function GameShellContainer({
           useProgressStore.getState().progress,
           playerId,
         );
-        if (nextGame) {
-          router.push({
-            pathname: '/games/[classKey]',
-            params: {
-              classKey: nextGame.classKey,
-              doorIndex: String(nextGame.gameNumber),
-              challengeLevel: String(nextGame.challengeLevel),
-            },
-          });
-        } else {
-          router.push('/menu');
-        }
+        router.push(buildNextGameHref(nextGame));
       }, NEXT_GAME_DELAY_MS);
     }
   }, [
