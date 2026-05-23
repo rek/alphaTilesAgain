@@ -166,24 +166,38 @@ export function useAudio() {
   const unlockAudio = async (): Promise<void> => {
     if (Platform.OS !== 'web' || isAudioUnlocked) return;
 
-    // Priming requires loaded handles — skip chime if called before preload completes
+    // Priming requires loaded handles — skip if called before preload completes
     // (e.g. from the loading screen tap handler before audio phase).
     if (handles) {
+      // Safari/iOS require EACH <audio> element's first play() to originate
+      // from a user gesture — priming just the chime leaves tiles/words/etc.
+      // silent on first play (issue #25). Fire play()+pause() synchronously
+      // on every loaded handle within the gesture frame; no awaits between
+      // elements so the whole loop stays in the gesture's task.
+      const primeOne = (handle: SoundHandle | null): void => {
+        if (!handle) return;
+        try {
+          const originalVolume = handle.volume;
+          handle.volume = 0;
+          handle.play();
+          handle.pause();
+          handle.volume = originalVolume;
+        } catch {
+          // Per-handle priming failure is non-fatal; keep going.
+        }
+      };
+
       try {
-        // Prime the AudioContext by playing a zero-volume chime.
-        const chime = handles.chimes.correct;
-        const originalVolume = chime.volume;
-        chime.volume = 0;
-        chime.play();
-        // Brief tick to let the browser allow audio context to resume.
-        await new Promise<void>((resolve) => setTimeout(resolve, 50));
-        chime.pause();
-        await chime.seekTo(0);
-        chime.volume = originalVolume;
+        primeOne(handles.chimes.correct);
+        primeOne(handles.chimes.incorrect);
+        primeOne(handles.chimes.correctFinal);
+        for (const h of handles.tiles.values()) primeOne(h);
+        for (const h of handles.words.values()) primeOne(h);
+        for (const h of handles.syllables.values()) primeOne(h);
+        for (const h of handles.instructions.values()) primeOne(h);
       } catch {
-        // Non-fatal — still mark as unlocked so the app can proceed.
         if (__DEV__) {
-          console.warn('[data-audio] unlockAudio: priming failed (non-fatal)');
+          console.warn('[data-audio] unlockAudio: priming loop failed (non-fatal)');
         }
       }
     }
