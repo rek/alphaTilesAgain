@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { ImageSourcePropType } from 'react-native';
 
 export type DeleteState = 'idle' | 'armed' | 'confirm';
@@ -87,13 +88,13 @@ export function UiPlayerCard({
           }}
           hitSlop={8}
         >
-          <Text
-            style={styles.deleteIcon}
+          <Ionicons
+            name={deleteState === 'confirm' ? 'checkmark' : 'trash-outline'}
+            size={14}
+            color="#fff"
             accessibilityElementsHidden
             importantForAccessibility="no"
-          >
-            {deleteState === 'confirm' ? '✓' : '🗑'}
-          </Text>
+          />
         </Pressable>
       )}
     </Pressable>
@@ -129,10 +130,5 @@ const styles = StyleSheet.create({
   },
   deleteButtonConfirm: {
     backgroundColor: '#cc0000',
-  },
-  deleteIcon: {
-    color: '#fff',
-    fontSize: 13,
-    lineHeight: 16,
   },
 });

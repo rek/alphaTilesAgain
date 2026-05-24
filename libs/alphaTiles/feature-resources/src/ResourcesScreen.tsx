@@ -13,6 +13,7 @@
 
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export interface ResourceRow {
   name: string;
@@ -32,16 +33,29 @@ export interface ResourcesScreenProps {
   emptyMessage: string;
   /** Called when user taps a resource entry; receives the entry's URL */
   onResourceTap: (url: string) => void;
+  /** Translated label: "Back" */
+  backLabel: string;
 }
 
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
 
 export function ResourcesScreen(props: ResourcesScreenProps): React.JSX.Element {
-  const { onBack, isEmpty, resources, emptyMessage, onResourceTap } = props;
+  const { onBack, isEmpty, resources, emptyMessage, onResourceTap, backLabel } = props;
 
   const backButton = (
-    <Pressable onPress={onBack} accessibilityRole="button" style={styles.backButton}>
-      <Text style={styles.backArrow}>{'←'}</Text>
+    <Pressable
+      onPress={onBack}
+      accessibilityRole="button"
+      accessibilityLabel={backLabel}
+      style={styles.backButton}
+    >
+      <Ionicons
+        name="chevron-back"
+        size={24}
+        color="#000"
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
     </Pressable>
   );
 
@@ -86,9 +100,6 @@ const styles = StyleSheet.create({
   backButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-  },
-  backArrow: {
-    fontSize: 24,
   },
   centerContainer: {
     flex: 1,

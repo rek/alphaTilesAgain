@@ -38,6 +38,7 @@ export type GameMenuScreenModernProps = {
     audioInstructions: string;
     score: string;
   };
+  doorLabel: (door: DoorData) => string;
   tabLabels: {
     about: string;
     share: string;
@@ -61,9 +62,10 @@ type CardProps = {
   door: DoorData;
   size: number;
   onPress: () => void;
+  label: string;
 };
 
-function ModernDoorCard({ door, size, onPress }: CardProps): React.JSX.Element {
+function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.Element {
   const fontSize = Math.floor(size * 0.38);
 
   const cardBg = door.visual === 'not-started'
@@ -84,6 +86,7 @@ function ModernDoorCard({ door, size, onPress }: CardProps): React.JSX.Element {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
+      accessibilityLabel={label}
       style={({ pressed }) => [
         styles.card,
         borderProps,
@@ -106,7 +109,14 @@ function ModernDoorCard({ door, size, onPress }: CardProps): React.JSX.Element {
         {door.index}
       </Text>
       {door.visual === 'mastery' && (
-        <Text style={[styles.masteryBadge, { color: door.colorHex }]}>{'✓'}</Text>
+        <Ionicons
+          name="checkmark"
+          size={14}
+          color={door.colorHex}
+          style={styles.masteryBadge}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        />
       )}
     </Pressable>
   );
@@ -129,6 +139,7 @@ export function GameMenuScreenModern({
   onAudioInstructions,
   a11y,
   tabLabels,
+  doorLabel,
 }: GameMenuScreenModernProps): React.JSX.Element {
   const { width } = useWindowDimensions();
   const numColumns = getColumns(width);
@@ -162,13 +173,14 @@ export function GameMenuScreenModern({
         numColumns={numColumns}
         keyExtractor={(item) => String(item.index)}
         contentContainerStyle={[styles.grid, { padding: GRID_PADDING }]}
-        columnWrapperStyle={numColumns > 1 ? { gap: CARD_GAP } : undefined}
-        ItemSeparatorComponent={() => <View style={{ height: CARD_GAP }} />}
+        columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
+        ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
         renderItem={({ item }) => (
           <ModernDoorCard
             door={item}
             size={cardSize}
             onPress={() => { onDoorPress(item.index); }}
+            label={doorLabel(item)}
           />
         )}
       />
@@ -214,6 +226,12 @@ export function GameMenuScreenModern({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  columnWrapper: {
+    gap: CARD_GAP,
+  },
+  itemSeparator: {
+    height: CARD_GAP,
   },
   topBar: {
     flexDirection: 'row',
@@ -270,8 +288,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     end: 8,
-    fontSize: 14,
-    fontWeight: '700',
   },
   pressed: {
     opacity: 0.55,

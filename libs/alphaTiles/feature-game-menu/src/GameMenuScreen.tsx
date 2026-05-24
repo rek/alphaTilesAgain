@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { ImageSourcePropType } from 'react-native';
 import { UiDoorGrid } from '@shared/ui-door-grid';
 import type { DoorItem } from '@shared/ui-door-grid';
@@ -74,7 +75,13 @@ export function GameMenuScreen({
           accessibilityLabel={a11y.back}
           style={styles.backButton}
         >
-          <Text style={styles.backArrow}>{'←'}</Text>
+          <Ionicons
+            name="chevron-back"
+            size={24}
+            color="#000"
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
         </Pressable>
         {playerAvatarSrc !== null ? (
           <Image source={playerAvatarSrc} style={styles.avatar} />
@@ -167,9 +174,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginEnd: 8,
-  },
-  backArrow: {
-    fontSize: 24,
   },
   avatar: {
     width: 36,

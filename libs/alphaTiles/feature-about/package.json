@@ -8,6 +8,7 @@
   "dependencies": {
     "tslib": "^2.3.0",
     "@alphaTiles/data-language-assets": "*",
+    "@expo/vector-icons": "^15.0.3",
     "@shared/util-analytics": "*",
     "@shared/util-i18n": "*",
     "expo-application": "*",

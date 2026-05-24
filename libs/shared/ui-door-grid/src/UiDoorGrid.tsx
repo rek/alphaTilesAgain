@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { UiDoor } from '@shared/ui-door';
 
 export type DoorItem = {
@@ -59,7 +60,14 @@ export function UiDoorGrid({
               accessibilityRole="button"
               accessibilityLabel={a11y.prev}
             >
-              <Text style={styles.arrow}>{'←'}</Text>
+              <Ionicons
+                name="chevron-back"
+                size={24}
+                color="#000"
+                style={styles.arrow}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
             </Pressable>
           )}
           <Text style={styles.pageIndicator}>{`${page + 1} / ${totalPages}`}</Text>
@@ -69,7 +77,14 @@ export function UiDoorGrid({
               accessibilityRole="button"
               accessibilityLabel={a11y.next}
             >
-              <Text style={styles.arrow}>{'→'}</Text>
+              <Ionicons
+                name="chevron-forward"
+                size={24}
+                color="#000"
+                style={styles.arrow}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
             </Pressable>
           )}
         </View>
@@ -93,7 +108,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   arrow: {
-    fontSize: 24,
     paddingHorizontal: 16,
   },
   pageIndicator: {

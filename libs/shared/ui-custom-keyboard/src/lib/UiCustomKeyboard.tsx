@@ -11,6 +11,7 @@
  */
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const KEYS_PER_PAGE = 33;
 const TOTAL_CELLS = 35;
@@ -84,7 +85,13 @@ export function UiCustomKeyboard({
           style={[styles.cell, styles.navCell]}
           onPress={() => setPage((p) => Math.max(0, p - 1))}
         >
-          <Text style={styles.navText}>{'←'}</Text>
+          <Ionicons
+            name="chevron-back"
+            size={20}
+            color="#000"
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
         </Pressable>
       ) : (
         <View key="prev-empty" style={styles.emptyCell} />
@@ -101,7 +108,13 @@ export function UiCustomKeyboard({
           style={[styles.cell, styles.navCell]}
           onPress={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
         >
-          <Text style={styles.navText}>{'→'}</Text>
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color="#000"
+            accessibilityElementsHidden
+            importantForAccessibility="no"
+          />
         </Pressable>
       ) : (
         <View key="next-empty" style={styles.emptyCell} />
@@ -149,10 +162,6 @@ const styles = StyleSheet.create({
   },
   keyText: {
     fontSize: 18,
-    textAlign: 'center',
-  },
-  navText: {
-    fontSize: 20,
     textAlign: 'center',
   },
   backspaceButton: {

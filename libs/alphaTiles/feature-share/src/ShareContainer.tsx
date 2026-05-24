@@ -81,6 +81,7 @@ export function ShareContainer(): React.JSX.Element {
       qrAltLabel={t('chrome:share.qrAlt')}
       unavailableMessage={t('chrome:share.unavailable')}
       onShareTap={onShareTap}
+      backLabel={t('chrome:back')}
     />
   );
 }

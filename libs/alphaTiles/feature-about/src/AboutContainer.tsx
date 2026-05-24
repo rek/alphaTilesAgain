@@ -106,6 +106,7 @@ export function AboutContainer(): React.JSX.Element {
       onWebsiteTap={onWebsiteTap}
       reportIssueLabel={t('chrome:about.reportIssue')}
       onReportIssueTap={onReportIssueTap}
+      backLabel={t('chrome:back')}
     />
   );
 }

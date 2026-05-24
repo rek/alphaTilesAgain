@@ -19,6 +19,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
 
 export interface ShareScreenProps {
@@ -38,6 +39,8 @@ export interface ShareScreenProps {
   unavailableMessage: string;
   /** Called when user taps the share button */
   onShareTap: () => void;
+  /** Translated label: "Back" */
+  backLabel: string;
 }
 
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
@@ -52,6 +55,7 @@ export function ShareScreen(props: ShareScreenProps): React.JSX.Element {
     qrAltLabel,
     unavailableMessage,
     onShareTap,
+    backLabel,
   } = props;
 
   const { width } = useWindowDimensions();
@@ -59,8 +63,19 @@ export function ShareScreen(props: ShareScreenProps): React.JSX.Element {
   const qrSize = Math.min(320, Math.max(192, Math.floor((width * 2) / 3)));
 
   const backButton = (
-    <Pressable onPress={onBack} accessibilityRole="button" style={styles.backButton}>
-      <Text style={styles.backArrow}>{'←'}</Text>
+    <Pressable
+      onPress={onBack}
+      accessibilityRole="button"
+      accessibilityLabel={backLabel}
+      style={styles.backButton}
+    >
+      <Ionicons
+        name="chevron-back"
+        size={24}
+        color="#000"
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      />
     </Pressable>
   );
 
@@ -113,9 +128,6 @@ const styles = StyleSheet.create({
   backButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-  },
-  backArrow: {
-    fontSize: 24,
   },
   container: {
     flex: 1,

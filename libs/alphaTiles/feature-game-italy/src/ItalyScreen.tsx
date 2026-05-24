@@ -19,6 +19,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { ImageSourcePropType } from 'react-native';
 
 export type ItalyBoardCell = {
@@ -163,7 +164,15 @@ export function ItalyScreen({
                         showLoteria ? styles.beanCircleLoteria : styles.beanCircleNormal,
                       ]}
                     >
-                      {showLoteria ? <Text style={styles.beanStar}>★</Text> : null}
+                      {showLoteria ? (
+                        <Ionicons
+                          name="star"
+                          size={28}
+                          color="#5C3D17"
+                          accessibilityElementsHidden
+                          importantForAccessibility="no"
+                        />
+                      ) : null}
                     </View>
                   )}
                 </View>
@@ -276,10 +285,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2C200',
     borderColor: '#A37B00',
     borderWidth: 3,
-  },
-  beanStar: {
-    color: '#5C3D17',
-    fontSize: 28,
-    fontWeight: 'bold',
   },
 });

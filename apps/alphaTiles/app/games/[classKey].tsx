@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useTranslation } from '@shared/util-i18n';
 
 export default function GamePlaceholderRoute() {
   const { classKey, doorIndex, challengeLevel } = useLocalSearchParams<{
@@ -9,13 +10,19 @@ export default function GamePlaceholderRoute() {
     challengeLevel: string;
   }>();
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.root}>
       <Text style={styles.title}>{classKey}</Text>
       <Text style={styles.sub}>Door {doorIndex} · Level {challengeLevel}</Text>
       <Text style={styles.note}>Game not yet implemented</Text>
-      <Pressable style={styles.back} onPress={() => router.back()}>
+      <Pressable
+        style={styles.back}
+        onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel={t('chrome:back')}
+      >
         <Text style={styles.backLabel}>← Back</Text>
       </Pressable>
     </View>

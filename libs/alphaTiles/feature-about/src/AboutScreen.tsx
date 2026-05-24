@@ -9,6 +9,7 @@
 
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 export interface AboutScreenProps {
   /** Called when user taps the back button */
@@ -47,6 +48,8 @@ export interface AboutScreenProps {
   reportIssueLabel: string;
   /** Called when user taps the report-an-issue link */
   onReportIssueTap: () => void;
+  /** Translated label: "Back" */
+  backLabel: string;
 }
 
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
@@ -71,12 +74,24 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
     onWebsiteTap,
     reportIssueLabel,
     onReportIssueTap,
+    backLabel,
   } = props;
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={onBack} accessibilityRole="button" style={styles.backButton}>
-        <Text style={styles.backArrow}>{'←'}</Text>
+      <Pressable
+        onPress={onBack}
+        accessibilityRole="button"
+        accessibilityLabel={backLabel}
+        style={styles.backButton}
+      >
+        <Ionicons
+          name="chevron-back"
+          size={24}
+          color="#000"
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        />
       </Pressable>
     <ScrollView
       style={styles.scroll}
@@ -154,9 +169,6 @@ const styles = StyleSheet.create({
   backButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-  },
-  backArrow: {
-    fontSize: 24,
   },
   scroll: {
     flex: 1,

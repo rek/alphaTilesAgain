@@ -37,6 +37,7 @@ export function ResourcesContainer(): React.JSX.Element {
       resources={rows}
       emptyMessage={t('chrome:resources.empty')}
       onResourceTap={onResourceTap}
+      backLabel={t('chrome:back')}
     />
   );
 }
