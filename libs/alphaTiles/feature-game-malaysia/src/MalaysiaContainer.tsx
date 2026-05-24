@@ -19,6 +19,7 @@ import React, {
 } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useTranslation } from '@shared/util-i18n';
 import {
   useLangAssets,
   usePrecompute,
@@ -38,7 +39,7 @@ import { rowColor, PAGE_SIZE } from './rowColor';
 import { wordsForStage } from './wordsForStage';
 import type { MalaysiaData } from './malaysiaPreProcess';
 
-type RouteParams = Record<string, string | string[] | undefined> & {
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
   icons?: GameShellIcons;
 };
 
@@ -47,6 +48,12 @@ function MalaysiaGame(): React.JSX.Element {
   const audio = useAudio();
   const data = usePrecompute<MalaysiaData>('malaysia');
   const params = useLocalSearchParams<{ stage?: string }>();
+  const { t } = useTranslation();
+
+  const a11yLabels = useMemo(() => ({
+    previousPage: t('chrome:a11y.previous_page'),
+    nextPage: t('chrome:a11y.next_page'),
+  }), [t]);
   const stage = parseInt(
     (Array.isArray(params.stage) ? params.stage[0] : params.stage) ?? '1',
     10,
@@ -170,6 +177,7 @@ function MalaysiaGame(): React.JSX.Element {
       onPress={onPress}
       onPrev={onPrev}
       onNext={onNext}
+      a11yLabels={a11yLabels}
     />
   );
 }

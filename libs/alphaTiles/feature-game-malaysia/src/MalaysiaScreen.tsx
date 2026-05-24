@@ -52,6 +52,11 @@ export type MalaysiaScreenProps = {
   onPress: (rowIndex: number) => void;
   onPrev: () => void;
   onNext: () => void;
+  /** Pre-translated accessibility labels (container owns i18n). */
+  a11yLabels: {
+    previousPage: string;
+    nextPage: string;
+  };
 };
 
 const TEXT_LIGHT = '#FFFFFF';
@@ -77,6 +82,7 @@ export function MalaysiaScreen({
   onPress,
   onPrev,
   onNext,
+  a11yLabels,
 }: MalaysiaScreenProps): React.JSX.Element {
   const { width, height } = useWindowDimensions();
 
@@ -143,7 +149,7 @@ export function MalaysiaScreen({
           onPress={disabled || !showPrev ? undefined : onPrev}
           disabled={disabled || !showPrev}
           accessibilityRole="button"
-          accessibilityLabel="Previous page"
+          accessibilityLabel={a11yLabels.previousPage}
           accessibilityState={{ disabled: disabled || !showPrev }}
           style={[styles.arrowSlot, !showPrev && styles.arrowHidden]}
         >
@@ -166,7 +172,7 @@ export function MalaysiaScreen({
           onPress={disabled || !showNext ? undefined : onNext}
           disabled={disabled || !showNext}
           accessibilityRole="button"
-          accessibilityLabel="Next page"
+          accessibilityLabel={a11yLabels.nextPage}
           accessibilityState={{ disabled: disabled || !showNext }}
           style={[styles.arrowSlot, !showNext && styles.arrowHidden]}
         >

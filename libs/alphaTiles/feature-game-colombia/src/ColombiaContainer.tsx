@@ -14,6 +14,7 @@ import React, {
 } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
 import {
@@ -42,7 +43,7 @@ import type {
 } from './types';
 import type { SyllableRow } from './drawSyllableDistractor';
 
-type RouteParams = Record<string, string | string[] | undefined> & {
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
   icons?: GameShellIcons;
 };
 
@@ -98,6 +99,13 @@ function ColombiaGame({
   } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
+  const { t } = useTranslation();
+
+  const a11yLabels = useMemo(() => ({
+    previousPage: t('chrome:a11y.previous_page'),
+    nextPage: t('chrome:a11y.next_page'),
+    delete: t('chrome:a11y.delete'),
+  }), [t]);
 
   const scriptType = (assets.langInfo.find('Script type') ?? 'Roman') as ScriptType;
   const placeholderChar = assets.langInfo.find('Placeholder character') ?? '◌';
@@ -347,6 +355,7 @@ function ColombiaGame({
         onKeyPress={() => undefined}
         onPageChange={() => undefined}
         onImagePress={() => undefined}
+        a11yLabels={a11yLabels}
       />
     );
   }
@@ -394,6 +403,7 @@ function ColombiaGame({
       onKeyPress={onKeyPress}
       onPageChange={onPageChange}
       onImagePress={onImagePress}
+      a11yLabels={a11yLabels}
     />
   );
 }

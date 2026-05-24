@@ -50,6 +50,10 @@ export type GameShellScreenProps = {
   instructionsLabel: string;
   scoreLabel: string;
   celebrationBackLabel: string;
+  /** Pre-translated accessibility labels (container owns i18n). */
+  a11yLabels: {
+    advance: string;
+  };
   // Handlers
   onBackPress: () => void;
   onReplayPress: () => void;
@@ -87,6 +91,7 @@ export function GameShellScreen({
   children,
   celebrationSource = { uri: 'https://assets10.lottiefiles.com/packages/lf20_jR229r.json' },
   icons,
+  a11yLabels,
 }: GameShellScreenProps): React.JSX.Element {
   const trackerIcons =
     icons?.trackerComplete && icons?.trackerIncomplete
@@ -163,7 +168,7 @@ export function GameShellScreen({
           <Pressable
             onPress={onAdvancePress}
             style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
-            accessibilityLabel="advance"
+            accessibilityLabel={a11yLabels.advance}
             accessibilityRole="button"
             disabled={interactionLocked || advanceArrow === 'gray'}
           >

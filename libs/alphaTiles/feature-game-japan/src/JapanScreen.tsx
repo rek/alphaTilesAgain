@@ -44,6 +44,10 @@ export type JapanScreenProps = {
   wordImage?: ImageSourcePropType;
   /** When true, mirrors icon/image content via scaleX: -1 (Java line 99-104). */
   rtl?: boolean;
+  /** Pre-translated accessibility labels (container owns i18n). */
+  a11yLabels: {
+    joinTiles: string;
+  };
 };
 
 function TileBox({
@@ -84,10 +88,12 @@ function LinkButton({
   visible,
   clickable,
   onPress,
+  label,
 }: {
   visible: boolean;
   clickable: boolean;
   onPress: () => void;
+  label: string;
 }): React.JSX.Element {
   if (!visible) {
     return <View style={styles.linkButtonSpacer} />;
@@ -102,7 +108,7 @@ function LinkButton({
       ]}
       hitSlop={LINK_BTN_HIT}
       accessibilityRole="button"
-      accessibilityLabel="join tiles"
+      accessibilityLabel={label}
       accessibilityState={{ disabled: !clickable }}
     >
       <View style={[styles.linkButtonDot, !clickable && styles.linkButtonDotLocked]} />
@@ -118,6 +124,7 @@ export function JapanScreen({
   wordText,
   wordImage,
   rtl = false,
+  a11yLabels,
 }: JapanScreenProps): React.JSX.Element {
   const mirror: ImageStyle | null = rtl ? { transform: [{ scaleX: -1 }] } : null;
 
@@ -158,6 +165,7 @@ export function JapanScreen({
                   visible={showLink}
                   clickable={linkClickable}
                   onPress={() => onJoin(gi - 1)}
+                  label={a11yLabels.joinTiles}
                 />
               )}
               {group.tiles.map((tile, ti) => (

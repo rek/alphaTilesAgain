@@ -49,6 +49,11 @@ export type IraqScreenProps = {
   onTilePress: (indexOnPage: number) => void;
   onPrev: () => void;
   onNext: () => void;
+  /** Pre-translated accessibility labels (container owns i18n). */
+  a11yLabels: {
+    previousPage: string;
+    nextPage: string;
+  };
 };
 
 const TILE_OVERLAY_BG = '#FFFFFF';
@@ -67,6 +72,7 @@ export function IraqScreen({
   onTilePress,
   onPrev,
   onNext,
+  a11yLabels,
 }: IraqScreenProps): React.JSX.Element {
   const { width, height } = useWindowDimensions();
   const gridWidth = Math.min(width - 32, height * 1.4);
@@ -135,7 +141,7 @@ export function IraqScreen({
         <Pressable
           onPress={interactionLocked || !showPrev ? undefined : onPrev}
           accessibilityRole="button"
-          accessibilityLabel="Previous page"
+          accessibilityLabel={a11yLabels.previousPage}
           accessibilityState={{ disabled: interactionLocked || !showPrev }}
           style={[
             styles.arrow,
@@ -153,7 +159,7 @@ export function IraqScreen({
         <Pressable
           onPress={interactionLocked || !showNext ? undefined : onNext}
           accessibilityRole="button"
-          accessibilityLabel="Next page"
+          accessibilityLabel={a11yLabels.nextPage}
           accessibilityState={{ disabled: interactionLocked || !showNext }}
           style={[
             styles.arrow,

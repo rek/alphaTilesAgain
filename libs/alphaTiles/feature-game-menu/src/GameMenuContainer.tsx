@@ -36,10 +36,7 @@ export function GameMenuContainer(): React.JSX.Element {
   function onDoorPress(doorIndex: number): void {
     const door = allDoors.find((d) => d.index === doorIndex);
     if (!door) return;
-    track({
-      type: 'screen_viewed',
-      props: { screenName: `game/${door.classKey}` },
-    });
+    track('screen_viewed', { screenName: `game/${door.classKey}` });
     router.push({
       pathname: '/games/[classKey]',
       params: {
@@ -99,6 +96,8 @@ export function GameMenuContainer(): React.JSX.Element {
       resources: t('menu.tabs.resources'),
       audioInstructions: t('menu.tabs.audio'),
     },
+    doorLabel: (door: { index: number; visual: 'not-started' | 'in-process' | 'mastery' }) =>
+      t('menu.a11y.door', { index: door.index, state: door.visual }),
   };
 
   return <GameMenuScreenModern {...commonProps} allDoors={allDoors} />;

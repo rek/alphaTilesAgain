@@ -16,6 +16,7 @@
  * Pagination prev/next bounded; visibility derived in screen from page/pageCount.
  */
 import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
 import {
@@ -37,6 +38,12 @@ function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
   const audio = useAudio();
   const assets = useLangAssets();
   const data = usePrecompute<SudanData>('sudan');
+  const { t } = useTranslation();
+
+  const a11yLabels = useMemo(() => ({
+    previousPage: t('chrome:a11y.previous_page'),
+    nextPage: t('chrome:a11y.next_page'),
+  }), [t]);
 
   const isSyllable = syllableGame === 'S';
   const hasSyllableAudio = useMemo(
@@ -122,6 +129,7 @@ function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
         onPrev={onPrev}
         onNext={onNext}
         onSyllable={onSyllablePress}
+        a11yLabels={a11yLabels}
       />
     );
   }
@@ -136,6 +144,7 @@ function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
       onPrev={onPrev}
       onNext={onNext}
       onTile={onTilePress}
+      a11yLabels={a11yLabels}
     />
   );
 }

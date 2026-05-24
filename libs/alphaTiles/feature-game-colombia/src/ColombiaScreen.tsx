@@ -55,6 +55,12 @@ export type ColombiaScreenProps = {
   onPageChange: (delta: 1 | -1) => void;
   /** Tap the word image to replay audio. */
   onImagePress: () => void;
+  /** Pre-translated accessibility labels (container owns i18n). */
+  a11yLabels: {
+    previousPage: string;
+    nextPage: string;
+    delete: string;
+  };
 };
 
 export function ColombiaScreen({
@@ -71,6 +77,7 @@ export function ColombiaScreen({
   onKeyPress,
   onPageChange,
   onImagePress,
+  a11yLabels,
 }: ColombiaScreenProps): React.JSX.Element {
   const { width, height } = useWindowDimensions();
   const imageSize = Math.min(Math.floor(width * 0.4), Math.floor(height * 0.28));
@@ -146,7 +153,7 @@ export function ColombiaScreen({
           <Pressable
             onPress={onFirstPage || interactionLocked ? undefined : () => onPageChange(-1)}
             style={[styles.navBtn, onFirstPage && styles.navBtnInactive]}
-            accessibilityLabel="previous page"
+            accessibilityLabel={a11yLabels.previousPage}
             accessibilityRole="button"
           >
             <Text style={styles.navText}>{'<'}</Text>
@@ -158,7 +165,7 @@ export function ColombiaScreen({
         <Pressable
           onPress={interactionLocked ? undefined : onDelete}
           style={[styles.deleteBtn, interactionLocked && styles.deleteBtnDisabled]}
-          accessibilityLabel="delete"
+          accessibilityLabel={a11yLabels.delete}
           accessibilityRole="button"
         >
           <Text style={styles.deleteText}>{'<-'}</Text>
@@ -168,7 +175,7 @@ export function ColombiaScreen({
           <Pressable
             onPress={onLastPage || interactionLocked ? undefined : () => onPageChange(1)}
             style={[styles.navBtn, onLastPage && styles.navBtnInactive]}
-            accessibilityLabel="next page"
+            accessibilityLabel={a11yLabels.nextPage}
             accessibilityRole="button"
           >
             <Text style={styles.navText}>{'>'}</Text>

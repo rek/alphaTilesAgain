@@ -332,6 +332,10 @@ export function GameShellContainer({
   // Score from progress entry
   const score = progressEntry.points;
 
+  const a11yLabels = useMemo(() => ({
+    advance: t('a11y.advance'),
+  }), [t]);
+
   const screenProps: GameShellScreenProps = {
     score,
     gameNumber,
@@ -356,6 +360,7 @@ export function GameShellContainer({
     celebrationSource,
     icons,
     children,
+    a11yLabels,
   };
 
   const contextValue = useMemo(() => ({

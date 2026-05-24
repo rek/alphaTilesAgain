@@ -20,6 +20,7 @@
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ImageSourcePropType } from 'react-native';
+import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
 import {
@@ -49,7 +50,7 @@ import { stripInstructionCharacters } from './stripInstructionCharacters';
 type Word = LangAssets['words']['rows'][number];
 type TileRow = LangAssets['tiles']['rows'][number];
 
-type RouteParams = Record<string, string | string[] | undefined> & {
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
   icons?: GameShellIcons;
 };
 
@@ -66,6 +67,12 @@ function IraqGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Ele
   const shell = useGameShell();
   const audio = useAudio();
   const assets = useLangAssets();
+  const { t } = useTranslation();
+
+  const a11yLabels = useMemo(() => ({
+    previousPage: t('chrome:a11y.previous_page'),
+    nextPage: t('chrome:a11y.next_page'),
+  }), [t]);
 
   const tileRows = assets.tiles.rows;
   const wordRows = assets.words.rows;
@@ -242,6 +249,7 @@ function IraqGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Ele
       onTilePress={onTilePress}
       onPrev={onPrev}
       onNext={onNext}
+      a11yLabels={a11yLabels}
     />
   );
 }

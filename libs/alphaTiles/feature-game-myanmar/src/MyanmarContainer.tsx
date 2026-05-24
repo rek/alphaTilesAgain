@@ -34,7 +34,7 @@ import { matchPath } from './matchPath';
 import { stackAppend, EMPTY_STACK } from './stackAppend';
 import type { StackState } from './stackAppend';
 
-type RouteParams = Record<string, string | string[] | undefined> & {
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
   icons?: GameShellIcons;
 };
 

@@ -13,6 +13,7 @@ const SOLVED_COLOR = '#4CAF50';
 const UNSOLVED_COLOR = '#1565C0';
 const BLANK_COLOR = '#E0E0E0';
 const IMAGE_BG = '#555555';
+const GAP = 3;
 
 type CellColor = 'solved' | 'unsolved' | 'blank';
 
@@ -24,6 +25,10 @@ export type ChinaScreenProps = {
   interactionLocked: boolean;
   onTilePress: (index: number) => void;
   onImagePress: (index: number) => void;
+  /** Pre-translated accessibility labels (container owns i18n). */
+  a11yLabels: {
+    emptyTile: string;
+  };
 };
 
 function cellBgColor(color: CellColor): string {
@@ -40,6 +45,7 @@ export function ChinaScreen({
   interactionLocked,
   onTilePress,
   onImagePress,
+  a11yLabels,
 }: ChinaScreenProps): React.JSX.Element {
   const { width, height } = useWindowDimensions();
 
@@ -47,12 +53,11 @@ export function ChinaScreen({
   const byWidth = Math.floor(width / 5);
   const byHeight = Math.floor((height * 0.72) / 4);
   const cellSize = Math.max(40, Math.min(byWidth, byHeight));
-  const gap = 3;
 
   return (
     <View style={styles.root}>
       {/* Left strip: one word image per row */}
-      <View style={{ flexDirection: 'column', gap }}>
+      <View style={styles.imageStrip}>
         {wordImages.map((img, i) => (
           <Pressable
             key={i}
@@ -79,9 +84,9 @@ export function ChinaScreen({
       </View>
 
       {/* 4×4 tile grid */}
-      <View style={{ marginStart: gap }}>
+      <View style={styles.gridContainer}>
         {[0, 1, 2, 3].map((row) => (
-          <View key={row} style={{ flexDirection: 'row', gap, marginBottom: row < 3 ? gap : 0 }}>
+          <View key={row} style={[styles.gridRow, row < 3 && styles.gridRowGap]}>
             {[0, 1, 2, 3].map((col) => {
               const idx = row * 4 + col;
               const isBlank = idx === blankIndex;
@@ -97,7 +102,7 @@ export function ChinaScreen({
                     { width: cellSize, height: cellSize, backgroundColor: bg },
                     pressed && !isBlank && styles.pressed,
                   ]}
-                  accessibilityLabel={isBlank ? 'empty' : text}
+                  accessibilityLabel={isBlank ? a11yLabels.emptyTile : text}
                   accessibilityRole={isBlank ? 'none' : 'button'}
                 >
                   {!isBlank && (
@@ -121,6 +126,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+  },
+  imageStrip: {
+    flexDirection: 'column',
+    gap: GAP,
+  },
+  gridContainer: {
+    marginStart: GAP,
+  },
+  gridRow: {
+    flexDirection: 'row',
+    gap: GAP,
+  },
+  gridRowGap: {
+    marginBottom: GAP,
   },
   imageCell: {
     borderRadius: 6,

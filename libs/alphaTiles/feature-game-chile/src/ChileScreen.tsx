@@ -18,6 +18,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { ColorTile, TileColor } from './evaluateGuess';
 
 const TILE_BG: Record<TileColor, string> = {
@@ -58,6 +59,12 @@ export type ChileScreenProps = {
    * (Chile.java:87–90 RTL parity). Submit checkmark stays unflipped.
    */
   rtl?: boolean;
+  /** Pre-translated accessibility labels (container owns i18n). */
+  a11yLabels: {
+    backspace: string;
+    playAgain: string;
+    submit: string;
+  };
 };
 
 const TILE_GAP = 4;
@@ -75,6 +82,7 @@ export function ChileScreen({
   showReset = false,
   onReset,
   rtl = false,
+  a11yLabels,
 }: ChileScreenProps): React.JSX.Element {
   const { width } = useWindowDimensions();
   const iconFlip = rtl ? styles.iconFlipped : null;
@@ -140,7 +148,7 @@ export function ChileScreen({
         <Pressable
           style={({ pressed }) => [styles.actionButton, pressed && styles.pressed]}
           onPress={onBackspace}
-          accessibilityLabel="backspace"
+          accessibilityLabel={a11yLabels.backspace}
           accessibilityRole="button"
         >
           <Text style={[styles.actionButtonText, iconFlip]}>⌫</Text>
@@ -150,7 +158,7 @@ export function ChileScreen({
           <Pressable
             style={({ pressed }) => [styles.actionButton, styles.resetButton, pressed && styles.pressed]}
             onPress={onReset}
-            accessibilityLabel="play again"
+            accessibilityLabel={a11yLabels.playAgain}
             accessibilityRole="button"
           >
             <Text style={[styles.actionButtonText, iconFlip]}>↺</Text>
@@ -159,10 +167,16 @@ export function ChileScreen({
           <Pressable
             style={({ pressed }) => [styles.actionButton, styles.submitButton, pressed && styles.pressed]}
             onPress={onSubmitGuess}
-            accessibilityLabel="submit guess"
+            accessibilityLabel={a11yLabels.submit}
             accessibilityRole="button"
           >
-            <Text style={styles.actionButtonText}>✓</Text>
+            <Ionicons
+              name="checkmark"
+              size={22}
+              color={TILE_TEXT_COLOR}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
           </Pressable>
         )}
       </View>

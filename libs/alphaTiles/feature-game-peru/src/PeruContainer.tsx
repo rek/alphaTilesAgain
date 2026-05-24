@@ -25,7 +25,7 @@ import { buildAllChoices } from './buildAllChoices';
 import type { ChoiceLevel } from './buildAllChoices';
 import { buildSameTypePools } from './buildSameTypePools';
 
-type RouteParams = Record<string, string | string[] | undefined> & {
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
   icons?: GameShellIcons;
 };
 

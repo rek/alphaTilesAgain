@@ -9,6 +9,7 @@
  */
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { ImageSourcePropType } from 'react-native';
+import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
 import {
@@ -149,6 +150,11 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
   } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
+  const { t } = useTranslation();
+
+  const a11yLabels = useMemo(() => ({
+    joinTiles: t('chrome:a11y.join_tiles'),
+  }), [t]);
 
   const maxTiles = MAX_TILES_BY_LEVEL[challengeLevel] ?? DEFAULT_MAX_TILES;
 
@@ -404,6 +410,7 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
         onSeparate={noop}
         wordText="?"
         rtl={isRTL}
+        a11yLabels={a11yLabels}
       />
     );
   }
@@ -421,6 +428,7 @@ function JapanGame({ challengeLevel }: JapanGameProps): React.JSX.Element {
       wordText={wordText}
       wordImage={wordImage}
       rtl={isRTL}
+      a11yLabels={a11yLabels}
     />
   );
 }

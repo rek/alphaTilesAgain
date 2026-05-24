@@ -18,6 +18,7 @@
  * Lose: last row, no win → append secret in GREEN, showReset.
  */
 import React, { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
 import {
@@ -59,6 +60,13 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
   const assets = useLangAssets();
   const audio = useAudio();
   const chileData = usePrecompute<ChileData>('chile');
+  const { t } = useTranslation();
+
+  const a11yLabels = useMemo(() => ({
+    backspace: t('chrome:a11y.backspace'),
+    playAgain: t('chrome:a11y.play_again'),
+    submit: t('chrome:a11y.submit_guess'),
+  }), [t]);
 
   // Read baseGuessCount from settings (Chile.java:309)
   const baseGuessCount = useMemo(
@@ -227,6 +235,7 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
       showReset={showReset}
       onReset={onReset}
       rtl={rtl}
+      a11yLabels={a11yLabels}
     />
   );
 }

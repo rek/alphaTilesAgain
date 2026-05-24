@@ -46,7 +46,7 @@ type WordRow = LangAssets['words']['rows'][number];
 type TileRow = LangAssets['tiles']['rows'][number];
 type SyllableRow = LangAssets['syllables']['rows'][number];
 
-type RouteParams = Record<string, string | string[] | undefined> & {
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
   icons?: GameShellIcons;
 };
 

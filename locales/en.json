@@ -105,7 +105,15 @@
       "door": "Door {{number}}",
       "game_tile": "Game Tile {{id}}",
       "active_word": "Word In Focus",
-      "play_audio_instructions": "Play Audio Instructions"
+      "play_audio_instructions": "Play Audio Instructions",
+      "empty_tile": "Empty tile",
+      "join_tiles": "Join tiles",
+      "previous_page": "Previous page",
+      "next_page": "Next page",
+      "submit_guess": "Submit guess",
+      "advance": "Advance",
+      "delete": "Delete",
+      "play_again": "Play again"
     }
   }
 }

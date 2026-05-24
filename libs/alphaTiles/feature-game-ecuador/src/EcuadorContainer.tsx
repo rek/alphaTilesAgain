@@ -23,7 +23,7 @@ import { pickEcuadorWords } from './pickEcuadorWords';
 import { placeTiles } from './placeTiles';
 import { tileColor } from './tileColor';
 
-type RouteParams = Record<string, string | string[] | undefined> & {
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
   icons?: GameShellIcons;
 };
 

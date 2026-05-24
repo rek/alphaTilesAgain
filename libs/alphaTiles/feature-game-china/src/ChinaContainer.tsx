@@ -8,6 +8,7 @@
  */
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import type { ImageSourcePropType } from 'react-native';
+import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
 import {
@@ -39,7 +40,9 @@ type CurrentWords = {
 
 const MOVES_BY_CHALLENGE: Record<number, number> = { 1: 5, 2: 10, 3: 15 };
 
-type RouteParams = Record<string, string | string[] | undefined> & { icons?: GameShellIcons };
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
@@ -50,6 +53,11 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
   const audio = useAudio();
   const assets = useLangAssets();
   const chinaData = usePrecompute<ChinaData>('china');
+  const { t } = useTranslation();
+
+  const a11yLabels = useMemo(() => ({
+    emptyTile: t('chrome:a11y.empty_tile'),
+  }), [t]);
 
   const scriptType = assets.langInfo.find('Script type') ?? 'Roman';
   const placeholderChar = assets.langInfo.find('Placeholder character') ?? '◌';
@@ -212,6 +220,7 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
         interactionLocked
         onTilePress={() => undefined}
         onImagePress={() => undefined}
+        a11yLabels={a11yLabels}
       />
     );
   }
@@ -228,6 +237,7 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
         interactionLocked={interactionLocked}
         onTilePress={onTilePress}
         onImagePress={onImagePress}
+        a11yLabels={a11yLabels}
       />
     </>
   );

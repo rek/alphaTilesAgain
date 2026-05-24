@@ -6,6 +6,7 @@
 //
 // When adding a new game that uses registerPrecompute, add an entry here.
 import { registerPrecompute } from '@shared/util-precompute';
+import type { LangAssets } from '@alphaTiles/data-language-pack';
 import { buildRomaniaData } from '@alphaTiles/feature-game-romania';
 import { buildChinaData } from '@alphaTiles/feature-game-china';
 import { chilePreProcess } from '@alphaTiles/feature-game-chile';
@@ -25,5 +26,5 @@ registerPrecompute('brazil', brazilPreProcess);
 registerPrecompute('mexico', buildMexicoData);
 registerPrecompute('georgia', georgiaPreProcess);
 registerPrecompute('malaysia', malaysiaPreProcess);
-registerPrecompute('sudan', (assets) => buildSudanData(assets, 7));
+registerPrecompute('sudan', (assets: LangAssets) => buildSudanData(assets, 7));
 registerPrecompute('taiwan', buildTaiwanData);

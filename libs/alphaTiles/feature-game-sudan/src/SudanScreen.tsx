@@ -14,6 +14,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const GAP = 4;
 const TEXT_LIGHT = '#FFFFFF';
@@ -46,6 +47,11 @@ type CommonProps = {
   disabled: boolean;
   onPrev: () => void;
   onNext: () => void;
+  /** Pre-translated accessibility labels (container owns i18n). */
+  a11yLabels: {
+    previousPage: string;
+    nextPage: string;
+  };
 };
 
 export type SudanScreenProps =
@@ -127,7 +133,7 @@ export function SudanScreen(props: SudanScreenProps): React.JSX.Element {
       <View style={styles.arrowRow}>
         {showPrev ? (
           <Pressable
-            accessibilityLabel="previous page"
+            accessibilityLabel={props.a11yLabels.previousPage}
             accessibilityRole="button"
             accessibilityState={{ disabled: props.disabled }}
             onPress={props.disabled ? undefined : props.onPrev}
@@ -137,7 +143,13 @@ export function SudanScreen(props: SudanScreenProps): React.JSX.Element {
               props.disabled && styles.arrowDisabled,
             ]}
           >
-            <Text style={styles.arrowText}>{'←'}</Text>
+            <Ionicons
+              name="chevron-back"
+              size={22}
+              color={TEXT_LIGHT}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
           </Pressable>
         ) : (
           <View style={styles.arrowSpacer} />
@@ -151,7 +163,7 @@ export function SudanScreen(props: SudanScreenProps): React.JSX.Element {
 
         {showNext ? (
           <Pressable
-            accessibilityLabel="next page"
+            accessibilityLabel={props.a11yLabels.nextPage}
             accessibilityRole="button"
             accessibilityState={{ disabled: props.disabled }}
             onPress={props.disabled ? undefined : props.onNext}
@@ -161,7 +173,13 @@ export function SudanScreen(props: SudanScreenProps): React.JSX.Element {
               props.disabled && styles.arrowDisabled,
             ]}
           >
-            <Text style={styles.arrowText}>{'→'}</Text>
+            <Ionicons
+              name="chevron-forward"
+              size={22}
+              color={TEXT_LIGHT}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
           </Pressable>
         ) : (
           <View style={styles.arrowSpacer} />
@@ -216,11 +234,6 @@ const styles = StyleSheet.create({
   arrowSpacer: {
     minWidth: 56,
     minHeight: 44,
-  },
-  arrowText: {
-    color: TEXT_LIGHT,
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   arrowDisabled: {
     opacity: 0.5,
