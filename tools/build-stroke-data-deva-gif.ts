@@ -549,7 +549,9 @@ async function maskToPotraceSvg(
   // Step 3: extra Gaussian blur on top of bilinear (≈1 source pixel) for
   // potrace's curve fit to land on smoother contours.
   const blurred = createCanvas(W, H);
-  const blctx = blurred.getContext('2d');
+  // node-canvas exposes `filter` on its 2D context; DOM CanvasRenderingContext2D
+  // doesn't include it in lib.dom — narrow back to the node-canvas shape.
+  const blctx = blurred.getContext('2d') as ReturnType<typeof blurred.getContext> & { filter: string };
   blctx.filter = `blur(${SCALE / 2}px)`;
   blctx.drawImage(big, 0, 0);
   const png = blurred.toBuffer('image/png');

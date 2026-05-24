@@ -41,8 +41,7 @@ export function ErrorScreen({ error }: Props): React.JSX.Element {
   return (
     <View
       style={styles.container}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      accessibilityLiveRegion={'assertive' as any}
+      accessibilityLiveRegion="assertive"
       accessibilityRole="alert"
     >
       <ScrollView contentContainerStyle={styles.content}>

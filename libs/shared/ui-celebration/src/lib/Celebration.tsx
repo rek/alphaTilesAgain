@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { BackHandler, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import LottieView from 'lottie-react-native';
 import type { AnimationObject } from 'lottie-react-native';
@@ -16,14 +16,11 @@ export function Celebration({
   backLabel,
   onMount,
 }: CelebrationProps): React.JSX.Element {
-  const called = useRef(false);
-
   useEffect(() => {
-    if (!called.current) {
-      called.current = true;
-      onMount?.();
-    }
-  }, [onMount]);
+    onMount?.();
+    // Mount-only — fire once when Celebration appears.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Suppress Android hardware-back during celebration (mirrors Celebration.java:25-30).
   useEffect(() => {

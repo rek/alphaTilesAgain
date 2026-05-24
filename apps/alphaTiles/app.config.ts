@@ -107,7 +107,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     icon: resolvedIcon,
     scheme: `alphatiles-${lang}`,
     userInterfaceStyle: 'automatic',
-    newArchEnabled: true,
+    // newArchEnabled is supported by Expo runtime but not in @expo/config-types yet.
+    ...({ newArchEnabled: true } as Record<string, unknown>),
     ios: {
       supportsTablet: true,
       bundleIdentifier: `org.alphatilesapp.alphatilesagain.${lang}`,
@@ -120,7 +121,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundImage: './assets/images/android-icon-background.png',
         monochromeImage: './assets/images/android-icon-monochrome.png',
       },
-      edgeToEdgeEnabled: true,
+      // edgeToEdgeEnabled landed in Expo 53/54 Android config but isn't in
+      // @expo/config-types yet (as of our pin). Cast keeps the runtime value.
+      ...({ edgeToEdgeEnabled: true } as Record<string, unknown>),
       predictiveBackGestureEnabled: false,
     },
     web: {

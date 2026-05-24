@@ -433,7 +433,8 @@ async function maskToPotraceSvg(
   }
   // Slight blur on source-pixel edges.
   const blurred = createCanvas(w, h);
-  const bctx = blurred.getContext('2d');
+  // node-canvas exposes `filter` on its 2D context; DOM type doesn't.
+  const bctx = blurred.getContext('2d') as ReturnType<typeof blurred.getContext> & { filter: string };
   bctx.filter = 'blur(1px)';
   bctx.drawImage(canvas, 0, 0);
   const png = blurred.toBuffer('image/png');
