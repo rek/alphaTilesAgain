@@ -13,6 +13,7 @@
     "android": "nx run-android alphaTiles",
     "ios": "nx run-ios alphaTiles",
     "web": "nx serve alphaTiles",
+    "typecheck": "nx run alphaTiles:typecheck",
     "postinstall": "patch-package"
   },
   "devDependencies": {

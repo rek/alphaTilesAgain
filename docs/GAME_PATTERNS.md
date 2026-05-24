@@ -180,17 +180,26 @@ Use when the game needs a filtered/transformed view of pack data that is:
 - Identical every run (pack is immutable at runtime)
 
 ```ts
-// build<Name>Data.ts
+// libs/alphaTiles/feature-game-<name>/src/build<Name>Data.ts
 export type <Name>Data = { ... };
 
-function build<Name>Data(assets: LangAssets): <Name>Data { ... }
+export function build<Name>Data(assets: LangAssets): <Name>Data { ... }
+```
 
-registerPrecompute('<name>', build<Name>Data);   // side-effect at module load
-export { build<Name>Data };
+```ts
+// apps/alphaTiles/app/registerPrecomputes.ts — central registry
+import { registerPrecompute } from '@shared/util-precompute';
+import { build<Name>Data } from '@alphaTiles/feature-game-<name>';
 
+registerPrecompute('<name>', build<Name>Data);
+```
+
+```ts
 // container:
 const data = usePrecompute<<Name>Data>('<name>');
 ```
+
+**Why central, not module-load:** registering inside `build<Name>Data.ts` pulls every game's container + screen into the boot bundle as a transitive import. The central `registerPrecomputes.ts` imports *only* the pure `build*Data` functions, so game UI stays out of the main chunk and is loaded lazily per route. When adding a new game with a precompute, add one line to `registerPrecomputes.ts`.
 
 When a precompute has too little data (empty buckets), **log a warning and return empty arrays — do not throw.** Let the container detect empty state and show a friendly error screen with a back button.
 

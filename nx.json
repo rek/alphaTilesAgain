@@ -95,6 +95,7 @@
       "inputs": ["default", "^default", "{workspaceRoot}/jest.preset.js"]
     },
     "lint": { "cache": true, "inputs": ["default"], "options": { "command": "eslint . --max-warnings 0" } },
+    "typecheck": { "cache": true, "inputs": ["default", "^default", "{workspaceRoot}/tsconfig.base.json"] },
     "start": { "cache": false },
     "run-ios": { "cache": false },
     "run-android": { "cache": false },
