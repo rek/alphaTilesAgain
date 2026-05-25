@@ -77,6 +77,20 @@ const DOOR_CONTENT: Record<string, DoorContent> = {
     what: 'Plays a Cantonese word, then plays its first character on its own. The student picks that first character from six choices.',
     good: 'Hearing where one syllable ends and the next begins — useful for any student moving from listening to reading.',
   },
+  'georgia-2-S': {
+    title: 'First-syllable identification — 12 choices',
+    difficulty: 'Medium',
+    mechanic: 'Georgia · syllable choice',
+    what: 'Same listen-then-tap format as the 6-choice door, but the student must find the correct first character in a grid of twelve.',
+    good: 'Students comfortable with the 6-choice version who want more characters competing for their attention.',
+  },
+  'georgia-3-S': {
+    title: 'First-syllable identification — 18 choices',
+    difficulty: 'Hard',
+    mechanic: 'Georgia · syllable choice',
+    what: 'Same listen-then-tap format with the largest choice grid: eighteen syllables, roughly a third of the full pool visible per round.',
+    good: 'Advanced listening — the student is effectively scanning the whole syllable inventory to recognise the target.',
+  },
 };
 
 const DIFFICULTY_STYLES: Record<DoorContent['difficulty'], string> = {

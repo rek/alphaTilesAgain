@@ -8,3 +8,5 @@ Door	Country	ChallengeLevel	Color	InstructionAudio	AudioDuration	SyllOrTile	Stag
 7	Taiwan	2	1	X	0	T	-
 8	Taiwan	3	2	X	0	T	-
 9	Georgia	1	1	X	0	S	-
+10	Georgia	2	2	X	0	S	-
+11	Georgia	3	3	X	0	S	-
