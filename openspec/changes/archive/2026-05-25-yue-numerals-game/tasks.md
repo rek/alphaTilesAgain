@@ -59,6 +59,8 @@ Add 12 Cantonese numeral characters to the `yue` pack (tiles, words, syllables, 
 
 ## 7. Manual smoke test
 
+**Status at archive: deferred — requires browser + audio (no e2e harness in v1, per `docs/ARCHITECTURE.md` §15).** Static verification done via validator + manifest + typecheck + lint (all green). Customer / next-touching contributor should run these before relying on the doors.
+
 - [ ] 7.1 Build the yue web bundle: `nx start-web-yue alphaTiles` (or `APP_LANG=yue EXPO_BASE_URL=/alphaTilesAgain/yue npx nx run alphaTiles:web-export` for a full export check). Confirm bundle compiles with no errors and route count matches.
 - [ ] 7.2 Open `/menu` in a browser. Confirm 11 door tiles render (was 9; the two new ones are Doors 10 + 11 with the new colours).
 - [ ] 7.3 Tap Door 10 (Georgia CL2 S). Confirm: a Cantonese word plays, then its first syllable plays in isolation, then 12 syllable choices render in a grid. Tap the correct one — confirm the correct-answer fanfare fires and the score increments.
@@ -75,10 +77,5 @@ Add 12 Cantonese numeral characters to the `yue` pack (tiles, words, syllables, 
 
 ## 9. Commit + PR
 
-- [ ] 9.1 Stage the pack changes in logical commits (suggested split):
-  - `feat(yue): add 12 numeral characters to tiles, words, syllables` (text-file appends + the duplicated audio copies)
-  - `feat(yue): generate numeral reference images` (the new `tools/build-numeral-images.ts` + 12 PNGs)
-  - `chore(yue): regenerate stroke data for numerals` (12 new stroke JSONs from build-stroke-data)
-  - `feat(yue): add Georgia CL2/CL3 syllable doors + landing guide entries` (aa_games.txt + cantoneseDoors.generated.ts + cantoneseGuide.tsx)
-- [ ] 9.2 Open PR titled `feat(yue): numeral game pack data + Georgia CL2/3 doors` linking issue #28.
-- [ ] 9.3 In the PR description, summarise the unresolved customer items from task 8.1 so reviewers know the gap is intentional.
+- [x] 9.1 Staged + committed in the planned 5-way split, plus one follow-up `style(yue): normalize aa_gametiles.txt line endings to CRLF`. Pushed to origin/main (6 commits: 78f2e53, 5d57572, 3ce0057, 2d82054, 4638794, 67e6138).
+- [~] 9.2 / 9.3 **N/A** — user chose direct-to-main over PR-based merge. No PR opened. Customer follow-up items (8.1) live in the issue-#28 comment thread instead of a PR description.
