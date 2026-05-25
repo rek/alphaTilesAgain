@@ -103,3 +103,15 @@ tiles	Or1	Or2	Or3	Type	AudioName	Upper	Type2	AudioName2	Type3	AudioName3	Placeho
 蕃茄	紅蘿蔔	薯仔	青豆	X	tomato	蕃茄	none	X	none	X	0	0	0	-	-	3
 紅蘿蔔	薯仔	青豆	菜心	X	carrot	紅蘿蔔	none	X	none	X	0	0	0	-	-	3
 薯仔	青豆	菜心	青瓜	X	potato	薯仔	none	X	none	X	0	0	0	-	-	3
+一	二	三	五	X	zz_1	一	none	X	none	X	0	0	0	1	-	-
+二	三	五	六	X	zz_2	二	none	X	none	X	0	0	0	1	-	-
+三	五	六	七	X	zz_3	三	none	X	none	X	0	0	0	1	-	-
+五	六	七	八	X	zz_5	五	none	X	none	X	0	0	0	1	-	-
+六	七	八	九	X	zz_6	六	none	X	none	X	0	0	0	1	-	-
+七	八	九	十	X	zz_7	七	none	X	none	X	0	0	0	1	-	-
+八	九	十	百	X	zz_8	八	none	X	none	X	0	0	0	1	-	-
+九	十	百	千	X	zz_9	九	none	X	none	X	0	0	0	1	-	-
+十	百	千	萬	X	zz_10	十	none	X	none	X	0	0	0	1	-	-
+百	千	萬	一	X	zz_100	百	none	X	none	X	0	0	0	1	-	-
+千	萬	一	二	X	zz_1000	千	none	X	none	X	0	0	0	1	-	-
+萬	一	二	三	X	zz_10000	萬	none	X	none	X	0	0	0	1	-	-
