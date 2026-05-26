@@ -162,3 +162,4 @@ Syllable	Or1	Or2	Or3	SyllableAudioName	Duration	Color
 百				百	405	4
 千				千	766	5
 萬				萬	755	6
+四				四	706	7

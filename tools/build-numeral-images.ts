@@ -26,6 +26,7 @@ const NUMERALS: ReadonlyArray<readonly [string, string]> = [
   ['zz_1', '1'],
   ['zz_2', '2'],
   ['zz_3', '3'],
+  ['zz_4', '4'],
   ['zz_5', '5'],
   ['zz_6', '6'],
   ['zz_7', '7'],
