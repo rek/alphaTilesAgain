@@ -8,7 +8,7 @@ type DoorContent = {
   good: string;
 };
 
-// Hand-authored description per (country, challengeLevel, syllOrTile).
+// Hand-authored description per (classKey, challengeLevel, syllOrTile).
 // Source-of-truth door list comes from cantoneseDoors.generated.ts (regen via
 // `bun tools/generate-cantonese-doors.ts` after editing languages/yue/aa_games.txt).
 // If yue adds a row whose key is not in this map, the page renders an explicit
@@ -170,7 +170,7 @@ export function CantoneseGuide() {
                       <div className="rounded-lg border border-amber-300 bg-amber-50 text-amber-900 p-4">
                         <p className="font-semibold mb-1">No description for this door yet.</p>
                         <p className="text-sm font-mono">
-                          {row.country} · CL {row.challengeLevel} · {row.syllOrTile}
+                          {row.classKey} · CL {row.challengeLevel} · {row.syllOrTile}
                         </p>
                         <p className="text-sm mt-2">
                           Add an entry to <code className="font-mono">DOOR_CONTENT</code> in
