@@ -1,26 +1,23 @@
 ## ADDED Requirements
 
-### Requirement: Replacement Syllable Audio For Twelve Yue Characters
+### Requirement: Replacement Syllable Audio For Thirteen Yue Characters
 
-The `yue` language pack SHALL ship hand-recorded single-syllable audio (supplied by the language community per issue #27) for the first 12 characters in the Taiwan writing-game's stroke-count-sorted rotation: `人 士 女 丈 大 上 下 工 小 叉 公 夫`. Each file SHALL live at `languages/yue/audio/syllables/<char>.mp3`, overwriting the auto-`silencedetect`-cut clip shipped by the archived `yue-syllable-game` change. The destination filename SHALL be exactly the character (e.g. `女.mp3`), with no index prefix or whitespace.
+The `yue` language pack SHALL ship hand-recorded single-syllable audio (supplied by the language community per issue #27) for the first 13 characters in the Taiwan writing-game's stroke-count-sorted rotation: `人 士 女 丈 大 上 下 工 小 叉 手 公 夫`. Each file SHALL live at `languages/yue/audio/syllables/<char>.mp3`, overwriting the auto-`silencedetect`-cut clip shipped by the archived `yue-syllable-game` change. The destination filename SHALL be exactly the character (e.g. `女.mp3`), with no index prefix or whitespace.
 
-The 13th sort-position character (`手`) SHALL remain on its existing auto-cut clip pending customer confirmation on issue #27 of whether they intend to re-record it.
-
-#### Scenario: All 12 customer-supplied files land at the expected destination paths
-- **GIVEN** the customer has supplied 12 mp3 files in a bundle with index-prefixed filenames
+#### Scenario: All 13 customer-supplied files land at the expected destination paths
+- **GIVEN** the customer has supplied 13 mp3 files (12 in an initial bundle with index-prefixed filenames, plus `011 手.mp3` supplied separately in the issue-#27 follow-up)
 - **WHEN** the change is applied
-- **THEN** `languages/yue/audio/syllables/人.mp3`, `士.mp3`, `女.mp3`, `丈.mp3`, `大.mp3`, `上.mp3`, `下.mp3`, `工.mp3`, `小.mp3`, `叉.mp3`, `公.mp3`, and `夫.mp3` each contain the bytes of the corresponding customer-supplied file
+- **THEN** `languages/yue/audio/syllables/人.mp3`, `士.mp3`, `女.mp3`, `丈.mp3`, `大.mp3`, `上.mp3`, `下.mp3`, `工.mp3`, `小.mp3`, `叉.mp3`, `手.mp3`, `公.mp3`, and `夫.mp3` each contain the bytes of the corresponding customer-supplied file
 - **AND** none of those filenames contain leading whitespace, trailing whitespace, or an index prefix
-- **AND** `手.mp3` is unchanged from its pre-change state
 
 #### Scenario: Validator accepts the asset swap
-- **GIVEN** the 12 files have been overwritten
+- **GIVEN** the 13 files have been overwritten
 - **WHEN** `APP_LANG=yue tools/validate-lang-pack.ts` runs
 - **THEN** it reports zero errors
 - **AND** `checkAudioReferences` confirms every `aa_syllables.txt` row resolves to a non-empty file
 
 #### Scenario: Manifest counts unchanged from HEAD
-- **GIVEN** the 12 files have been overwritten
+- **GIVEN** the 13 files have been overwritten
 - **WHEN** `APP_LANG=yue tools/generate-lang-manifest.ts` runs
 - **THEN** `apps/alphaTiles/src/generated/langManifest.ts` shows zero diff
 - **AND** the syllables / words / tiles counts remain at the HEAD baseline (163 / 114 / 116 — the post-`yue-numerals-game` state)

@@ -5,14 +5,13 @@
  * `@jamsch/react-native-hanzi-writer` worklet code path (TDZ on
  * `getPathString` in Node SSR — see openspec/changes/game-taiwan/STATUS.md).
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useHanziWriter } from '@jamsch/react-native-hanzi-writer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
-import { useCallback } from 'react';
 import {
   GameShellContainer,
   useGameShell,
@@ -21,6 +20,7 @@ import {
 } from '@alphaTiles/feature-game-shell';
 import { TaiwanScreen } from './TaiwanScreen';
 import { pickTaiwanCharacters } from './pickTaiwanCharacters';
+import { pickAudioForChar } from './pickAudioForChar';
 import type { TaiwanData } from './buildTaiwanData';
 import type { StrokeData } from '@alphaTiles/data-stroke-data';
 
@@ -77,11 +77,18 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
 
   const currentChar = roundChars[currentCharIndex] ?? roundChars[0] ?? '';
 
-  const onRepeat = useCallback(() => {
-    const audioId = taiwanData.audioForChar[currentChar];
-    if (audioId) void audio.playWord(audioId);
-  }, [audio, currentChar, taiwanData.audioForChar]);
-  useShellRepeat(onRepeat);
+  // Syllable-first with compound-word fallback (yue-writing-audio § D1, D6 —
+  // Curtis confirmed on issue #27 that repeat and completion play the same audio).
+  const playCharAudio = useCallback(() => {
+    const choice = pickAudioForChar({
+      char: currentChar,
+      syllables: assets.audio.syllables,
+      audioForChar: taiwanData.audioForChar,
+    });
+    if (choice.kind === 'syllable') void audio.playSyllable(choice.char);
+    else if (choice.kind === 'word') void audio.playWord(choice.lwc);
+  }, [audio, assets.audio.syllables, currentChar, taiwanData.audioForChar]);
+  useShellRepeat(playCharAudio);
 
   if (roundChars.length === 0) {
     return (
@@ -93,10 +100,7 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
 
   function handleCharComplete(strokeCount: number): void {
     shell.incrementPointsAndTracker(true, strokeCount);
-    const audioId = taiwanData.audioForChar[currentChar];
-    if (audioId) {
-      void audio.playWord(audioId);
-    }
+    playCharAudio();
     if (currentCharIndex + 1 >= roundChars.length) {
       // Round complete — reshuffle and start over. The 12-correct celebration
       // fires automatically once the shell tracker hits its threshold (D5).

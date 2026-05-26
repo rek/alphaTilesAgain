@@ -6,16 +6,15 @@
 - [ ] 0.4 Read `libs/alphaTiles/feature-game-taiwan/src/TaiwanInner.tsx` (both audio call sites: `onRepeat` at line ~80-83, `handleCharComplete` audio block at line ~97-99) and `buildTaiwanData.ts` lines 48-56 (compound-fallback construction).
 - [ ] 0.5 Read `libs/alphaTiles/data-audio/src/lib/useAudio.ts` lines 95-118 (`playSyllable` silent-no-op-on-missing semantics) and `libs/alphaTiles/data-language-pack/src/LangAssets.ts:53-62` (confirm `audio.syllables` is `Record<string, number>` — a pack-shipped predicate, not a runtime-loaded one).
 - [ ] 0.6 Read `openspec/changes/game-taiwan/specs/game-taiwan/spec.md` lines 97-109 — the stale "Character Audio On Completion" requirement that this change supersedes (design § D8).
-- [ ] 0.7 Confirm Curtis's reply on issue #27 — if `手` was intentionally omitted (keep auto-cut) or if he supplies a recording (add to scope) and whether the repeat button should mirror completion (provisional default) or stay compound (override).
-- [ ] 0.8 If Curtis's answer changes scope (e.g. supplies `手`, or wants compound on repeat), update `proposal.md` / `design.md` § D6 / `specs/yue-writing-audio/spec.md` before continuing.
+- [x] 0.7 Curtis replied on issue #27 (2026-05-26): supplied fresh `011 手.mp3` (Drive link) + confirmed repeat button SHOULD mirror completion (syllable-first). Scope is 13 files; no behaviour split between repeat and completion.
+- [x] 0.8 Updated `proposal.md`, `design.md` (§§ D2, D3, D6, D7, Open Questions), and `specs/yue-writing-audio/spec.md` to reflect 13-file scope and resolved repeat-button question.
 
 ## 1. Asset Swap
 
-- [ ] 1.1 Quick listening pass on Curtis's 12 files vs the existing auto-cut clips in `languages/yue/audio/syllables/` to confirm they're materially different and the customer recordings sound correct.
+- [ ] 1.1 Quick listening pass on Curtis's 13 files vs the existing auto-cut clips in `languages/yue/audio/syllables/` to confirm they're materially different and the customer recordings sound correct.
 - [ ] 1.2 Loudness sanity check — sample 2-3 of Curtis's files and 2-3 existing auto-cut files; if there's a clear volume cliff, run `ffmpeg -af loudnorm` over Curtis's bundle before copying. Otherwise skip.
-- [ ] 1.3 Copy Curtis's 12 mp3s into place with normalised filenames (per D2 mapping table in `design.md`). One `cp` per file; do not script for a one-shot.
-- [ ] 1.4 Verify exactly 12 files in `git status --short languages/yue/audio/syllables/` show as modified — no new files, no deletions.
-- [ ] 1.5 Confirm `languages/yue/audio/syllables/手.mp3` is unchanged from `HEAD`.
+- [ ] 1.3 Copy Curtis's 13 mp3s into place with normalised filenames (per D2 mapping table in `design.md`). One `cp` per file; do not script for a one-shot.
+- [ ] 1.4 Verify exactly 13 files in `git status --short languages/yue/audio/syllables/` show as modified — no new files, no deletions.
 
 ## 2. Engine: Pure Helper
 
@@ -44,11 +43,11 @@
 - [ ] 5.1 `APP_LANG=yue` web build runs without TypeScript errors: `npx tsc --noEmit` (or `nx typecheck feature-game-taiwan` if scoped target exists).
 - [ ] 5.2 `nx start-web-yue alphaTiles` — boot the yue build, navigate to Door 6 (Taiwan CL1).
 - [ ] 5.3 Trace the first character (`人`); confirm the audio that plays is Curtis's `人.mp3` (not a compound word).
-- [ ] 5.4 Press the repeat button on `人`; confirm the same audio plays (provisional default per D6 — may flip based on Curtis's reply).
+- [ ] 5.4 Press the repeat button on `人`; confirm the same syllable audio plays (Curtis confirmed syllable-first on repeat per D6).
 - [ ] 5.5 Trace through positions 2-10 (`士 女 丈 大 上 下 工 小 叉`) confirming each plays the corresponding customer recording.
-- [ ] 5.6 Trace position 11 (`手`); confirm it plays the existing (auto-cut) `手.mp3`.
+- [ ] 5.6 Trace position 11 (`手`); confirm it plays Curtis's `手.mp3` (the freshly supplied recording, not the prior auto-cut clip).
 - [ ] 5.7 Trace positions 12-13 (`公 夫`) confirming customer recordings.
-- [ ] 5.8 Trace a character past position 13 (e.g. `心` at position 15) and confirm it plays the auto-cut syllable clip, not the compound — proves the engine swap applies pack-wide, not just to the 12 replaced files.
+- [ ] 5.8 Trace a character past position 13 (e.g. `心` at position 15) and confirm it plays the auto-cut syllable clip, not the compound — proves the engine swap applies pack-wide, not just to the 13 replaced files.
 - [ ] 5.9 Repeat smoke on Door 7 (Taiwan CL2) and Door 8 (Taiwan CL3) — same characters, audio behaviour should be identical (CL only affects rendering, not audio source).
 - [ ] 5.10 Verify Door 9 (Georgia S) still plays audio correctly — Georgia is unchanged, regression check.
 - [ ] 5.11 Verify Doors 10-11 (Georgia CL2 / CL3 S — added by `yue-numerals-game`) still play audio correctly. Trace through a few numerals via the Taiwan rotation (`一`, `二`, etc.) — confirm syllable audio plays for numerals too.
@@ -75,14 +74,13 @@
 ## 9. OTA + Commit Hygiene
 
 - [ ] 9.1 Compose conventional-commits messages per `docs/COMMIT_CONVENTIONS.md` (≤50 chars subject, no capital first letter). Suggested split:
-  - `chore(yue): re-record 12 syllable mp3s (#27)`
+  - `chore(yue): re-record 13 syllable mp3s (#27)`
   - `feat(game-taiwan): syllable audio on completion (#27)`
   - `test(game-taiwan): cover pickAudioForChar branches`
-- [ ] 9.2 Push branch, open PR linking issue #27 and the proposal folder. PR description SHOULD note that the repeat-button behaviour is provisional (D6) and may flip pending Curtis's reply.
+- [ ] 9.2 Push branch, open PR linking issue #27 and the proposal folder.
 - [ ] 9.3 After merge, plan OTA update: `eas update --branch yue --message "fix(audio): per-syllable audio in writing game"` (per `docs/decisions/ADR-009`).
 
 ## 10. Followups
 
-- [ ] 10.1 If Curtis confirms `手` should be re-recorded, raise a tiny follow-up change adding the 13th file.
-- [ ] 10.2 Open a coordinated edit / comment on `openspec/changes/game-taiwan/` notifying the owner that lines 97-109 of `specs/game-taiwan/spec.md` need the reconciliation in `design.md` § D8 before archive — including the `assets.tileAudio` → `assets.audio.syllables` surface-name fix.
-- [ ] 10.3 Comment on issue #27 with the merge commit hash and OTA channel info so Curtis can confirm in-app.
+- [ ] 10.1 Open a coordinated edit / comment on `openspec/changes/game-taiwan/` notifying the owner that lines 97-109 of `specs/game-taiwan/spec.md` need the reconciliation in `design.md` § D8 before archive — including the `assets.tileAudio` → `assets.audio.syllables` surface-name fix.
+- [ ] 10.2 Comment on issue #27 with the merge commit hash and OTA channel info so Curtis can confirm in-app.
