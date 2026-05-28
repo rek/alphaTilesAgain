@@ -2,7 +2,27 @@
 
 Living doc. Updated after each game is archived. Read before proposing or implementing any `game-*` change.
 
-Latest entry: **yue-syllable-game archived** (2026-05-14) — first reuse of an existing game class for a new pack-data feature; Georgia S-mode gained isolated-syllable playback.
+Latest entry: **yue-composite-numerals applied** (2026-05-28) — shell `replayWord` falls back to a syllable chain when per-word audio is absent but `wordInLOP` decomposes into known syllables; validator downgrades `MISSING_WORD_AUDIO` to a warning for such rows.
+
+---
+
+## Syllable-chain audio fallback in shell (from yue-composite-numerals)
+
+When a word entry has no `audio/words/<lwc>.mp3` but its `wordInLOP` fully decomposes into known syllables, the shell's `replayWord` plays each constituent syllable's clip in sequence with a `GAP_MS` natural pause (`150 ms` initial value). Pattern lives in `GameShellContainer.replayWord` — branches on `audio.getWordDuration(lwc)`:
+
+- **A — handle present:** `audio.playWord(lwc)` (legacy path).
+- **B — handle absent + decomposable:** schedule recursive `setTimeout(playStep(i+1), getSyllableDuration(syll) ?? FALLBACK_MS + GAP_MS)`, lock interaction for the chain's lifetime, unlock in the final timer step.
+- **C — handle absent + indecomposable:** fall through to `audio.playWord` (warn-once no-op).
+
+Critical: this is **NOT smoothed concat**. Each syllable's leading/trailing micro-silence is preserved and the `GAP_MS` gap is intentional — pedagogically the gap *is* a teaching cue ("this is X, this is Y, together = XY"). Concatenating clips end-to-end was rejected for tone-sandhi and connected-speech reasons.
+
+Timer-ref hygiene (mirrors `docs/GAME_PATTERNS.md` "Deferred audio after a clip"):
+- Single-slot ref `chainTimerRef`, overwritten each step.
+- Cleared at every `setRefWord` transition (wrapped setter exposed via context).
+- Cleared on AppState `background|inactive`.
+- Cleared in unmount cleanup.
+
+Validator: `checkAudioReferences` downgrades `MISSING_WORD_AUDIO` from `error` to `warning` when `Has syllable audio: TRUE` and the LOP decomposes — keeps the build green while signaling the missing recording. When Curtis-style real recordings arrive, the warning vanishes automatically.
 
 ---
 

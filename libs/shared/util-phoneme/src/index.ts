@@ -7,3 +7,4 @@ export { registerScriptParser } from './scriptRegistry';
 export type { ScriptParser } from './scriptRegistry';
 export { combineTilesToMakeWord } from './combineTilesToMakeWord';
 export { standardizeWordSequence } from './standardizeWordSequence';
+export { parseWordIntoSyllables } from './parseWordIntoSyllables';

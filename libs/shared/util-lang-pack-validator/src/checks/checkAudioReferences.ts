@@ -19,6 +19,7 @@ import type { ParsedPack } from '@shared/util-lang-pack-parser';
 import type { FileInventory } from '../FileInventory';
 import { ISSUE_CODES } from '../issueCodes';
 import { wordDistance } from '../levenshtein';
+import { parseWordIntoSyllables } from '@shared/util-phoneme';
 
 const CATEGORY = 'audio-reference';
 
@@ -125,22 +126,37 @@ export function checkAudioReferences(
   }
 
   // Word audio checks — every word LWC must have an audio file
+  // EXCEPT: if the pack has syllable audio AND the word's LOP fully decomposes
+  // into syllables whose audio is present, the engine's shell can play a
+  // syllable-chain fallback. In that case the missing word audio is downgraded
+  // to a warning (yue-composite-numerals).
   for (let i = 0; i < words.rows.length; i++) {
     const row = words.rows[i];
     const lineNumber = i + 2;
     const lwc = row.wordInLWC;
     referencedWordAudio.add(lwc);
     if (!inventory.wordAudio.includes(lwc)) {
-      const suggestion = findTypoSuggestion(lwc, inventory.wordAudio);
+      const decomposable =
+        hasSyllableAudio &&
+        (() => {
+          const parts = parseWordIntoSyllables(row.wordInLOP, syllables.rows);
+          if (parts.length === 0) return false;
+          return parts.every((s) => inventory.syllableAudio.includes(s.audioName));
+        })();
+      const suggestion = decomposable
+        ? null
+        : findTypoSuggestion(lwc, inventory.wordAudio);
       issues.push({
-        severity: 'error',
+        severity: decomposable ? 'warning' : 'error',
         code: ISSUE_CODES.MISSING_WORD_AUDIO,
         category: CATEGORY,
         file: 'aa_wordlist.txt',
         line: lineNumber,
         column: 'wordInLWC',
-        message: `Word "${lwc}" is missing audio file audio/words/${lwc}.mp3${suggestion ? ` (did you mean "${suggestion}"?)` : ''}`,
-        context: { audioName: lwc, word: lwc, suggestion },
+        message: decomposable
+          ? `Word "${lwc}" has no audio/words/${lwc}.mp3; shell will play syllable chain for "${row.wordInLOP}"`
+          : `Word "${lwc}" is missing audio file audio/words/${lwc}.mp3${suggestion ? ` (did you mean "${suggestion}"?)` : ''}`,
+        context: { audioName: lwc, word: lwc, suggestion, decomposable },
       });
     } else if (inventory.sizes) {
       const size = inventory.sizes[lwc] ?? 0;

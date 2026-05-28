@@ -37,7 +37,7 @@ import { buildTileChoicesRandom } from './buildTileChoicesRandom';
 import { buildTileChoicesHard } from './buildTileChoicesHard';
 import { buildSyllableChoicesRandom } from './buildSyllableChoicesRandom';
 import { buildSyllableChoicesHard } from './buildSyllableChoicesHard';
-import { parseWordIntoSyllables } from './parseWordIntoSyllables';
+import { parseWordIntoSyllables } from '@shared/util-phoneme';
 import { shuffleArray } from './shuffleArray';
 import { stripInstructionCharacters } from './stripInstructionCharacters';
 import type { GeorgiaData } from './georgiaPreProcess';

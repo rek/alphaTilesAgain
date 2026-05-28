@@ -7,24 +7,25 @@
  * Greedy longest-prefix match against the syllable list (sorted by descending
  * length). Returns [] if the word can't be fully parsed; caller retries with
  * another word.
+ *
+ * Generic over the row type so this util has no dependency on the alphaTiles
+ * data layer (util→nothing dep rule). Caller passes any objects with a
+ * `syllable: string` field; the full row type is preserved in the return.
  */
-import type { LangAssets } from '@alphaTiles/data-language-assets';
 
-type SyllableRow = LangAssets['syllables']['rows'][number];
-
-export function parseWordIntoSyllables(
+export function parseWordIntoSyllables<T extends { syllable: string }>(
   wordInLOP: string,
-  syllables: SyllableRow[],
-): SyllableRow[] {
+  syllables: T[],
+): T[] {
   if (syllables.length === 0) return [];
   const sorted = [...syllables].sort(
     (a, b) => b.syllable.length - a.syllable.length,
   );
   const lop = wordInLOP.replace(/[#.]/g, '');
-  const result: SyllableRow[] = [];
+  const result: T[] = [];
   let i = 0;
   while (i < lop.length) {
-    let matched: SyllableRow | undefined;
+    let matched: T | undefined;
     for (const s of sorted) {
       if (s.syllable.length > 0 && lop.startsWith(s.syllable, i)) {
         matched = s;

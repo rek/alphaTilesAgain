@@ -37,6 +37,12 @@ const NUMERALS: ReadonlyArray<readonly [string, string]> = [
   ['zz_100', '100'],
   ['zz_1000', '1000'],
   ['zz_10000', '10000'],
+  // Composites (yue-composite-numerals smoke-test batch)
+  ['zz_20', '20'],
+  ['zz_30', '30'],
+  ['zz_50', '50'],
+  ['zz_203', '203'],
+  ['zz_1000000', '1000000'],
 ];
 
 function fontPxForLabel(label: string): number {
@@ -45,7 +51,9 @@ function fontPxForLabel(label: string): number {
   if (label.length <= 2) return 280;
   if (label.length <= 3) return 220;
   if (label.length <= 4) return 170;
-  return 140;
+  if (label.length <= 5) return 140;
+  if (label.length <= 6) return 115;
+  return 100;
 }
 
 function renderOne(lwc: string, label: string): void {

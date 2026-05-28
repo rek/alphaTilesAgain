@@ -35,6 +35,7 @@ import {
   shouldIncrementTracker,
   displayChallengeLevel,
 } from '@alphaTiles/util-scoring';
+import { parseWordIntoSyllables } from '@shared/util-phoneme';
 import { GameShellContextProvider } from './GameShellContext';
 import { GameShellScreen } from './GameShellScreen';
 import type { GameShellScreenProps, GameShellIcons } from './GameShellScreen';
@@ -44,6 +45,13 @@ import { buildNextGameHref } from './buildNextGameHref';
 // Java timing constants — preserved verbatim (GameActivity.java:342, 412)
 const CELEBRATION_DELAY_MS = 1800; // correctSoundDuration + this before celebration shows
 const NEXT_GAME_DELAY_MS = 4500;   // total delay before navigating to next game
+
+// Syllable-chain fallback constants (yue-composite-numerals)
+// GAP_MS: silent pause between syllables — teaching cue, not concat.
+// FALLBACK_MS: per-syllable duration when getSyllableDuration returns undefined
+// (matches observed mean of yue base-numeral clips ~400–940ms).
+const GAP_MS = 150;
+const FALLBACK_MS = 700;
 
 type GameShellContainerProps = {
   children: React.ReactNode;
@@ -156,6 +164,14 @@ export function GameShellContainer({
   // Timer refs — cleared on unmount (mirrors GameActivity.java soundSequencer + nextScreenTimer)
   const celebrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nextGameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Syllable-chain fallback timer (single slot, overwritten each step).
+  const chainTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearChain = useCallback(() => {
+    if (chainTimerRef.current) {
+      clearTimeout(chainTimerRef.current);
+      chainTimerRef.current = null;
+    }
+  }, []);
 
   // Optional mechanic-registered callback for the advance arrow
   const onAdvanceRef = useRef<(() => void) | null>(null);
@@ -178,6 +194,11 @@ export function GameShellContainer({
       if (state === 'background' || state === 'inactive') {
         // useAudio doesn't expose pauseAll; we stop current sounds via a no-op
         // The expo-audio system doesn't play in background so this is a guard.
+        // Cancel any in-flight syllable chain so it doesn't fire on resume.
+        if (chainTimerRef.current) {
+          clearTimeout(chainTimerRef.current);
+          chainTimerRef.current = null;
+        }
       }
       // Audio resumes naturally when the app returns to 'active'.
     });
@@ -207,8 +228,19 @@ export function GameShellContainer({
     return () => {
       if (celebrationTimerRef.current) clearTimeout(celebrationTimerRef.current);
       if (nextGameTimerRef.current) clearTimeout(nextGameTimerRef.current);
+      if (chainTimerRef.current) clearTimeout(chainTimerRef.current);
     };
   }, []);
+
+  // Wrap setRefWord so a round transition cancels any in-flight syllable chain
+  // from the previous word (yue-composite-numerals).
+  const setRefWordWithChainClear = useCallback(
+    (next: { wordInLOP: string; wordInLWC: string } | null) => {
+      clearChain();
+      setRefWord(next);
+    },
+    [clearChain],
+  );
 
   // ── after12checkedTrackers handling (GameActivity.java:316-413) ──────────
   const handleMastery = useCallback(() => {
@@ -279,11 +311,41 @@ export function GameShellContainer({
     [country, gameUniqueId, incrementPoints, incrementTracker, handleMastery],
   );
 
+  // replayWord — three branches:
+  //   A: per-word audio handle exists → play it (legacy single-clip path).
+  //   B: no word handle but LOP fully decomposes into known syllables →
+  //      schedule a syllable chain via setTimeout timer-ref. Locks interaction
+  //      for the chain's total duration; unlocks on the final timer step.
+  //   C: neither resolves → no-op (audio layer's warn-once handles the log).
   const replayWord = useCallback(() => {
-    if (refWord) {
+    if (!refWord) return;
+    clearChain();
+    if (audio.getWordDuration(refWord.wordInLWC) !== undefined) {
       audio.playWord(refWord.wordInLWC);
+      return;
     }
-  }, [refWord, audio]);
+    const parts = parseWordIntoSyllables(refWord.wordInLOP, assets.syllables.rows);
+    if (parts.length === 0) {
+      // Branch C: fall through to playWord which emits the warn-once message.
+      audio.playWord(refWord.wordInLWC);
+      return;
+    }
+    setInteractionLocked(true);
+    const playStep = (i: number) => {
+      const syll = parts[i];
+      audio.playSyllable(syll.syllable);
+      const dur = audio.getSyllableDuration(syll.syllable) ?? FALLBACK_MS;
+      if (i + 1 < parts.length) {
+        chainTimerRef.current = setTimeout(() => playStep(i + 1), dur + GAP_MS);
+      } else {
+        chainTimerRef.current = setTimeout(() => {
+          chainTimerRef.current = null;
+          setInteractionLocked(false);
+        }, dur);
+      }
+    };
+    playStep(0);
+  }, [refWord, audio, assets.syllables.rows, clearChain]);
 
   const handleBackPress = useCallback(() => {
     if (showCelebration) return;
@@ -369,7 +431,7 @@ export function GameShellContainer({
     interactionLocked,
     setInteractionLocked,
     refWord,
-    setRefWord,
+    setRefWord: setRefWordWithChainClear,
     progressEntry,
     gameUniqueId,
     setOnAdvance,
@@ -380,7 +442,7 @@ export function GameShellContainer({
     interactionLocked,
     setInteractionLocked,
     refWord,
-    setRefWord,
+    setRefWordWithChainClear,
     progressEntry,
     gameUniqueId,
     setOnAdvance,
