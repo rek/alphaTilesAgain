@@ -116,3 +116,4 @@ tiles	Or1	Or2	Or3	Type	AudioName	Upper	Type2	AudioName2	Type3	AudioName3	Placeho
 百	千	萬	一	X	zz_100	百	none	X	none	X	0	0	0	1	-	-
 千	萬	一	二	X	zz_1000	千	none	X	none	X	0	0	0	1	-	-
 萬	一	二	三	X	zz_10000	萬	none	X	none	X	0	0	0	1	-	-
+零	一	二	三	X	zz_0	零	none	X	none	X	0	0	0	1	-	-

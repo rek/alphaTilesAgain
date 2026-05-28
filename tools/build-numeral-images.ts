@@ -23,6 +23,7 @@ const FG = '#1565C0';
 
 // (lwc, label) pairs. Lwc matches aa_wordlist.txt rows.
 const NUMERALS: ReadonlyArray<readonly [string, string]> = [
+  ['zz_0', '0'],
   ['zz_1', '1'],
   ['zz_2', '2'],
   ['zz_3', '3'],
