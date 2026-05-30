@@ -17,8 +17,8 @@ const baseParsed = {
   },
   words: {
     rows: [
-      { wordInLWC: 'act' },
-      { wordInLWC: 'bag' },
+      { wordInLWC: 'act', wordInLOP: 'act' },
+      { wordInLWC: 'bag', wordInLOP: 'bag' },
     ],
   },
   syllables: { rows: [] as Array<{ syllable: string; audioName: string }> },
@@ -104,7 +104,7 @@ describe('resolveAudio', () => {
   it('throws LangAssetsBindError (word-audio) on missing word audio', () => {
     const parsed = {
       ...baseParsed,
-      words: { rows: [{ wordInLWC: 'missing_word' }] },
+      words: { rows: [{ wordInLWC: 'missing_word', wordInLOP: 'missing_word' }] },
     };
     expect(() => resolveAudio(baseManifestAudio, parsed)).toThrow(
       LangAssetsBindError,
@@ -112,6 +112,48 @@ describe('resolveAudio', () => {
     expect(() => resolveAudio(baseManifestAudio, parsed)).toThrow(
       /word-audio/,
     );
+  });
+
+  it('tolerates missing word audio when LOP decomposes into available syllables', () => {
+    // zz_20 "二十" has no word recording but decomposes into 二 + 十, both
+    // having syllable audio — shell plays the syllable chain (yue composites).
+    const parsed = {
+      ...baseParsed,
+      words: { rows: [{ wordInLWC: 'zz_20', wordInLOP: '二十' }] },
+      syllables: {
+        rows: [
+          { syllable: '二', audioName: 'zz_ji6' },
+          { syllable: '十', audioName: 'zz_sap6' },
+        ],
+      },
+    };
+    const audio = {
+      ...baseManifestAudio,
+      syllables: { zz_ji6: 400, zz_sap6: 401 },
+    };
+    const result = resolveAudio(audio, parsed);
+    expect('zz_20' in result.words).toBe(false);
+    expect(result.syllables['二']).toBe(400);
+    expect(result.syllables['十']).toBe(401);
+  });
+
+  it('throws on missing word audio when only some syllables have audio', () => {
+    // Partial decomposition must NOT be tolerated — would play a broken chain.
+    const parsed = {
+      ...baseParsed,
+      words: { rows: [{ wordInLWC: 'zz_20', wordInLOP: '二十' }] },
+      syllables: {
+        rows: [
+          { syllable: '二', audioName: 'zz_ji6' },
+          { syllable: '十', audioName: 'zz_sap6' },
+        ],
+      },
+    };
+    const audio = {
+      ...baseManifestAudio,
+      syllables: { zz_ji6: 400 }, // 十 audio missing
+    };
+    expect(() => resolveAudio(audio, parsed)).toThrow(/word-audio/);
   });
 
   it('includes syllables keyed by syllable.syllable', () => {
