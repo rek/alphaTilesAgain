@@ -16,6 +16,7 @@ import {
   GameShellContainer,
   useGameShell,
   useShellRepeat,
+  useShellAdvance,
   type GameShellIcons,
 } from '@alphaTiles/feature-game-shell';
 import { TaiwanScreen } from './TaiwanScreen';
@@ -90,6 +91,19 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
   }, [audio, assets.audio.syllables, currentChar, taiwanData.audioForChar]);
   useShellRepeat(playCharAudio);
 
+  // Move to the next character; reshuffle + restart when the round is done.
+  // Shared by stroke-completion and the shell advance arrow (manual skip —
+  // skip awards no points, it just moves on).
+  const goToNext = useCallback(() => {
+    if (currentCharIndex + 1 >= roundChars.length) {
+      setRoundSeed((s) => s + 1);
+      setCurrentCharIndex(0);
+    } else {
+      setCurrentCharIndex((idx) => idx + 1);
+    }
+  }, [currentCharIndex, roundChars.length]);
+  useShellAdvance(goToNext);
+
   if (roundChars.length === 0) {
     return (
       <View style={styles.empty}>
@@ -99,16 +113,11 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
   }
 
   function handleCharComplete(strokeCount: number): void {
+    // The 12-correct celebration fires automatically once the shell tracker
+    // hits its threshold (D5); goToNext reshuffles when the round completes.
     shell.incrementPointsAndTracker(true, strokeCount);
     playCharAudio();
-    if (currentCharIndex + 1 >= roundChars.length) {
-      // Round complete — reshuffle and start over. The 12-correct celebration
-      // fires automatically once the shell tracker hits its threshold (D5).
-      setRoundSeed((s) => s + 1);
-      setCurrentCharIndex(0);
-    } else {
-      setCurrentCharIndex((idx) => idx + 1);
-    }
+    goToNext();
   }
 
   return (

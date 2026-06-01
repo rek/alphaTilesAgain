@@ -5,6 +5,7 @@ import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
+  useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
 import { decodeThailandChallengeLevel } from './decodeThailandChallengeLevel';
 import { setupThailandRound } from './setupThailandRound';
@@ -186,6 +187,10 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   // mount-only — acceptable empty-deps useEffect per CODE_STYLE.md §Hooks
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Shell advance arrow = manual skip to the next question (startRound clears
+  // any pending correct-answer advance timer and loads a fresh round).
+  useShellAdvance(startRound);
 
   const onChoicePress = useCallback(
     (index: number) => {
