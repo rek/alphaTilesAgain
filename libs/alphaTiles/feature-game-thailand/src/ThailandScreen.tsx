@@ -85,7 +85,7 @@ function RefDisplay({
             importantForAccessibility="no"
           />
         ) : (
-          <Text style={styles.refFallbackText} numberOfLines={1} adjustsFontSizeToFit>
+          <Text style={styles.refFallbackText} numberOfLines={2} adjustsFontSizeToFit>
             {refDisplay.wordLabel}
           </Text>
         )}
@@ -119,7 +119,7 @@ function RefDisplay({
     >
       <Text
         style={[styles.refText, { color: refDisplay.textColor }]}
-        numberOfLines={1}
+        numberOfLines={2}
         adjustsFontSizeToFit
       >
         {refDisplay.text}
@@ -167,12 +167,12 @@ function ChoiceCell({
             importantForAccessibility="no"
           />
         ) : (
-          <Text style={[styles.choiceText, { color: fg }]} numberOfLines={1} adjustsFontSizeToFit>
+          <Text style={[styles.choiceText, { color: fg }]} numberOfLines={2} adjustsFontSizeToFit>
             {choice.wordLabel}
           </Text>
         )
       ) : (
-        <Text style={[styles.choiceText, { color: fg }]} numberOfLines={1} adjustsFontSizeToFit>
+        <Text style={[styles.choiceText, { color: fg }]} numberOfLines={2} adjustsFontSizeToFit>
           {choice.text}
         </Text>
       )}
