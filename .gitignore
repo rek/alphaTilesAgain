@@ -76,3 +76,6 @@ node_modules/
 
 # Claude Code agent worktrees (transient)
 .claude/worktrees/
+
+# Playwright MCP session artifacts (snapshots, console logs)
+.playwright-mcp/
