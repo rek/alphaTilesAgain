@@ -40,8 +40,10 @@ The container SHALL decode `challengeLevel` into three configuration switches:
 | CL | `<HanziWriter.Outline>` rendered | `<HanziWriter.Character>` rendered | `quiz.start({leniency})` |
 |---|---|---|---|
 | 1 (default) | yes | yes | `1.5` |
-| 2 | yes | no | `1.0` |
-| 3 | no | no | `0.7` |
+| 2 | yes | no | `1.2` |
+| 3 | yes | no | `1.0` |
+
+The outline guide SHALL be rendered at every challenge level. A fully blank canvas combined with strict matching (the original CL3 = no outline + `leniency 0.7`) left learners with no reference and was unusable (issue #31). Difficulty scales by character-fill (CL1 shows the filled glyph; CL2/CL3 show outline only) and matching leniency, never by removing all guidance.
 
 `<HanziWriter />` exposes outline + character + grid-lines as compositional **children** (not props). The presenter SHALL render or omit `<HanziWriter.Outline />` and `<HanziWriter.Character />` per the table.
 
@@ -55,11 +57,11 @@ Unknown CL SHALL fall through to CL1 behaviour.
 - **THEN** both `<HanziWriter.Outline>` and `<HanziWriter.Character>` are rendered as children
 - **AND** the container starts the quiz with `leniency: 1.5`
 
-#### Scenario: CL 3 enables blank-canvas mode
+#### Scenario: CL 3 keeps the outline guide with strict matching
 - **GIVEN** `challengeLevel === 3`
 - **WHEN** the screen renders
-- **THEN** neither `<HanziWriter.Outline>` nor `<HanziWriter.Character>` is rendered
-- **AND** the container starts the quiz with `leniency: 0.7`
+- **THEN** `<HanziWriter.Outline>` is rendered but `<HanziWriter.Character>` is not
+- **AND** the container starts the quiz with `leniency: 1.0`
 
 #### Scenario: Unknown CL falls through
 - **GIVEN** `challengeLevel === 99`
@@ -93,6 +95,32 @@ The `<HanziWriter.QuizMistakeHighlighter />` child MUST be rendered inside `<Han
 - **GIVEN** the round has 5 characters and the player just completed the 2nd
 - **WHEN** `onComplete` fires
 - **THEN** the screen renders the 3rd character and resets `mistakeCount` to 0
+
+### Requirement: Completion Success Pause
+
+On character completion the container SHALL hold on the completed character for a brief pause (~900 ms), rendering the full glyph filled (success color) before advancing to the next character. This guarantees the learner sees the finished character — the upstream resets `quiz.index` to `0` the instant the last stroke matches, which otherwise blanks single-stroke characters (e.g. `一`) and makes multi-stroke characters disappear before the next one mounts (issue #31).
+
+The pause SHALL be driven by a single-slot timer ref, cleared on advance (manual skip or pause completion) and on unmount, per the timer-ref hygiene pattern. During the pause the drawing surface is inert (the upstream quiz is inactive).
+
+#### Scenario: Single-stroke character is shown before advancing
+- **GIVEN** the current character is `"一"` (1 stroke)
+- **WHEN** the player completes it
+- **THEN** the full glyph is rendered filled for the success pause
+- **AND** the round advances only after the pause elapses
+
+#### Scenario: Skip during the pause cancels the timer
+- **GIVEN** a success pause is in progress
+- **WHEN** the player taps the advance arrow
+- **THEN** the pending advance timer is cleared and the round advances exactly once
+
+### Requirement: Clear Control
+
+The presenter SHALL render a "Clear" control that restarts the current character's quiz (resetting drawn strokes and mistake count) without changing the character or advancing the round. The control SHALL be disabled during the success pause.
+
+#### Scenario: Clear resets the current character
+- **GIVEN** the player has drawn two correct strokes of a 5-stroke character
+- **WHEN** the player taps "Clear"
+- **THEN** the quiz restarts at stroke 0 with the same character and the drawn strokes are removed
 
 ### Requirement: Character Audio On Completion
 

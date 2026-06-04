@@ -65,15 +65,17 @@ Stakeholders: PM (curriculum + launch), engineering (build), legal (LGPL data sh
 
 ### D4. CL decoding via leniency + outline visibility
 
-| CL | Outline | Numbered start dots | Leniency |
+| CL | Outline | Character fill | Leniency |
 |---|---|---|---|
-| 1 (default) | visible | yes | 1.5 (forgiving) |
-| 2 | visible | no | 1.0 (default) |
-| 3 | hidden | no | 0.7 (strict) |
+| 1 (default) | visible | visible | 1.5 (forgiving) |
+| 2 | visible | hidden | 1.2 |
+| 3 | visible | hidden | 1.0 (default) |
 
 Unknown CL → CL1.
 
-**Rationale:** Mirrors `@jamsch` knobs directly (`showOutline`, `showCharacter`, `leniency`). Maps to the curriculum progression: visible-with-numbers (assisted) → outline-only (recall) → blank (production).
+**Rationale:** Mirrors `@jamsch` knobs directly (`showOutline`, `showCharacter`, `leniency`). Curriculum progression: filled glyph (assisted) → outline-only forgiving (recall) → outline-only strict (production).
+
+**Revised post-#31 (2026-06-04):** The original CL3 was a fully blank canvas (`outline hidden`) + `leniency 0.7`. A funder hit it on door 8 and found it unplayable — no glyph to trace plus strict matching meant nothing ever registered, and the canvas read as broken. **The outline now shows at every CL**; difficulty scales by character-fill and leniency only. `0.7` was stricter than the library default and is gone. Numbered start dots were never available in `@jamsch` v1.2 and are dropped from the table.
 
 ### D5. Round-shape and scoring
 
@@ -129,7 +131,7 @@ Rollback: remove the route + menu entry; pack files stay forward-compatible. The
 
 1. Compound vs single-character round shape — v1 uses single chars, but pack audio is per-compound. Acceptable, or do we need per-char audio in pack?
 2. Mistake threshold per char — 3 fixed, or expose via `aa_settings.txt`?
-3. Hint behaviour after threshold — auto-reveal next stroke (current decision), or show full character outline + restart?
+3. ~~Hint behaviour after threshold — auto-reveal next stroke, or show full character outline + restart?~~ **Resolved (#31):** outline is always visible (the per-stroke hint via `<QuizMistakeHighlighter>` stays), and a manual **Clear** control lets the player restart the current character.
 4. Does Taiwan show in stages progression, or always available? Currently "always available when content exists" — matches Sudan/Iraq browser pattern.
 5. Per-stroke chime — skipped in v1 (D5 non-goal). Revisit if user testing shows confusion about correctness.
 6. Stage gating — should `availableTiles` filter to current stage, or expose all-pack characters? Current design: stage-filtered (consistent with other games).

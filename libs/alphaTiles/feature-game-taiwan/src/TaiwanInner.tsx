@@ -27,13 +27,24 @@ import type { StrokeData } from '@alphaTiles/data-stroke-data';
 
 const GOAL_COUNT = 5;
 const MISTAKE_HINT_THRESHOLD = 3;
+// How long the completed glyph stays on screen (filled green) before the round
+// advances. Guarantees the learner SEES the finished character — including
+// single-stroke chars like 一 where the upstream resets quiz.index to 0 the
+// instant the last stroke matches (issue #31). Also covers the audio.
+const SUCCESS_PAUSE_MS = 900;
 
 type CLConfig = { outlineVisible: boolean; characterVisible: boolean; leniency: number };
 
+// Every level renders the outline as a tracing guide — a fully blank canvas
+// (the old CL3) plus strict matching was unusable for learners (issue #31).
+// Difficulty now scales by character-fill + matching leniency, never by
+// removing all guidance. Leniency multiplies the upstream match thresholds
+// (bigger = more forgiving); 0.7 was stricter than the library default and is
+// gone.
 const CL_TABLE: Record<number, CLConfig> = {
   1: { outlineVisible: true, characterVisible: true, leniency: 1.5 },
-  2: { outlineVisible: true, characterVisible: false, leniency: 1.0 },
-  3: { outlineVisible: false, characterVisible: false, leniency: 0.7 },
+  2: { outlineVisible: true, characterVisible: false, leniency: 1.2 },
+  3: { outlineVisible: true, characterVisible: false, leniency: 1.0 },
 };
 
 function decodeCl(value: unknown): CLConfig {
@@ -70,6 +81,20 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
   // seed changes — same trick as other games' `startRound()` reset.
   const [roundSeed, setRoundSeed] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
+  // True for the brief success pause after a character completes: the glyph is
+  // shown filled (green) so the learner sees what they wrote before advancing.
+  const [succeeding, setSucceeding] = useState(false);
+  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearAdvanceTimer = useCallback(() => {
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current);
+      advanceTimerRef.current = null;
+    }
+  }, []);
+
+  // Single-slot timer hygiene (docs/GAME_PATTERNS.md "Deferred audio after a clip").
+  useEffect(() => clearAdvanceTimer, [clearAdvanceTimer]);
 
   const roundChars = useMemo(
     () => pickTaiwanCharacters(taiwanData.availableTiles, GOAL_COUNT, roundSeed),
@@ -95,13 +120,15 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
   // Shared by stroke-completion and the shell advance arrow (manual skip —
   // skip awards no points, it just moves on).
   const goToNext = useCallback(() => {
+    clearAdvanceTimer();
+    setSucceeding(false);
     if (currentCharIndex + 1 >= roundChars.length) {
       setRoundSeed((s) => s + 1);
       setCurrentCharIndex(0);
     } else {
       setCurrentCharIndex((idx) => idx + 1);
     }
-  }, [currentCharIndex, roundChars.length]);
+  }, [currentCharIndex, roundChars.length, clearAdvanceTimer]);
   useShellAdvance(goToNext);
 
   if (roundChars.length === 0) {
@@ -117,7 +144,13 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
     // hits its threshold (D5); goToNext reshuffles when the round completes.
     shell.incrementPointsAndTracker(true, strokeCount);
     playCharAudio();
-    goToNext();
+    // Hold on the completed glyph (filled green) so the learner sees the whole
+    // character — the upstream resets quiz.index to 0 the instant the last
+    // stroke matches, which otherwise blanks single-stroke chars (一) and makes
+    // multi-stroke chars vanish before the next one appears (issue #31).
+    clearAdvanceTimer();
+    setSucceeding(true);
+    advanceTimerRef.current = setTimeout(goToNext, SUCCESS_PAUSE_MS);
   }
 
   return (
@@ -128,11 +161,14 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
       character={currentChar}
       strokeData={assets.strokes[currentChar]}
       cl={cl}
+      succeeding={succeeding}
       progressLabel={t('taiwan.progress', {
         current: currentCharIndex + 1,
         total: roundChars.length,
       })}
       retryLabel={t('retry')}
+      clearLabel={t('taiwan.clear')}
+      successLabel={t('taiwan.well_done')}
       loadingLabel={t('loading_short')}
       onComplete={handleCharComplete}
     />
@@ -152,16 +188,22 @@ function CharRound({
   character,
   strokeData,
   cl,
+  succeeding,
   progressLabel,
   retryLabel,
+  clearLabel,
+  successLabel,
   loadingLabel,
   onComplete,
 }: {
   character: string;
   strokeData: StrokeData | undefined;
   cl: CLConfig;
+  succeeding: boolean;
   progressLabel: string;
   retryLabel: string;
+  clearLabel: string;
+  successLabel: string;
   loadingLabel: string;
   onComplete: (strokeCount: number) => void;
 }): React.JSX.Element {
@@ -178,12 +220,12 @@ function CharRound({
   const startedRef = useRef(false);
   const characterClass = writer.characterClass;
 
-  // Auto-start once the upstream signals load. `characterClass` flips null →
-  // Character one render after the loader resolves; the ref guard ensures we
-  // only start once even if the effect re-runs on identity changes.
-  useEffect(() => {
-    if (!characterClass || startedRef.current) return;
-    startedRef.current = true;
+  // Single source of truth for quiz config. Used by both the mount auto-start
+  // and the "Clear" button — `quiz.start` resets index + mistakes, so calling
+  // it again is a clean restart of the current character.
+  const startQuiz = useCallback(() => {
+    const cls = writer.characterClass;
+    if (!cls) return;
     writer.quiz.start({
       leniency: cl.leniency,
       showHintAfterMisses: MISTAKE_HINT_THRESHOLD,
@@ -192,9 +234,18 @@ function CharRound({
         // diagnostics / analytics. No-op until analytics is wired.
       },
       onComplete() {
-        onComplete(characterClass.strokes.length);
+        onComplete(cls.strokes.length);
       },
     });
+  }, [writer, cl.leniency, onComplete]);
+
+  // Auto-start once the upstream signals load. `characterClass` flips null →
+  // Character one render after the loader resolves; the ref guard ensures we
+  // only start once even if the effect re-runs on identity changes.
+  useEffect(() => {
+    if (!characterClass || startedRef.current) return;
+    startedRef.current = true;
+    startQuiz();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [characterClass]);
 
@@ -202,7 +253,13 @@ function CharRound({
     <TaiwanScreen
       writer={writer}
       outlineVisible={cl.outlineVisible}
-      characterVisible={cl.characterVisible}
+      // During the success pause, force the full glyph on (green) regardless of
+      // CL so the learner sees the completed character (issue #31).
+      characterVisible={cl.characterVisible || succeeding}
+      success={succeeding}
+      successLabel={successLabel}
+      onClear={startQuiz}
+      clearLabel={clearLabel}
       progressLabel={progressLabel}
       retryLabel={retryLabel}
       loadingLabel={loadingLabel}

@@ -14,6 +14,14 @@ export type TaiwanScreenProps = {
   writer: ReturnType<typeof useHanziWriter>;
   outlineVisible: boolean;
   characterVisible: boolean;
+  /** True during the brief post-completion pause: tints the glyph green and shows the success mark. */
+  success: boolean;
+  /** Pre-translated success mark, e.g. "✓". */
+  successLabel: string;
+  /** Resets the current character's strokes (the "Clear" button). */
+  onClear: () => void;
+  /** Pre-translated label for the "Clear" button. */
+  clearLabel: string;
   /** Pre-translated label, e.g. "Character 2 of 5". */
   progressLabel: string;
   /** Pre-translated label for the "Try again" button shown if the writer errors. */
@@ -23,10 +31,24 @@ export type TaiwanScreenProps = {
 };
 
 export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
-  const { writer, outlineVisible, characterVisible, progressLabel, retryLabel, loadingLabel } = props;
+  const {
+    writer,
+    outlineVisible,
+    characterVisible,
+    success,
+    successLabel,
+    onClear,
+    clearLabel,
+    progressLabel,
+    retryLabel,
+    loadingLabel,
+  } = props;
+  const characterColor = success ? '#2e7d32' : '#1565c0';
   return (
     <View style={styles.root}>
-      <Text style={styles.progress}>{progressLabel}</Text>
+      <Text style={[styles.progress, success && styles.progressSuccess]}>
+        {success ? successLabel : progressLabel}
+      </Text>
       <HanziWriter
         writer={writer}
         loading={
@@ -51,11 +73,20 @@ export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
         <HanziWriter.GridLines color="#e5e5e5" />
         <HanziWriter.Svg>
           {outlineVisible ? <HanziWriter.Outline color="#bdbdbd" /> : null}
-          {characterVisible ? <HanziWriter.Character color="#1565c0" radicalColor="#2e7d32" /> : null}
+          {characterVisible ? <HanziWriter.Character color={characterColor} radicalColor="#2e7d32" /> : null}
           <HanziWriter.QuizStrokes color="#1565c0" radicalColor="#2e7d32" />
           <HanziWriter.QuizMistakeHighlighter color="#e53935" strokeDuration={400} />
         </HanziWriter.Svg>
       </HanziWriter>
+      <Pressable
+        onPress={onClear}
+        disabled={success}
+        style={[styles.clearBtn, success && styles.clearBtnDisabled]}
+        accessibilityRole="button"
+        accessibilityLabel={clearLabel}
+      >
+        <Text style={styles.clearText}>{clearLabel}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -72,6 +103,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#424242',
+  },
+  progressSuccess: {
+    color: '#2e7d32',
+    fontSize: 24,
+  },
+  clearBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#bdbdbd',
+  },
+  clearBtnDisabled: {
+    opacity: 0.4,
+  },
+  clearText: {
+    color: '#616161',
+    fontWeight: '600',
   },
   writer: {
     alignSelf: 'center',

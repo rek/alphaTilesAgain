@@ -2,7 +2,7 @@
 
 Living doc. Updated after each game is archived. Read before proposing or implementing any `game-*` change.
 
-Latest entry: **yue-composite-numerals applied** (2026-05-28) — shell `replayWord` falls back to a syllable chain when per-word audio is absent but `wordInLOP` decomposes into known syllables; validator downgrades `MISSING_WORD_AUDIO` to a warning for such rows.
+Latest entry: **game-taiwan stroke-UX fix** (2026-06-04, issue #31) — never leave a blank canvas (outline guide at every CL); hold a success pause showing the completed glyph before advancing (fixes single-stroke `一` and the "everything vanished" report); add a Clear control. See "Stroke-tracing UX (game-taiwan, issue #31)" below.
 
 ---
 
@@ -187,7 +187,7 @@ export function <Name>Screen(props: <Name>ScreenProps) {
 | Mexico | 1-digit difficulty | `1`→3 pairs, `2`→4, `3`→6, `4`→8, `5`→10 (Memory) |
 | Romania | none | CL ignored; NO_TRACKER (non-scored). scanSetting (1/2/3) controls word filtering |
 | United States | 1-digit difficulty | tile-count cap (5/7/9, no min); pair-and-spell; no `playCorrectFinal` fanfare on win |
-| Taiwan | 1-digit difficulty | CL1 → outline + numbered guides + leniency 1.5; CL2 → outline only + leniency 1.0; CL3 → blank + leniency 0.7. CL knobs gate **child rendering** + `quiz.start()` opts, not props on `<HanziWriter />`. |
+| Taiwan | 1-digit difficulty | CL1 → outline + filled character + leniency 1.5; CL2 → outline only + leniency 1.2; CL3 → outline only + leniency 1.0. Outline shows at **every** level (blank canvas was unusable, issue #31). CL knobs gate **child rendering** + `quiz.start()` opts, not props on `<HanziWriter />`. |
 
 Decode locally in the container via a constant map. Add new games here when their `challengeLevel` is decoded.
 
@@ -756,6 +756,18 @@ categories exist on Commons). Reusable bits live in `tools/skeletonize.ts`.
    hand-author per-char overrides.
 
 ---
+
+## Stroke-tracing UX (game-taiwan, issue #31)
+
+The funder hit three compounding problems on door 8 (CL3). All three are general to any `hanzi-writer`-style trace game; fix them together.
+
+1. **Never ship a fully blank canvas.** Original CL3 rendered no `<Outline>` + no `<Character>` and matched at `leniency 0.7` (stricter than the library default). With no glyph to trace and strict matching, the game is unplayable — the learner has nothing to aim at and every stroke is rejected. **Always render the `<Outline>` guide;** scale difficulty by character-fill (CL1 = filled glyph, CL2/CL3 = outline only) and by leniency (1.5 / 1.2 / 1.0), never by removing all guidance. `leniency` multiplies every upstream match threshold (`AVG_DIST`, `START_AND_END_DIST`, `FRECHET`, length) — values below ~1.0 frustrate finger/mouse input.
+
+2. **The upstream blanks the glyph the instant the last stroke matches.** `@jamsch` `quiz.check` sets `{ index: 0, active: false }` on completion, and `<QuizStrokes>` renders only strokes where `index > i` — so at `index 0` *nothing* renders. For a 1-stroke char (`一`) the completed stroke is never shown; for multi-stroke chars everything vanishes a frame before the next char mounts. The player reads this as "it disappeared and never came back." **Fix: a success pause** — on `onComplete`, set a `succeeding` flag that forces `<HanziWriter.Character>` on (filled, success color) for ~900 ms, then advance via a single-slot timer ref (cleared on skip + unmount). The completed glyph is always visible regardless of the upstream index reset.
+
+3. **Add a Clear/restart control.** Calling `writer.quiz.start(params)` again resets `index` + `mistakes` for the current character without remounting — a clean "start this character over." Disable it during the success pause. (The funder explicitly asked "do we need a clear function?" — yes.)
+
+Note `<QuizMistakeHighlighter>` animates the **expected** stroke in red as a hint after `showHintAfterMisses`, not the user's wrong stroke; the user's drawn ink fades out (200 ms) on its own. With an always-visible outline + looser leniency, mistakes drop and the "messy strokes" perception goes away.
 
 ## Auto-start the quiz/animation when the upstream signals readiness (from game-taiwan)
 

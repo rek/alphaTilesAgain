@@ -11,7 +11,9 @@
     "loading_short": "Loading…",
     "taiwan": {
       "progress": "Character {{current}} of {{total}}",
-      "no_content": "No stroke data available."
+      "no_content": "No stroke data available.",
+      "clear": "Clear",
+      "well_done": "✓"
     },
     "next": "Next",
     "instructions": "Instructions",

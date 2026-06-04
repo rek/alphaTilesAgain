@@ -19,6 +19,10 @@ const meta: Meta<typeof StoryHost> = {
   args: {
     progressLabel: 'Character 1 of 5',
     retryLabel: 'Retry',
+    clearLabel: 'Clear',
+    successLabel: '✓',
+    success: false,
+    onClear: () => undefined,
     loadingLabel: 'Loading…',
   },
 };
@@ -36,7 +40,12 @@ export const CL2_OutlineOnly: Story = {
   args: { outlineVisible: true, characterVisible: false },
 };
 
-export const CL3_BlankCanvas: Story = {
-  name: 'CL3 — blank canvas',
-  args: { outlineVisible: false, characterVisible: false },
+export const CL3_OutlineStrict: Story = {
+  name: 'CL3 — outline only, strict matching',
+  args: { outlineVisible: true, characterVisible: false },
+};
+
+export const SuccessPause: Story = {
+  name: 'Success pause (completed glyph, green)',
+  args: { outlineVisible: true, characterVisible: true, success: true },
 };
