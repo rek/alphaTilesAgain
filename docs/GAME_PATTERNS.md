@@ -784,3 +784,28 @@ useEffect(() => {
 ```
 
 Track started-state in a ref (not state) so the effect doesn't re-render on the start. Reset the ref when `currentChar` changes.
+
+## New game routes must inject chrome assets (found 2026-08-19)
+
+`type:ui` libs can't resolve app assets, so `ScoreBar`'s tracker icons are passed in
+per-route via Metro static `require`:
+
+```tsx
+// apps/alphaTiles/app/games/<game>.tsx
+const icons = {
+  trackerComplete: require('../../assets/zz_complete.png'),
+  trackerIncomplete: require('../../assets/zz_incomplete.png'),
+};
+```
+
+**This is silently optional.** `GameShellScreen` falls back to `trackerIcons = undefined`
+when either is absent — no error, no type failure, no test catches it. A verification
+sweep found only 9 of 19 routes passing them, `thailand.tsx` among the missing despite
+being 5 of yue's 11 live doors.
+
+When adding a game route, copy the `icons` block. When touching this area, prefer
+hoisting the map into one app-level module so the omission becomes impossible. See
+issue #51.
+
+**Generalises:** any prop a presenter treats as optional-with-fallback is a place where
+per-route wiring drifts. Grep every route before assuming a chrome feature is live.
