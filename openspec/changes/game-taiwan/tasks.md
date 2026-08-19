@@ -1,5 +1,11 @@
 ## 0. Preflight
 
+> **Verified 2026-08-19.** Every remaining unticked box is manual QA, a PM confirmation
+> or the legal sign-off — **no code work is outstanding**. 18 tests pass in
+> `feature-game-taiwan` and typecheck is clean. Task 12.3 (LGPL sign-off) is the only
+> item blocking yue v1; tracked as issue #46.
+
+
 - [x] 0.1 Read `docs/GAME_PATTERNS.md` (full)
 - [x] 0.2 Read `docs/ARCHITECTURE.md § 5–6` (pack shape + runtime data flow)
 - [x] 0.3 Read GitHub issue #13 — proposal #21 (Taiwan) + the OSS-update comment

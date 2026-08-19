@@ -34,3 +34,21 @@
 - [ ] 6.3 Run accessibility inspector; confirm each tracker reads "Tracker N of 12, complete/incomplete"
 - [x] 6.4 Update `ScoreBar.stories.tsx` to include a story with `trackerIcons` supplied
 - [x] 6.5 Run `nx test shared-ui-score-bar` — all tests pass
+
+## 7. Route wiring gap (found during 2026-08-19 verification)
+
+`ScoreBar.tsx:54` builds the a11y label exactly as specced (`Tracker N of 12, <state>`),
+and `zz_complete.png` / `zz_incomplete.png` exist in `apps/alphaTiles/assets/`. But the
+icons are injected per-route, and **only 9 of 19 game routes pass them**.
+
+Wired: china, colombia, ecuador, georgia, iraq, malaysia, myanmar, peru, taiwan.
+Missing: brazil, chile, italy, japan, mexico, romania, sudan, thailand, united-states.
+
+**`thailand.tsx` is the urgent one — Thailand is 5 of yue's 11 live doors**, so nearly
+half of what a yue player sees today falls back to non-image trackers.
+
+The rest become relevant as games are switched on for yue (issues #34-#36) — mexico,
+italy, chile, japan, brazil, romania and sudan are all on that list.
+
+- [ ] 7.1 Add `trackerComplete` / `trackerIncomplete` requires to `thailand.tsx`
+- [ ] 7.2 Add the same to the remaining 8 routes, or hoist the icon map to one shared module so new routes cannot miss it

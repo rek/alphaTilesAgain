@@ -1,5 +1,12 @@
 ## 0. Preflight
 
+> **Verified 2026-08-19.** The chain itself is shipped and committed (`e08e4f1`,
+> `300ec76`): `GameShellContainer.tsx` carries `GAP_MS = 150` and `chainTimerRef` with
+> teardown. Remaining boxes are deferred unit tests, manual QA and housekeeping — no
+> engine work outstanding. The composite mp3s are deliberately absent; the chain is the
+> fallback until real recordings land.
+
+
 - [x] 0.1 Re-read `proposal.md`, `design.md`, both spec files in this change directory
 - [x] 0.2 Read `libs/alphaTiles/feature-game-shell/src/lib/GameShellContainer.tsx` for current `replayWord`
 - [x] 0.3 Read `libs/alphaTiles/feature-game-georgia/src/parseWordIntoSyllables.ts` (about to relocate)

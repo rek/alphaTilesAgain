@@ -1,3 +1,21 @@
+# Tasks — yue-writing-audio
+
+> **Verified 2026-08-19.** This file previously read 2/51 while commit `7a27f56`
+> had already shipped the change. Boxes below are now ticked to match the code.
+>
+> **Verified done:** the 13 replacement mp3s are in `languages/yue/audio/syllables/`;
+> `pickAudioForChar.ts` implements the three-branch union with 5 passing tests;
+> `TaiwanInner.tsx:107-117` dispatches syllable-first via `useShellRepeat`, so repeat
+> and completion share one path; `buildTaiwanData.ts` still carries `audioForChar` as
+> the fallback; no `eslint-disable` was added for the new hook (the one at line 249 is
+> the unrelated quiz auto-start); typecheck and 976 tests pass.
+>
+> **Not verifiable from code** (left unticked): 1.1/1.2 listening + loudness passes,
+> §4 Storybook audit, §5.2+ manual QA on a running build, §6 cross-pack regression.
+>
+> Line references in §3 ("lines ~80-83", "~97-99") are stale — the file was
+> reworked by 942a777. Current call site is `TaiwanInner.tsx:107-117`.
+
 ## 0. Preflight
 
 - [ ] 0.1 Read `proposal.md`, `design.md`, and `specs/yue-writing-audio/spec.md` end-to-end.
@@ -13,24 +31,24 @@
 
 - [ ] 1.1 Quick listening pass on Curtis's 13 files vs the existing auto-cut clips in `languages/yue/audio/syllables/` to confirm they're materially different and the customer recordings sound correct.
 - [ ] 1.2 Loudness sanity check — sample 2-3 of Curtis's files and 2-3 existing auto-cut files; if there's a clear volume cliff, run `ffmpeg -af loudnorm` over Curtis's bundle before copying. Otherwise skip.
-- [ ] 1.3 Copy Curtis's 13 mp3s into place with normalised filenames (per D2 mapping table in `design.md`). One `cp` per file; do not script for a one-shot.
-- [ ] 1.4 Verify exactly 13 files in `git status --short languages/yue/audio/syllables/` show as modified — no new files, no deletions.
+- [x] 1.3 Copy Curtis's 13 mp3s into place with normalised filenames (per D2 mapping table in `design.md`). One `cp` per file; do not script for a one-shot.
+- [x] 1.4 Verify exactly 13 files in `git status --short languages/yue/audio/syllables/` show as modified — no new files, no deletions.
 
 ## 2. Engine: Pure Helper
 
-- [ ] 2.1 Create `libs/alphaTiles/feature-game-taiwan/src/pickAudioForChar.ts` exporting `pickAudioForChar({ char, syllables, audioForChar })` returning the discriminated union `{ kind: 'syllable', char } | { kind: 'word', lwc } | { kind: 'none' }` per `design.md` § D1.
-- [ ] 2.2 Create co-located `pickAudioForChar.test.ts` covering all three branches per `specs/yue-writing-audio/spec.md` § "Taiwan Plays Syllable Audio With Compound-Word Fallback". Each test case maps 1:1 to a spec scenario.
-- [ ] 2.3 `nx test feature-game-taiwan` — confirm the new tests pass and nothing else regresses.
+- [x] 2.1 Create `libs/alphaTiles/feature-game-taiwan/src/pickAudioForChar.ts` exporting `pickAudioForChar({ char, syllables, audioForChar })` returning the discriminated union `{ kind: 'syllable', char } | { kind: 'word', lwc } | { kind: 'none' }` per `design.md` § D1.
+- [x] 2.2 Create co-located `pickAudioForChar.test.ts` covering all three branches per `specs/yue-writing-audio/spec.md` § "Taiwan Plays Syllable Audio With Compound-Word Fallback". Each test case maps 1:1 to a spec scenario.
+- [x] 2.3 `nx test feature-game-taiwan` — confirm the new tests pass and nothing else regresses.
 
 ## 3. Engine: Container Wiring
 
-- [ ] 3.1 In `TaiwanInner.tsx`, import `pickAudioForChar`.
-- [ ] 3.2 Add a `playCharAudio` `useCallback` inside the `TaiwanGame` component that calls `pickAudioForChar` and dispatches to `audio.playSyllable` / `audio.playWord` / no-op. Deps: `[audio, assets.audio.syllables, currentChar, taiwanData.audioForChar]`.
-- [ ] 3.3 Replace the body of the existing `onRepeat` callback (lines ~80-83) with `playCharAudio()`.
-- [ ] 3.4 Replace the audio-play block inside `handleCharComplete` (lines ~97-99) with `playCharAudio()`.
-- [ ] 3.5 Confirm `react-hooks/exhaustive-deps` passes with no `eslint-disable-next-line` comment needed.
-- [ ] 3.6 Merge the two separate `react` imports at `TaiwanInner.tsx:8` and `:15` into one (`useCallback` is currently imported on its own line — cleanup while touching the region).
-- [ ] 3.7 Confirm `buildTaiwanData.ts` is unchanged (the `audioForChar` precompute stays as the fallback path per D1).
+- [x] 3.1 In `TaiwanInner.tsx`, import `pickAudioForChar`.
+- [x] 3.2 Add a `playCharAudio` `useCallback` inside the `TaiwanGame` component that calls `pickAudioForChar` and dispatches to `audio.playSyllable` / `audio.playWord` / no-op. Deps: `[audio, assets.audio.syllables, currentChar, taiwanData.audioForChar]`.
+- [x] 3.3 Replace the body of the existing `onRepeat` callback (lines ~80-83) with `playCharAudio()`.
+- [x] 3.4 Replace the audio-play block inside `handleCharComplete` (lines ~97-99) with `playCharAudio()`.
+- [x] 3.5 Confirm `react-hooks/exhaustive-deps` passes with no `eslint-disable-next-line` comment needed.
+- [x] 3.6 Merge the two separate `react` imports at `TaiwanInner.tsx:8` and `:15` into one (`useCallback` is currently imported on its own line — cleanup while touching the region).
+- [x] 3.7 Confirm `buildTaiwanData.ts` is unchanged (the `audioForChar` precompute stays as the fallback path per D1).
 
 ## 4. Storybook + Mocks Audit
 
@@ -40,7 +58,7 @@
 
 ## 5. Manual QA (yue build)
 
-- [ ] 5.1 `APP_LANG=yue` web build runs without TypeScript errors: `npx tsc --noEmit` (or `nx typecheck feature-game-taiwan` if scoped target exists).
+- [x] 5.1 `APP_LANG=yue` web build runs without TypeScript errors: `npx tsc --noEmit` (or `nx typecheck feature-game-taiwan` if scoped target exists).
 - [ ] 5.2 `nx start-web-yue alphaTiles` — boot the yue build, navigate to Door 6 (Taiwan CL1).
 - [ ] 5.3 Trace the first character (`人`); confirm the audio that plays is Curtis's `人.mp3` (not a compound word).
 - [ ] 5.4 Press the repeat button on `人`; confirm the same syllable audio plays (Curtis confirmed syllable-first on repeat per D6).
