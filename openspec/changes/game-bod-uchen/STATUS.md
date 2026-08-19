@@ -1,5 +1,8 @@
 # game-bod-uchen — Checkpoint 5 (synthetic) only. NOT shippable.
 
+> **ON HOLD 2026-08-19** — scope narrowed to `yue` only. Do not resume without an explicit
+> go-ahead. Content/legal blockers below still stand; nothing here is engineering-ready.
+
 Last touched: 2026-05-04. Checkpoints 1–3 (license-clean OSS sources) all dead.
 Checkpoint 5 (synthetic via Noto Serif Tibetan + skeletonize) green for tooling
 smoke. No real stroke-order data exists for Tibetan Uchen as of this date.

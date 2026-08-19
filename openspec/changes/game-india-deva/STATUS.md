@@ -1,5 +1,8 @@
 # game-india-deva — Phase 1B done. Hand-off ready.
 
+> **ON HOLD 2026-08-19** — scope narrowed to `yue` only. Do not resume without an explicit
+> go-ahead. Content/legal blockers below still stand; nothing here is engineering-ready.
+
 Last touched: 2026-05-04. Commit pending — see `git status`.
 
 ## TL;DR for the next agent
