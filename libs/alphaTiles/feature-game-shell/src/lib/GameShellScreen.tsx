@@ -40,7 +40,15 @@ export type GameShellScreenProps = {
   challengeLevel: number;
   trackerCount: number;
   trackerStates: ('complete' | 'incomplete')[]; // always length 12
+  /** Board lock (mechanic-owned): dims the board slot only. */
   interactionLocked: boolean;
+  /**
+   * Chrome-row lock (Java setOptionsRowUnclickable): pack speech chain
+   * playing or a mastery action pending. Separate from the board lock — a
+   * solved round keeps its board locked until the advance arrow is pressed,
+   * so the arrow must not obey it.
+   */
+  chromeLocked: boolean;
   showInstructionsButton: boolean;
   advanceArrow: 'blue' | 'gray' | 'hidden';
   showCelebration: boolean;
@@ -75,6 +83,7 @@ export function GameShellScreen({
   challengeLevel,
   trackerStates,
   interactionLocked,
+  chromeLocked,
   showInstructionsButton,
   advanceArrow,
   showCelebration,
@@ -124,7 +133,7 @@ export function GameShellScreen({
           style={styles.chromeButton}
           accessibilityLabel={backLabel}
           accessibilityRole="button"
-          disabled={interactionLocked}
+          disabled={chromeLocked}
         >
           {icons?.back ? (
             <Image source={icons.back} style={styles.chromeIcon} />
@@ -140,7 +149,7 @@ export function GameShellScreen({
             style={styles.chromeButton}
             accessibilityLabel={instructionsLabel}
             accessibilityRole="button"
-            disabled={interactionLocked}
+            disabled={chromeLocked}
           >
             {icons?.instructions ? (
               <Image source={icons.instructions} style={styles.chromeIcon} />
@@ -156,7 +165,7 @@ export function GameShellScreen({
           style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
           accessibilityLabel={replayLabel}
           accessibilityRole="button"
-          disabled={interactionLocked || advanceArrow === 'gray'}
+          disabled={chromeLocked || advanceArrow === 'gray'}
         >
           <Text style={[styles.chromeLabel, advanceArrow === 'gray' && styles.chromeLabelGray]}>
             {replayLabel}
@@ -170,7 +179,7 @@ export function GameShellScreen({
             style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
             accessibilityLabel={a11yLabels.advance}
             accessibilityRole="button"
-            disabled={interactionLocked || advanceArrow === 'gray'}
+            disabled={chromeLocked || advanceArrow === 'gray'}
           >
             <MaterialIcons
               name="arrow-forward"

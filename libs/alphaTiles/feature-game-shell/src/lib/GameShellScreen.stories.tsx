@@ -34,6 +34,7 @@ const meta: Meta<typeof GameShellScreen> = {
     trackerCount: 4,
     trackerStates: trackers(4),
     interactionLocked: false,
+    chromeLocked: false,
     showInstructionsButton: true,
     advanceArrow: 'gray',
     showCelebration: false,
@@ -59,6 +60,10 @@ export const Default: Story = {};
 
 export const InteractionLocked: Story = {
   args: { interactionLocked: true },
+};
+
+export const ChromeLocked: Story = {
+  args: { interactionLocked: true, chromeLocked: true },
 };
 
 export const AdvanceArrowBlue: Story = {

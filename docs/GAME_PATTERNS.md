@@ -366,6 +366,8 @@ audio.playCorrect().then(() => {
 
 Use `isMountedRef` to guard against unmount during the awaited `playCorrect`. Don't `await` in the handler — fire-and-forget the chain so React doesn't block.
 
+`setInteractionLocked` is the **board** lock only (the mechanic's buttons; Java `setAllGameButtonsUnclickable`). The shell's chrome row (back / instructions / replay / advance) has its own lock (Java `setOptionsRowUnclickable`), held only while a syllable chain plays or a mastery action is pending. So a solved round may keep its board locked until `useShellAdvance` starts the next one — the advance arrow stays usable (U1: Georgia / Ecuador / Colombia were stuck when chrome obeyed the board lock).
+
 ---
 
 ## When NOT to use a precompute
