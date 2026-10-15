@@ -14,6 +14,16 @@ _Avoid_: game row, game number, level (for the whole door)
 A mechanic (`aa_games.txt` Country, e.g. `UnitedStates`; kebab `classKey` `united-states`). Many Doors share one. Wired into the app only by the game-class registry (`apps/alphaTiles/src/gameClasses.ts`), which the one game route reads.
 _Avoid_: game type, route (there is one route)
 
+**Door progress**: one player's standing on one Door — points, tracker count, the 12-tracker bar, mastered, menu visual (`not-started` / `in-process` / `mastery`). Owned only by `@alphaTiles/data-door-progress` (`doorProgressOf`, `recordCorrectAnswer`, `nextUnmasteredDoor`, hooks `useDoorProgress` / `useDoorProgressOf`), keyed by `Door.progressKey(playerId)`.
+_Avoid_: reading `useProgressStore` entries directly for a door.
+
+**Tracker**: one of the 12 icons on the shell's tracker bar; a correct answer on a Door that tracks progress checks one. The count keeps going past 12; the bar stays full.
+
+**Mastered**: a Door that tracks progress with ≥ 12 checked trackers (Java `Earth` / `hasChecked12Trackers`). Never depends on the "After 12 checked trackers" setting; no-right/wrong Doors are never mastered.
+_Avoid_: completed, checked12, "finished game".
+
+**Mastery action**: what the shell does when a correct answer checks the 12th tracker (and each 12th after) — `keep-playing` / `return-to-menu` / `celebrate-then-next-door`, from the "After 12 checked trackers" effective setting (1 / 2 / 3). Next door = first enabled, unmastered Door after this one in play order.
+
 ## Settings
 
 **Player preferences**: sparse per-player overrides (`usePlayerPreferencesStore` in `@alphaTiles/data-players`); unset = pack default. Written only via `useSetPreference`.

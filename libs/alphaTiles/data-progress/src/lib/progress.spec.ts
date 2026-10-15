@@ -35,14 +35,6 @@ describe('incrementTracker', () => {
   });
 });
 
-describe('markChecked12', () => {
-  it('sets checked12Trackers to true', () => {
-    const key = 'k';
-    useProgressStore.getState().markChecked12(key);
-    expect(useProgressStore.getState().progress[key].checked12Trackers).toBe(true);
-  });
-});
-
 describe('setRoundCursor', () => {
   it('stores the cursor without touching points or lastPlayed', () => {
     const key = 'k';
@@ -78,24 +70,6 @@ describe('resetGame', () => {
 });
 
 // --- selectors ---
-
-describe('useProgressEntry', () => {
-  it('returns default when key is missing', () => {
-    const state = useProgressStore.getState();
-    const entry = state.progress['nonexistent'] ?? {
-      points: 0,
-      trackerCount: 0,
-      checked12Trackers: false,
-      lastPlayed: 0,
-    };
-    expect(entry).toEqual({
-      points: 0,
-      trackerCount: 0,
-      checked12Trackers: false,
-      lastPlayed: 0,
-    });
-  });
-});
 
 describe('useTotalPoints', () => {
   it('sums points for matching playerId keys', () => {

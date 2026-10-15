@@ -21,42 +21,39 @@ function door(index: number, overrides: Partial<Door> = {}): Door {
   };
 }
 
+const notStarted = () => ({ trackerCount: 0, visual: 'not-started' as const });
+
 describe('buildMenuDoors', () => {
   it('drops disabled doors; later doors keep their own row index', () => {
     const result = buildMenuDoors({
       doors: [door(1), door(2, { classKey: 'taiwan', enabled: false }), door(3)],
-      trackerCounts: {},
-      playerId: null,
+      progressOf: notStarted,
     });
     expect(result.map((d) => d.index)).toEqual([1, 3]);
   });
 
   it('empty catalogue → no doors', () => {
-    expect(buildMenuDoors({ doors: [], trackerCounts: {}, playerId: 'p1' })).toEqual([]);
+    expect(buildMenuDoors({ doors: [], progressOf: notStarted })).toEqual([]);
   });
 
-  it("reads the player's tracker count by Door.progressKey", () => {
-    const [d] = buildMenuDoors({
-      doors: [door(1)],
-      trackerCounts: { 'class1:p1': 12, 'class1:p2': 3 },
-      playerId: 'p1',
+  it("carries each door's progress (tracker count + visual)", () => {
+    const result = buildMenuDoors({
+      doors: [door(1), door(2)],
+      progressOf: (d) =>
+        d.index === 1 ? { trackerCount: 12, visual: 'mastery' } : { trackerCount: 3, visual: 'in-process' },
     });
-    expect(d.trackerCount).toBe(12);
-    expect(d.visual).toBe('mastery');
+    expect(result.map((d) => [d.index, d.trackerCount, d.visual])).toEqual([
+      [1, 12, 'mastery'],
+      [2, 3, 'in-process'],
+    ]);
+    expect(result[0].textColorHex).toBeUndefined();
   });
 
-  it('no player → zero trackers, not started', () => {
-    const [d] = buildMenuDoors({ doors: [door(1)], trackerCounts: { 'class1:': 5 }, playerId: null });
-    expect(d).toMatchObject({ trackerCount: 0, visual: 'not-started', textColorHex: undefined });
-  });
-
-  it('no-tracker doors are in-process with black text', () => {
+  it('no-tracker doors get black text', () => {
     const [d] = buildMenuDoors({
       doors: [door(1, { tracksProgress: false })],
-      trackerCounts: {},
-      playerId: 'p1',
+      progressOf: () => ({ trackerCount: 0, visual: 'in-process' }),
     });
-    expect(d.visual).toBe('in-process');
     expect(d.textColorHex).toBe('#000000');
   });
 });

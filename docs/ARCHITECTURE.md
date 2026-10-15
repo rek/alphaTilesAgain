@@ -219,7 +219,7 @@ not app logic. The `data-language-assets` and `data-language-pack` libs use this
 - **Do not use `useEffect` directly.** Use derived state, event handlers, `useMountEffect`, or the `key` prop. See `docs/CODE_STYLE.md`.
 - **Zustand store per domain**, not one god-store. Each store owns its slice, has its own persist config, and exposes typed selectors.
 - **Context providers for immutable data only.** If something changes, it belongs in Zustand.
-- **Effective settings** — cross-cutting settings (`showGameNames`, `changeArrowColors`, audio flags, avatars, mastery mode …) are read through `useEffectiveSettings()` (`@alphaTiles/data-settings`): pack `aa_settings.txt` typed + defaulted once, with the active player's preferences (`usePlayerPreferencesStore`, `data-players`) layered on top. Game-specific settings stay with their game. Settings screen (`feature-settings`, `/settings`) writes via `useSetPreference()`.
+- **Effective settings** — cross-cutting settings (`showGameNames`, `changeArrowColors`, audio flags, avatars, "After 12 checked trackers" — acted on by door progress …) are read through `useEffectiveSettings()` (`@alphaTiles/data-settings`): pack `aa_settings.txt` typed + defaulted once, with the active player's preferences (`usePlayerPreferencesStore`, `data-players`) layered on top. Game-specific settings stay with their game. Settings screen (`feature-settings`, `/settings`) writes via `useSetPreference()`.
 
 ## 8. Audio
 
@@ -356,7 +356,18 @@ A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pa
 - `doorsOf(pack) → Door[]` — pure; all rows, file order, `doors[i].index === i + 1`. Tested against the real `yue` + `eng` packs.
 - `useDoors()` / `useDoor(routeParams)` — the same, memoized from `useLangAssets()`.
 
-`Door = { index, classKey, country, challengeLevel, displayLevel, variant, stage, colorHex, name?, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }` (`name` = optional `GameName` column 9 of `aa_games.txt`, the menu door label). The menu (enabled doors + trackers), `GameShellContainer` (routed door, progress key, next-door search) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
+`Door = { index, classKey, country, challengeLevel, displayLevel, variant, stage, colorHex, name?, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }` (`name` = optional `GameName` column 9 of `aa_games.txt`, the menu door label). The menu (enabled doors), `GameShellContainer` (routed door) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
+
+### Door progress
+
+**Door progress** (see `GLOSSARY.md`) is the one place "mastered" is defined. `@alphaTiles/data-door-progress` (`type:data-access`, on top of `data-progress`, keyed by `Door.progressKey`):
+
+- `doorProgressOf({ door, playerId, progress }) → { points, trackerCount, trackers[12], mastered, visual }` — pure. Mastered = tracks progress ∧ `trackerCount >= 12` (Java `Earth.updateDoors` / `hasChecked12Trackers`); the bar stays full past 12.
+- `recordCorrectAnswer({ door, playerId, points, afterTwelveCheckedTrackers }) → MasteryAction | null` — writes points (+ one tracker if the door tracks progress); returns `keep-playing` / `return-to-menu` / `celebrate-then-next-door` on every 12th tracker.
+- `nextUnmasteredDoor({ order, from, playerId, progress })` — first enabled, unmastered door after `from` in `order`, wrapping; null → menu.
+- Hooks: `useDoorProgressOf(playerId) → (door) => DoorProgress` (menu; ladder placement) and `useDoorProgress(door, playerId) → DoorProgress & { recordCorrect, nextDoor }` (shell; reads "After 12 checked trackers" from effective settings).
+
+Menu visuals, the shell's tracker bar / score / mastery action and the next-door search all consume it. Play order is file order today; the difficulty ladder (#52) passes its tier order to `nextUnmasteredDoor` (one line in `useDoorProgress`). Tested against the real `yue` pack + the real store (in-memory AsyncStorage).
 
 ### Game-class registry and the one game route
 

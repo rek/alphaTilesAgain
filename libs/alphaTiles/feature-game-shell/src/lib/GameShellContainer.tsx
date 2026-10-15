@@ -3,13 +3,12 @@
  *
  * Ports GameActivity.java abstract class (~1217 LOC) decomposed per design.md §D1:
  * - Route-param extraction (expo-router useLocalSearchParams)
- * - Progress store read/write (@alphaTiles/data-progress)
+ * - Door progress: trackers, score, mastery action, next door (@alphaTiles/data-door-progress)
  * - Pack speech (speak/durationOf, chain lock) + correct/final chimes (@alphaTiles/data-audio)
  * - i18n strings (react-i18next via @shared/util-i18n)
  * - AppState listener — pause audio when backgrounded (GameActivity.java: Android lifecycle)
- * - "After 12 checked trackers" mode 1/2/3 (GameActivity.java:319-412)
- * - Celebration trigger (GameActivity.java:331-412) — correctSoundDuration+1800ms / 4500ms total
- * - next-uncompleted-game search (GameActivity.java:356-412)
+ * - Performs the mastery action door progress returns (GameActivity.java:319-412):
+ *   menu return, or celebration (correctSoundDuration+1800ms) then next door (4500ms)
  * - Android hardware-back → router.back()
  * - Exposes useGameShell() context to mechanic children
  *
@@ -27,16 +26,15 @@ import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio, usePackSpeech } from '@alphaTiles/data-audio';
 import type { SpeechItem } from '@alphaTiles/data-audio';
 import { useActivePlayer } from '@alphaTiles/data-players';
-import { useProgressStore, useProgressEntry } from '@alphaTiles/data-progress';
-import { useDoor, useDoors } from '@alphaTiles/data-doors';
+import { useDoor } from '@alphaTiles/data-doors';
+import { useDoorProgress } from '@alphaTiles/data-door-progress';
+import type { MasteryAction } from '@alphaTiles/data-door-progress';
 import { useEffectiveSettings } from '@alphaTiles/data-settings';
 import type { Door } from '@alphaTiles/data-doors';
 import { GameShellContextProvider } from './GameShellContext';
 import { GameShellScreen } from './GameShellScreen';
 import type { GameShellScreenProps, GameShellIcons } from './GameShellScreen';
-import { findNextUncompletedGame } from './findNextUncompletedGame';
 import { buildNextGameHref } from './buildNextGameHref';
-import { resolveMasteryAction } from './resolveMasteryAction';
 
 // Java timing constants — preserved verbatim (GameActivity.java:342, 412)
 const CELEBRATION_DELAY_MS = 1800; // correctSoundDuration + this before celebration shows
@@ -93,37 +91,23 @@ function GameShell({
   const assets = useLangAssets();
   const audio = useAudio();
   const activePlayer = useActivePlayer();
-  const doors = useDoors();
 
   const gameNumber = door.index;
   const instructionAudioId = showInstructionsButton ? door.instructionAudio : undefined;
-  const playerId = activePlayer?.id ?? '';
+  const playerId = activePlayer?.id ?? null;
 
   // Unique ID — mirrors GameActivity.java:175 uniqueGameLevelPlayerModeStageID
-  const gameUniqueId = useMemo(() => door.progressKey(playerId), [door, playerId]);
+  const gameUniqueId = useMemo(() => door.progressKey(playerId ?? ''), [door, playerId]);
 
-  // Progress store
-  const { incrementPoints, incrementTracker, markChecked12 } = useProgressStore.getState();
-  const progressEntry = useProgressEntry(gameUniqueId);
-  const { trackerCount, checked12Trackers } = progressEntry;
-
-  // aa_settings "After 12 checked trackers" (1 keep playing / 2 menu / 3 celebrate)
-  const masteryAction = useMemo(
-    () => resolveMasteryAction({ settings: assets.settings }),
-    [assets.settings],
-  );
+  // Door progress: score, trackers, mastery (one rule — see doorProgressOf)
+  const progress = useDoorProgress(door, playerId);
+  const { trackerCount, recordCorrect, nextDoor } = progress;
   const correctSoundDuration = CORRECT_SOUND_DURATION_MS;
-
 
   // Tracker states — 12 icons
   const trackerStates = useMemo(
-    (): ('complete' | 'incomplete')[] =>
-      Array.from({ length: 12 }, (_, i) =>
-        i < trackerCount % 12 || (trackerCount > 0 && trackerCount % 12 === 0 && checked12Trackers)
-          ? 'complete'
-          : 'incomplete',
-      ),
-    [trackerCount, checked12Trackers],
+    () => progress.trackers.map((checked): 'complete' | 'incomplete' => (checked ? 'complete' : 'incomplete')),
+    [progress.trackers],
   );
 
   // In-flight state (not persisted — mirrors GameActivity.java fields)
@@ -241,9 +225,7 @@ function GameShell({
   );
 
   // ── after12checkedTrackers handling (GameActivity.java:316-413) ──────────
-  const handleMastery = useCallback(() => {
-    markChecked12(gameUniqueId);
-
+  const handleMastery = useCallback((masteryAction: MasteryAction) => {
     if (masteryAction === 'keep-playing') {
       // Mode 1: keep playing, nothing happens.
       return;
@@ -257,7 +239,7 @@ function GameShell({
       return;
     }
 
-    if (masteryAction === 'celebrate-then-next-game') {
+    if (masteryAction === 'celebrate-then-next-door') {
       // Mode 3: show celebration ~1800ms after correctSoundDuration, then next game at 4500ms
       // GameActivity.java:331-412
       setInteractionLocked(true);
@@ -267,50 +249,25 @@ function GameShell({
       }, correctSoundDuration + CELEBRATION_DELAY_MS);
 
       nextGameTimerRef.current = setTimeout(() => {
-        const nextGame = findNextUncompletedGame(
-          doors,
-          gameNumber,
-          useProgressStore.getState().progress,
-          playerId,
-        );
         // replace (not push) so the finished game leaves the stack.
-        const href = buildNextGameHref(nextGame);
+        const href = buildNextGameHref(nextDoor());
         if (href === '/menu') router.dismissTo('/menu');
         else router.replace(href);
       }, NEXT_GAME_DELAY_MS);
     }
-  }, [
-    masteryAction,
-    correctSoundDuration,
-    gameUniqueId,
-    gameNumber,
-    playerId,
-    doors,
-    audio,
-    markChecked12,
-    router,
-    setInteractionLocked,
-  ]);
+  }, [correctSoundDuration, nextDoor, audio, router, setInteractionLocked]);
 
   // ── incrementPointsAndTracker — exposed to mechanics via context ──────────
   const incrementPointsAndTracker = useCallback(
     (isCorrect: boolean, points = 1) => {
       if (isCorrect) {
-        incrementPoints(gameUniqueId, points);
-
-        // Only increment tracker for non-exempt countries (design.md §D3)
-        if (door.tracksProgress) {
-          incrementTracker(gameUniqueId);
-          // After increment, re-read count from store to check mastery
-          const newCount = (useProgressStore.getState().progress[gameUniqueId]?.trackerCount ?? 0);
-          if (newCount > 0 && newCount % 12 === 0) {
-            handleMastery();
-          }
-        }
+        // Points always; a tracker only on doors that track progress.
+        const masteryAction = recordCorrect(points);
+        if (masteryAction) handleMastery(masteryAction);
       }
       setRepeatLocked(!isCorrect);
     },
-    [door, gameUniqueId, incrementPoints, incrementTracker, handleMastery],
+    [recordCorrect, handleMastery],
   );
 
   // Pack speech: games speak items, never audio keys (see usePackSpeech).
@@ -367,8 +324,7 @@ function GameShell({
     ? 'hidden'
     : (!changeArrowColor || !repeatLocked ? 'blue' : 'gray');
 
-  // Score from progress entry
-  const score = progressEntry.points;
+  const score = progress.points;
 
   const a11yLabels = useMemo(() => ({
     advance: t('a11y.advance'),
@@ -410,7 +366,6 @@ function GameShell({
     setInteractionLocked,
     refWord,
     setRefWord: setRefWordWithChainClear,
-    progressEntry,
     gameUniqueId,
     setOnAdvance,
     setOnRepeat,
@@ -423,7 +378,6 @@ function GameShell({
     setInteractionLocked,
     refWord,
     setRefWordWithChainClear,
-    progressEntry,
     gameUniqueId,
     setOnAdvance,
     setOnRepeat,

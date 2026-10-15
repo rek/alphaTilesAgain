@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { useShallow } from 'zustand/react/shallow';
 import { rnStorage } from './rnStorage';
 
 export type ProgressKey = string;
@@ -8,7 +7,12 @@ export type ProgressKey = string;
 export type ProgressEntry = {
   points: number;
   trackerCount: number;
-  checked12Trackers: boolean;
+  /**
+   * Legacy: written by builds before door progress (= trackerCount reached
+   * 12). Never read — mastery is derived from trackerCount
+   * (`@alphaTiles/data-door-progress`).
+   */
+  checked12Trackers?: boolean;
   lastPlayed: number; // epoch ms
   /** Next fixed-order question index (Thailand, M10). Absent = 0. */
   roundCursor?: number;
@@ -17,7 +21,6 @@ export type ProgressEntry = {
 const DEFAULT_ENTRY: ProgressEntry = {
   points: 0,
   trackerCount: 0,
-  checked12Trackers: false,
   lastPlayed: 0,
 };
 
@@ -28,7 +31,6 @@ type ProgressState = {
 type ProgressActions = {
   incrementPoints: (key: ProgressKey, delta: number) => void;
   incrementTracker: (key: ProgressKey) => void;
-  markChecked12: (key: ProgressKey) => void;
   resetGame: (key: ProgressKey) => void;
   setRoundCursor: (key: ProgressKey, cursor: number) => void;
 };
@@ -77,22 +79,6 @@ export const useProgressStore = create<ProgressState & ProgressActions>()(
         });
       },
 
-      markChecked12(key) {
-        set((state) => {
-          const entry = getEntry(state.progress, key);
-          return {
-            progress: {
-              ...state.progress,
-              [key]: {
-                ...entry,
-                checked12Trackers: true,
-                lastPlayed: Date.now(),
-              },
-            },
-          };
-        });
-      },
-
       setRoundCursor(key, cursor) {
         set((state) => {
           const entry = getEntry(state.progress, key);
@@ -119,12 +105,6 @@ export const useProgressStore = create<ProgressState & ProgressActions>()(
     },
   ),
 );
-
-export function useProgressEntry(key: ProgressKey): ProgressEntry {
-  return useProgressStore(
-    useShallow((state) => state.progress[key] ?? DEFAULT_ENTRY),
-  );
-}
 
 export function useTotalPoints(playerId: string): number {
   return useProgressStore((state) =>
