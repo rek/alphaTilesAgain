@@ -125,6 +125,20 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // @expo/config-types yet (as of our pin). Cast keeps the runtime value.
       ...({ edgeToEdgeEnabled: true } as Record<string, unknown>),
       predictiveBackGestureEnabled: false,
+      // Kids' app: strip permissions we don't use. blockedPermissions emits
+      // tools:node="remove", so library manifests / plugins can't re-add them.
+      // MODIFY_AUDIO_SETTINGS (expo-audio) and INTERNET (OTA) stay.
+      blockedPermissions: [
+        'android.permission.RECORD_AUDIO',
+        'android.permission.FOREGROUND_SERVICE',
+        'android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK',
+        'android.permission.FOREGROUND_SERVICE_MICROPHONE',
+        'android.permission.POST_NOTIFICATIONS',
+        'android.permission.SYSTEM_ALERT_WINDOW',
+        'android.permission.READ_EXTERNAL_STORAGE',
+        'android.permission.WRITE_EXTERNAL_STORAGE',
+        'android.permission.VIBRATE',
+      ],
     },
     web: {
       output: 'static',
@@ -145,7 +159,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       'expo-router',
       'expo-updates',
-      'expo-audio',
+      [
+        'expo-audio',
+        {
+          // No recording, no background playback: drops mic + foreground-service perms/service.
+          microphonePermission: false,
+          recordAudioAndroid: false,
+          enableBackgroundPlayback: false,
+          enableBackgroundRecording: false,
+        },
+      ],
       'expo-localization',
       [
         'expo-splash-screen',
