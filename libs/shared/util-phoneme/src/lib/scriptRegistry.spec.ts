@@ -73,6 +73,22 @@ describe('unknown script fallback', () => {
     );
     warnSpy.mockRestore();
   });
+
+  it('warns once per unknown script type, not per call', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    combineTilesToMakeWord([parsed('a')], 'a', -1, '__once__');
+    combineTilesToMakeWord([parsed('a')], 'a', -1, '__once__');
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    warnSpy.mockRestore();
+  });
+
+  it('Chinese and Roman use the default parser without warning', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(combineTilesToMakeWord([parsed('學'), parsed('廣')], '學廣', -1, 'Chinese')).toBe('學廣');
+    expect(combineTilesToMakeWord([parsed('c'), parsed('a')], 'ca', -1, 'Roman')).toBe('ca');
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
 });
 
 // --- combineTilesToMakeWord (default parser) ---

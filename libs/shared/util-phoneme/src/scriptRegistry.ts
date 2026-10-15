@@ -10,6 +10,8 @@ export type ScriptParser = {
 };
 
 const registry = new Map<string, ScriptParser>();
+/** Unknown script types already warned about — warn once, not on every word (U21). */
+const warned = new Set<string>();
 
 export function registerScriptParser(scriptType: string, parser: ScriptParser): void {
   if (registry.has(scriptType)) {
@@ -21,7 +23,8 @@ export function registerScriptParser(scriptType: string, parser: ScriptParser): 
 export function getParser(scriptType: string): ScriptParser {
   const parser = registry.get(scriptType);
   if (!parser) {
-    if (scriptType !== 'default') {
+    if (scriptType !== 'default' && !warned.has(scriptType)) {
+      warned.add(scriptType);
       console.warn(
         `util-phoneme: no parser registered for scriptType '${scriptType}', falling back to 'default'`,
       );
@@ -50,3 +53,7 @@ const defaultParser: ScriptParser = {
 };
 
 registerScriptParser('default', defaultParser);
+// Roman and Chinese (yue: one character per tile, no reordering) use the
+// default parser by design — Java special-cases only Thai/Lao/Khmer/Arabic.
+registerScriptParser('Roman', defaultParser);
+registerScriptParser('Chinese', defaultParser);
