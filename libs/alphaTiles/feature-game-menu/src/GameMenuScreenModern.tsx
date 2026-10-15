@@ -61,6 +61,8 @@ export type GameMenuScreenModernProps = {
     howLevelsWork: string;
   };
   doorLabel: (door: DoorData) => string;
+  /** Self-test entry below the door grid (#42); absent → not offered. */
+  selfTest?: { label: string; a11yLabel: string; onPress: () => void };
   tabLabels: {
     about: string;
     share: string;
@@ -189,6 +191,7 @@ export function GameMenuScreenModern({
   a11y,
   tabLabels,
   doorLabel,
+  selfTest,
 }: GameMenuScreenModernProps): React.JSX.Element {
   const { width } = useWindowDimensions();
   const numColumns = getColumns(width);
@@ -247,6 +250,25 @@ export function GameMenuScreenModern({
             label={doorLabel(item)}
           />
         )}
+        ListFooterComponent={
+          selfTest ? (
+            <Pressable
+              onPress={selfTest.onPress}
+              accessibilityRole="button"
+              accessibilityLabel={selfTest.a11yLabel}
+              style={({ pressed }) => [styles.selfTestButton, pressed && styles.pressed]}
+            >
+              <Ionicons
+                name="checkmark-done-outline"
+                size={24}
+                color="#FFFFFF"
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              />
+              <Text style={styles.selfTestLabel}>{selfTest.label}</Text>
+            </Pressable>
+          ) : null
+        }
       />
 
       <View style={styles.tabBar}>
@@ -377,6 +399,21 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.55,
+  },
+  selfTestButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 20,
+    paddingVertical: 16,
+    borderRadius: OUTER_RADIUS,
+    backgroundColor: '#1565C0',
+  },
+  selfTestLabel: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
   },
   tabBar: {
     flexDirection: 'row',

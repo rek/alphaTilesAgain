@@ -6,6 +6,8 @@ import { useActivePlayer, usePlayersStore } from '@alphaTiles/data-players';
 import { useEffectiveSettings } from '@alphaTiles/data-settings';
 import { useTotalPoints } from '@alphaTiles/data-progress';
 import { usePackSpeech } from '@alphaTiles/data-audio';
+import { useDoors } from '@alphaTiles/data-doors';
+import { SELF_TEST_LENGTH, selfTestSources } from '@alphaTiles/feature-self-test';
 import { track } from '@shared/util-analytics';
 import { doorHref } from './doorHref';
 import { useMenuDoors } from './useMenuDoors';
@@ -30,6 +32,8 @@ export function GameMenuContainer(): React.JSX.Element {
     levelLabel: t('menu.level', { n: door.tier }),
   }));
   const score = useTotalPoints(player?.id ?? '');
+  // Self-test (#42): offered below the grid when the pack has question doors.
+  const hasSelfTest = selfTestSources(useDoors()).length > 0;
 
   if (player === null) {
     return <Redirect href="/choose-player" />;
@@ -138,5 +142,13 @@ export function GameMenuContainer(): React.JSX.Element {
     },
   };
 
-  return <GameMenuScreenModern {...commonProps} allDoors={allDoors} />;
+  const selfTest = hasSelfTest
+    ? {
+        label: t('menu.self_test'),
+        a11yLabel: t('menu.a11y.self_test', { n: SELF_TEST_LENGTH }),
+        onPress: () => router.push('/self-test'),
+      }
+    : undefined;
+
+  return <GameMenuScreenModern {...commonProps} allDoors={allDoors} selfTest={selfTest} />;
 }
