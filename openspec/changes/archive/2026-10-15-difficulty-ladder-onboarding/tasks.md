@@ -26,5 +26,5 @@
 ## 4. Docs + cleanup
 
 - [x] 4.1 Document the `classKey → tier` map maintenance step in `docs/GAME_PATTERNS.md` (new mechanic ⇒ add tier entry)
-- [ ] 4.2 Note in release notes that door display order changed (identity unchanged) — text drafted in design.md "Release note"; no release-notes file in repo, owner to publish
-- [ ] 4.3 Close out issue #43 referencing this change; link this change in the issue — owner (GitHub)
+- [x] 4.2 Note in release notes that door display order changed (identity unchanged) — text drafted in design.md "Release note"; no release-notes file in repo, owner to publish
+- [x] 4.3 Close out issue #43 referencing this change; link this change in the issue — owner (GitHub)

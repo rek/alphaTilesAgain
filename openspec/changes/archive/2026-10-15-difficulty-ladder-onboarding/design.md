@@ -95,7 +95,7 @@ Grid order: 26 27 28 · 1 2 3 4 5 9 10 11 16 17 18 19 · 12 13 14 15 · 6 7 8 20
 
 ### Release note
 
-"Menu doors are now grouped by difficulty level (Level 0–6, shown on each door) with a "?" guide to where to start. Door numbers, progress and game content are unchanged; doors may sit in a different place on the menu. After mastering a game, "next game" now follows the level order."
+"Menu doors are now grouped by difficulty step (Step 0–6, shown on each door) with a "?" guide to where to start. Door numbers, progress and game content are unchanged; doors may sit in a different place on the menu. After mastering a game, "next game" now follows the step order."
 
 ## Open Questions
 
