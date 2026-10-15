@@ -79,13 +79,12 @@ describe('validateLangPack', () => {
     expect(result.errors.some((e) => e.code === 'REQUIRED_TXT_MISSING' && e.message.includes('aa_wordlist.txt'))).toBe(true);
   });
 
-  it('fails when fonts directory is empty', () => {
+  it('passes when pack ships no custom font (system font)', () => {
     const dir = makeLangDir({ fonts: false });
-    // manually create empty fonts dir
     fs.mkdirSync(path.join(dir, 'fonts'), { recursive: true });
     const result = validateLangPack(dir);
-    expect(result.ok).toBe(false);
-    expect(result.errors.some((e) => e.code === 'NO_FONT')).toBe(true);
+    expect(result.errors).toEqual([]);
+    expect(result.ok).toBe(true);
   });
 
   it('fails when avatar count is not 12', () => {
@@ -111,8 +110,7 @@ describe('validateLangPack', () => {
   });
 
   it('reports multiple errors at once', () => {
-    const dir = makeLangDir({ 'aa_wordlist.txt': false, 'aa_games.txt': false, fonts: false });
-    fs.mkdirSync(path.join(dir, 'fonts'), { recursive: true });
+    const dir = makeLangDir({ 'aa_wordlist.txt': false, 'aa_games.txt': false, avatarCount: 5 });
     const result = validateLangPack(dir);
     expect(result.errors.length).toBeGreaterThanOrEqual(3);
   });

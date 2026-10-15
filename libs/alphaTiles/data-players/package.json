@@ -8,6 +8,6 @@
   "dependencies": {
     "tslib": "^2.3.0",
     "zustand": "*",
-    "@react-native-async-storage/async-storage": "*"
+    "@react-native-async-storage/async-storage": "2.2.0"
   }
 }

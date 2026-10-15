@@ -1,5 +1,4 @@
 import { resolveFonts } from './resolveFonts';
-import { LangAssetsBindError } from '../LangAssetsBindError';
 
 describe('resolveFonts', () => {
   it('returns primary font handle', () => {
@@ -13,11 +12,8 @@ describe('resolveFonts', () => {
     expect(result.primaryBold).toBe(501);
   });
 
-  it('throws LangAssetsBindError (font) when primary is absent', () => {
-    expect(() => resolveFonts({ primary: undefined })).toThrow(
-      LangAssetsBindError,
-    );
-    expect(() => resolveFonts({ primary: undefined })).toThrow(/font/);
-    expect(() => resolveFonts({ primary: undefined })).toThrow(/primary/);
+  it('returns empty fonts when pack has no custom font (system font)', () => {
+    expect(resolveFonts({ primary: null, primaryBold: null })).toEqual({});
+    expect(resolveFonts({})).toEqual({});
   });
 });

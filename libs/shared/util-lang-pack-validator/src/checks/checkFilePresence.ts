@@ -5,7 +5,7 @@
  *
  * Checks:
  * - Required aa_*.txt files present in rawFiles
- * - At least one TTF under fonts/
+ * - fonts/ TTF/OTF (optional; info if absent → system font)
  * - Exactly 12 avatars under images/avatars/
  * - Exactly 12 avataricons under images/avataricons/
  */
@@ -51,16 +51,16 @@ export function checkFilePresence(
     }
   }
 
-  // At least one font
+  // Custom font optional: without one the app uses the platform system font.
   const ttfFonts = inventory.fonts.filter((f) =>
     /\.(ttf|otf)$/i.test(f) || !f.includes('.'),
   );
   if (ttfFonts.length === 0) {
     issues.push({
-      severity: 'error',
+      severity: 'info',
       code: ISSUE_CODES.MISSING_FONT,
       category: CATEGORY,
-      message: 'fonts/ must contain at least one .ttf or .otf file',
+      message: 'fonts/ has no .ttf/.otf; app will render with the system font',
       context: { got: 0 },
     });
   }
