@@ -8,6 +8,10 @@ Literacy-game generator: a language community's asset pack becomes a set of tile
 One playable game instance on the menu: an `aa_games.txt` row (game class + challenge level + tile/syllable mode + stage) resolved against the pack, identified by its 1-based row position (`index`, the route `doorIndex`). Resolved only by `@alphaTiles/data-doors` (`doorsOf`).
 _Avoid_: game row, game number, level (for the whole door)
 
+**Game class**:
+A mechanic (`aa_games.txt` Country, e.g. `UnitedStates`; kebab `classKey` `united-states`). Many Doors share one. Wired into the app only by the game-class registry (`apps/alphaTiles/src/gameClasses.ts`), which the one game route reads.
+_Avoid_: game type, route (there is one route)
+
 ## Audio
 
 **Pack speech**: the module games use to make pack content audible — `speak(item)`, `durationOf(item)`, `stop()` (`libs/alphaTiles/data-audio/src/lib/createPackSpeech.ts`; in games via `useGameShell().speak`). The only place that knows audio keys and fallbacks. _Avoid_: "play the word audio", audio key.

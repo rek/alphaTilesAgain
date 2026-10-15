@@ -56,4 +56,4 @@ The container SHALL dynamically import `@jamsch/react-native-hanzi-writer` insid
 
 ### Requirement: Route Registration
 
-`apps/alphaTiles/app/games/india-deva.tsx` SHALL render `<IndiaDevaContainer />` with `challengeLevel` parsed from the route params. Phase 3 only — no route in Phase 1.
+The game-class registry (`apps/alphaTiles/src/gameClasses.ts`) SHALL map `india-deva` to `<IndiaDevaContainer />`; the one game route renders it for the routed Door. Phase 3 only — no route in Phase 1.

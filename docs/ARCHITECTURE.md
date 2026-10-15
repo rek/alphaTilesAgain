@@ -234,8 +234,10 @@ not app logic. The `data-language-assets` and `data-language-pack` libs use this
 Some game classes precompute data at boot (Android: `Chile.chilePreProcess()`). Port uses `libs/shared/util-precompute`:
 
 ```ts
-// at feature-game-chile import time:
-registerPrecompute('chile', (assets) => buildChileData(assets));
+// apps/alphaTiles/src/gameClasses.ts — on the class's registry entry:
+chile: { Container: ChileContainer, precompute: chilePreProcess },
+// app/registerPrecomputes.ts (imported by _layout) loops the registry:
+registerPrecompute(classKey, gameClass.precompute);
 
 // during lang boot:
 runPrecomputes(assets); // iterates the registry, fills a per-key cache
@@ -244,7 +246,7 @@ runPrecomputes(assets); // iterates the registry, fills a per-key cache
 const chileData = usePrecompute('chile');
 ```
 
-Registry is `type:util` scope `shared`. Feature libs register their own keys — no central list in the asset loader.
+`util-precompute` is `type:util` scope `shared` and knows no game. The key is the classKey; the only list is the game-class registry (§17).
 
 ## 10. i18n key conventions
 
@@ -354,6 +356,12 @@ A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pa
 - `useDoors()` / `useDoor(routeParams)` — the same, memoized from `useLangAssets()`.
 
 `Door = { index, classKey, country, challengeLevel, displayLevel, variant, stage, colorHex, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }`. The menu (enabled doors + trackers), `GameShellContainer` (routed door, progress key, next-door search) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
+
+### Game-class registry and the one game route
+
+`apps/alphaTiles/src/gameClasses.ts` maps classKey → `{ Container, precompute? }`, typed `Record<GameClassKey, …>` over the plain key list `gameClassKeys.ts` (plain so `tools/` can import it). It is the one place a game class is wired into the app — **add a game = one registry entry**. App-level because only the app may import every `feature-game-*` lib and resolve app assets.
+
+One route serves every Door: `app/games/[classKey].tsx` → `useDoor(params)` → `gameClasses[door.classKey].Container` with route params + `gameIcons` (chrome icons injected once). URL: `/games/<classKey>?doorIndex=…&challengeLevel=…` (menu, next-door navigation and deep links). `generateStaticParams` prerenders one web page per registry key. A class missing from the registry renders a "game unavailable" screen at runtime and fails prebuild (`tools/assertGameClassesForGames.ts`; its test also checks every pack under `languages/`).
 
 ### V1 port scope
 

@@ -24,4 +24,4 @@ For each position in a target word, two tiles are shown (one correct, one distra
 
 ## Route
 
-`apps/alphaTiles/app/games/united-states.tsx` — params: `gameNumber`, `challengeLevel`
+`/games/united-states?doorIndex=…` — served by the one game route `apps/alphaTiles/app/games/[classKey].tsx` via the game-class registry (`apps/alphaTiles/src/gameClasses.ts`).
