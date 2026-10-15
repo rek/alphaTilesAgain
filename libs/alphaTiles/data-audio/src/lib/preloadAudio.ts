@@ -7,8 +7,8 @@
  * synchronous (the shell picks word clip vs syllable chain from them).
  *
  * M11: players are NOT kept per clip. Each probed player is handed to an LRU
- * pool capped at `livePlayerLimit` (native default 24); older ones are
- * `remove()`d and re-created on demand by useAudio. Peak live players ≈
+ * pool capped at `livePlayerLimit` (native default 24); older idle ones are
+ * released (native player freed) and re-created on demand by useAudio. Peak live players ≈
  * limit + 4 × CONCURRENCY + 3 chimes instead of one per clip (~400 for yue).
  * Web keeps every player (limit Infinity): Safari only unlocks <audio>
  * elements primed inside the user gesture (issue #25), so a player created
@@ -130,7 +130,7 @@ async function loadCategory(
     if (durationMs > 0) {
       durations.set(key, durationMs);
     }
-    // Pool may evict (remove) it straight away — only the source is kept.
+    // Pool may evict (release) it straight away — only the source is kept.
     pool.adopt(`${category}:${key}`, handle);
     return source;
   });

@@ -3,9 +3,14 @@
  *
  * Every live expo-audio player is an ExoPlayer + thread on Android, so keeping
  * one per clip (~400 for yue) risks OOM / thread exhaustion on low-end phones.
- * The pool keeps at most `capacity` players alive; the least-recently-used one
- * is `remove()`d when a new one is added. Evicted clips are re-created from
- * their asset source on next play.
+ * The pool keeps at most `capacity` players alive; the least-recently-used
+ * idle one is evicted when a new one is added. Eviction calls `remove()` AND
+ * `release()`: in expo-audio 55 `remove()` only drops the module's registry
+ * entry — the native player (ExoPlayer / AVPlayer) is freed when the JS
+ * SharedObject is released (`sharedObjectDidRelease`), so without `release()`
+ * it would live until GC. A player that is `playing` is never evicted
+ * (release stops it); the pool overflows briefly instead and catches up on the
+ * next add. Evicted clips are re-created from their asset source on next play.
  *
  * Keys are opaque strings — callers namespace them per category
  * (`tile:二` vs `syllable:二`) because ids collide across categories.
@@ -27,17 +32,39 @@ export function createPlayerPool({
     live.set(key, handle);
   };
 
-  const evictOverflow = () => {
-    while (live.size > capacity) {
-      const oldest = live.keys().next();
-      if (oldest.done) return;
-      const handle = live.get(oldest.value);
-      live.delete(oldest.value);
-      try {
-        handle?.remove();
-      } catch {
-        // Releasing a player is best-effort; never block playback on it.
-      }
+  const free = (handle: SoundHandle) => {
+    // Best-effort; never block playback on it.
+    try {
+      handle.remove();
+    } catch {
+      /* ignore */
+    }
+    try {
+      handle.release();
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const isPlaying = (handle: SoundHandle) => {
+    try {
+      return handle.playing === true;
+    } catch {
+      return false;
+    }
+  };
+
+  /** Evict idle LRU players; `keep` (the one just added) is never evicted. */
+  const evictOverflow = (keep: string) => {
+    let excess = live.size - capacity;
+    if (excess <= 0) return;
+    // LRU first; skip players still sounding.
+    for (const [key, handle] of [...live]) {
+      if (excess <= 0) return;
+      if (key === keep || isPlaying(handle)) continue;
+      live.delete(key);
+      free(handle);
+      excess--;
     }
   };
 
@@ -51,13 +78,13 @@ export function createPlayerPool({
       }
       const handle = create(source);
       touch(key, handle);
-      evictOverflow();
+      evictOverflow(key);
       return handle;
     },
     /** Hand an already-created player to the pool (boot probe). */
     adopt(key: string, handle: SoundHandle) {
       touch(key, handle);
-      evictOverflow();
+      evictOverflow(key);
     },
     has(key: string) {
       return live.has(key);
