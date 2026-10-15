@@ -6,7 +6,9 @@
  *
  * State:
  *   - page: number (0-indexed)
- *   - disabled: always false (speak starts synchronously; kept for the presenter)
+ *   - disabled: true while a tapped clip plays (Java Sudan.onBtnClick
+ *     makes every button unclickable for the clip duration, so taps don't
+ *     overlap into noise)
  *
  * Variant from the routed Door (`aa_games.txt` `SyllOrTile`):
  *   - 'T' (or anything not 'S'): tile variant — 63/page, type-coloured
@@ -15,8 +17,9 @@
  * Tap → shell.speak({ tile }) / speak({ syllable }).
  * Pagination prev/next bounded; visibility derived in screen from page/pageCount.
  */
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '@shared/util-i18n';
+import { useMountEffect } from '@shared/util-hooks';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import {
   GameShellContainer,
@@ -57,7 +60,21 @@ function SudanGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
   const pageCount = pages.length;
 
   const [page, setPage] = useState(0);
-  const disabled = false;
+  // Java Sudan.java:287-313: all buttons unclickable for the clip duration.
+  const [disabled, setDisabled] = useState(false);
+  const unlockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useMountEffect(() => () => {
+    if (unlockTimer.current) clearTimeout(unlockTimer.current);
+  });
+  const lockFor = useCallback((ms: number | undefined) => {
+    if (!ms) return; // silent / unknown length: nothing to wait for
+    if (unlockTimer.current) clearTimeout(unlockTimer.current);
+    setDisabled(true);
+    unlockTimer.current = setTimeout(() => {
+      unlockTimer.current = null;
+      setDisabled(false);
+    }, ms);
+  }, []);
 
   // Build cell view-models for the current page.
   const cells: SudanCell[] = useMemo(() => {
@@ -76,23 +93,22 @@ function SudanGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
     });
   }, [pages, page, isSyllable, colorList, hasSyllableAudio]);
 
-  // speak() starts playback synchronously, so there is no in-flight window
-  // to gate; `disabled` stays false (kept for the presenter contract).
   const onTilePress = useCallback(
     (index: number) => {
+      if (disabled) return;
       const tile = data.tilePages[page]?.[index];
-      if (tile) shell.speak({ tile });
+      if (tile) lockFor(shell.speak({ tile }));
     },
-    [data.tilePages, page, shell],
+    [data.tilePages, page, shell, disabled, lockFor],
   );
 
   const onSyllablePress = useCallback(
     (index: number) => {
-      if (!hasSyllableAudio) return; // Java: setClickable(false) for whole page.
+      if (!hasSyllableAudio || disabled) return; // Java: setClickable(false) for whole page.
       const syl = data.syllablePages[page]?.[index];
-      if (syl) shell.speak({ syllable: syl });
+      if (syl) lockFor(shell.speak({ syllable: syl }));
     },
-    [hasSyllableAudio, data.syllablePages, page, shell],
+    [hasSyllableAudio, data.syllablePages, page, shell, disabled, lockFor],
   );
 
   const onPrev = useCallback(() => {
