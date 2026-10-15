@@ -40,8 +40,8 @@ locales/                       # Translation files (at workspace root)
 | Type | NX tag | Purpose | Can import |
 | ---- | ------- | ------- | ---------- |
 | `feature` | `type:feature` | Screens, business logic, containers | ui, data-access, util |
-| `ui` | `type:ui` | Presentational components, design system | util only |
-| `data-access` | `type:data-access` | API calls, storage, state hooks | util only |
+| `ui` | `type:ui` | Presentational components, design system | ui, util |
+| `data-access` | `type:data-access` | API calls, storage, state hooks | data-access, util |
 | `util` | `type:util` | Pure functions, helpers, constants | nothing |
 | `tooling` | `type:tooling` | Config-only tooling projects (e.g. storybook-host); no runtime exports; **MUST NOT be imported by any other lib** | nothing |
 
@@ -54,6 +54,7 @@ NX enforces these with ESLint `@nx/enforce-module-boundaries`.
   ↓
 [feature]  →  [ui]  →  [util]
            →  [data-access]  →  [util]
+                (data-access → data-access, ui → ui also allowed)
            →  [util]
 ```
 
@@ -61,8 +62,8 @@ NX enforces these with ESLint `@nx/enforce-module-boundaries`.
 | ----- | --------------- |
 | `type:app` | `type:feature` only |
 | `type:feature` | `type:ui`, `type:data-access`, `type:util` |
-| `type:ui` | `type:util` only |
-| `type:data-access` | `type:util` only |
+| `type:ui` | `type:ui`, `type:util` |
+| `type:data-access` | `type:data-access`, `type:util` (e.g. data-door-progress → data-doors, data-progress, data-settings) |
 | `type:util` | nothing |
 
 **`type:ui` cannot import `react-i18next`** — accept pre-translated strings as props. Callers in feature libs pass `t()` values.

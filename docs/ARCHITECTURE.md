@@ -63,8 +63,8 @@ Every library has a `type` tag and a `scope` tag. ESLint enforces dependency rul
 | ---- | --- | ---------- |
 | `app` | `type:app` | `type:feature` only |
 | `feature` | `type:feature` | `type:ui`, `type:data-access`, `type:util` |
-| `data-access` | `type:data-access` | `type:util` |
-| `ui` | `type:ui` | `type:util` |
+| `data-access` | `type:data-access` | `type:data-access`, `type:util` |
+| `ui` | `type:ui` | `type:ui`, `type:util` |
 | `util` | `type:util` | nothing |
 
 | scope | tag |
@@ -351,7 +351,7 @@ The 17 Java game classes (`Brazil`, `China`, `Chile`, `Colombia`, `Ecuador`, `Ge
 
 ### Door catalogue
 
-A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pack. `@alphaTiles/data-doors` (`type:data-access`) is the only module that reads `games.rows`:
+A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pack. `@alphaTiles/data-doors` (`type:data-access`) is the only module that derives anything from `games.rows` (the one other reader, feature-loading's boot, only copies each row's InstructionAudio id into the `game` i18n namespace):
 
 - `doorsOf(pack) → Door[]` — pure; all rows, file order, `doors[i].index === i + 1`. Tested against the real `yue` + `eng` packs.
 - `useDoors()` / `useDoor(routeParams)` — the same, memoized from `useLangAssets()`.

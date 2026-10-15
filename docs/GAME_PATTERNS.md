@@ -169,9 +169,9 @@ export function <Name>Screen(props: <Name>ScreenProps) {
 | `onCreate(Bundle)` | `useMountEffect(() => startRound())` |
 | `playAgain()` / `repeatGame()` | `startRound()` |
 | `onBtnClick(View)` | `onTilePress(index)` / `onChoicePress(index)` |
-| `updatePointsAndTrackers(N)` | `shell.incrementPointsAndTracker(N)` |
-| `playCorrectFinalSound()` | `shell.playCorrectFinal()` |
-| `playIncorrectSound()` | `shell.playIncorrect()` |
+| `updatePointsAndTrackers(N)` | `shell.incrementPointsAndTracker(true, points?)` (`(isCorrect, points = 1)`) |
+| `playCorrectFinalSound()` | `useAudio().playCorrectFinal()` (chime) |
+| `playIncorrectSound()` | `useAudio().playIncorrect()` (chime) |
 | `getAudioInstructionsResID()` | `door.instructionAudio` (shell reads it from the Door) |
 | `hideInstructionAudioImage()` | `showInstructionsButton={false}` (default: shown iff the Door has a bundled clip) |
 | `ArrayList<Word>` field | `useState<Word[]>([])` in container |
@@ -250,7 +250,7 @@ Java typically logs and silently does nothing; the port should be explicit:
 type Result = { words: Word[] } | { error: 'insufficient-content' };
 
 // container detects and renders friendly error:
-if ('error' in result) return <InsufficientContentScreen onBack={shell.navigateBack} />;
+if ('error' in result) return <InsufficientContentScreen onBack={onBack} />; // container's own router.back()
 ```
 
 Retry loops: if setup can fail non-deterministically (e.g. random selection hits edge cases), bound retries at 5 in the container — not recursive in the pure helper.
