@@ -24,6 +24,16 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
 import * as fs from 'fs';
 import * as path from 'path';
 
+// Store identity. Android package / iOS bundle ID are permanent once published.
+// The primary pack (yue, first store release) owns the bare ID; every other pack
+// gets `<base>.<lang>`. Keep languages/<lang>/aa_share.txt in sync.
+const APP_ID_BASE = 'com.makektm.alphatiles';
+const PRIMARY_PACK = 'yue';
+
+function resolveAppId(lang: string): string {
+  return lang === PRIMARY_PACK ? APP_ID_BASE : `${APP_ID_BASE}.${lang}`;
+}
+
 // Inline minimal langinfo parser — avoids requiring the TS lib in Node's config-load context.
 function parseLangInfo(src: string): { find: (label: string) => string | undefined } {
   const normalizeLabel = (l: string) => l.replace(/^\d+\.\s*/, '').trim();
@@ -97,6 +107,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ? `../../languages/${lang}/images/splash.png`
     : './assets/images/splash-icon.png';
 
+  const appId = resolveAppId(lang);
+
   return {
     ...config,
     name: langInfo.gameNameInLocalLang || langInfo.nameInLocalLang,
@@ -111,10 +123,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...({ newArchEnabled: true } as Record<string, unknown>),
     ios: {
       supportsTablet: true,
-      bundleIdentifier: `org.alphatilesapp.alphatilesagain.${lang}`,
+      bundleIdentifier: appId,
     },
     android: {
-      package: `org.alphatilesapp.alphatilesagain.${lang}`,
+      package: appId,
       adaptiveIcon: {
         backgroundColor: '#E6F4FE',
         foregroundImage: './assets/images/android-icon-foreground.png',

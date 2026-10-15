@@ -104,7 +104,7 @@ One Expo project, one codebase, N builds (one per language pack).
 1. **`rsync-lang-packs`** — copies `$PUBLIC_LANG_ASSETS/<pack>/res/` → `languages/<APP_LANG>/` (flat normalized shape — see §5). Fails if the pack is absent or fails schema validation.
 2. **`lang-pack-validator`** — runs full validator against `languages/<APP_LANG>/`. Fails the build on errors; emits warnings to console.
 3. **`generate-lang-manifest`** — scans `languages/<APP_LANG>/` and emits `apps/alphaTiles/src/generated/langManifest.ts`. That file is the only place `require('../../languages/…')` calls live. Everything at runtime consumes the typed manifest via the `@generated/langManifest` path alias (see §6).
-4. **`app.config.ts`** — reads `languages/<APP_LANG>/aa_langinfo.txt`, derives display name, slug, `applicationId` suffix, RTL flag, icon path (override if present, else shared default). Exports the final Expo config object.
+4. **`app.config.ts`** — reads `languages/<APP_LANG>/aa_langinfo.txt`, derives display name, slug, app ID (see Per-build identity), RTL flag, icon path (override if present, else shared default). Exports the final Expo config object.
 
 ### EAS build profiles
 
@@ -112,7 +112,7 @@ One Expo project, one codebase, N builds (one per language pack).
 
 ### Per-build identity
 
-- `applicationId` = `org.alphatilesapps.alphatiles.blue.<pack>` (matches Android convention)
+- Android `package` / iOS `bundleIdentifier` = `com.makektm.alphatiles` for the primary pack (`yue`), `com.makektm.alphatiles.<pack>` for every other pack (`resolveAppId` in `app.config.ts`). Permanent once published. `languages/<pack>/aa_share.txt` must point at the same ID.
 - `slug` / `name` = from `aa_langinfo.txt`
 - Icon / splash = `languages/<APP_LANG>/images/icon.png` if present, else `apps/alphaTiles/assets/images/icon-default.png`
 - RTL = `I18nManager.forceRTL(true)` in app entry if `aa_langinfo.txt` script direction is `RTL`
