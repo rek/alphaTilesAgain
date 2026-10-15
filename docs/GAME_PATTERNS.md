@@ -12,6 +12,7 @@ Owner-delegated calls for the Cantonese pack; one line each.
 
 - **#30 Georgia S prompt** — S-mode shows the word with its first syllable blanked (`__生`) under the picture until solved (`buildSyllableHint`). Gated on S; T-mode/Java parity untouched. Only yue uses Georgia S today.
 - **M10 Thailand order** — kept #17's fixed order (owner asked for it) but persist the cursor per player+door (`ProgressEntry.roundCursor`), so each visit resumes and the whole word list is covered. Rejected shuffle: contradicts #17.
+- **L1 door 5** — CL 344 (written word → same written word) replaced by 364 (word audio → written word, hard distractors): the Hard step of door 4's listen-and-read ladder. Door 5 progress key changes (pre-release, acceptable).
 
 ---
 
