@@ -20,6 +20,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parseGametiles, parseSyllables, parseWordlist } from '../libs/shared/util-lang-pack-parser/src';
 import { assertGameClassesForGames } from './assertGameClassesForGames';
+import { localizeWebManifest } from './localizeWebManifest';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -401,6 +402,24 @@ function main(): void {
   );
 
   generateManifest(lang, langDir, outPath);
+
+  // <title> / <html lang> for app/+html.tsx — same rule as the exported
+  // manifest.json (tools/write-web-manifest.ts → localizeWebManifest).
+  const readPack = (f: string) =>
+    fs.existsSync(path.join(langDir, f)) ? fs.readFileSync(path.join(langDir, f), 'utf8') : '';
+  const web = localizeWebManifest(
+    { name: 'AlphaTiles' },
+    { langInfo: readPack('aa_langinfo.txt'), share: readPack('aa_share.txt') },
+  );
+  const webMetaPath = path.join(repoRoot, 'apps', 'alphaTiles', 'src', 'generated', 'webAppMeta.json');
+  fs.mkdirSync(path.dirname(webMetaPath), { recursive: true });
+  fs.writeFileSync(
+    webMetaPath,
+    JSON.stringify({ name: web['name'], lang: web['lang'] ?? 'en' }, null, 2) + '\n',
+    'utf8',
+  );
+  console.log(`[generate-lang-manifest] wrote ${path.relative(repoRoot, webMetaPath)} (name: ${String(web['name'])})`);
+
   try {
     assertGameClassesForGames(langDir);
   } catch (e) {

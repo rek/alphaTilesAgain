@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { readableAccentColor, readableTextColor } from '@shared/util-theme';
 import type { MenuDoor } from './buildMenuDoors';
 import { PlacementGuidanceSheet } from './PlacementGuidanceSheet';
 import type { PlacementGuidanceStrings } from './PlacementGuidanceSheet';
@@ -22,7 +23,7 @@ import type { PlacementGuidanceStrings } from './PlacementGuidanceSheet';
  * `levelLabel` is the translated tier badge ("Level 2"); doors arrive in
  * ladder order, the number shown is still the raw `index`.
  */
-type DoorData = Pick<MenuDoor, 'index' | 'colorHex' | 'visual' | 'textColorHex'> & {
+type DoorData = Pick<MenuDoor, 'index' | 'colorHex' | 'visual' | 'textColorHex' | 'tracksProgress'> & {
   name?: string;
   levelLabel?: string;
 };
@@ -75,10 +76,15 @@ export type GameMenuScreenModernProps = {
 const GRID_PADDING = 12;
 const CARD_GAP = 10;
 const OUTER_RADIUS = 16;
+/** Wide screens: cap the grid so doors stay finger-sized and more rows fit (U19). */
+const MAX_GRID_WIDTH = 720;
+/** Before the grid is measured, assume a desktop scrollbar may eat this much (U9). */
+const SCROLLBAR_ALLOWANCE = Platform.OS === 'web' ? 16 : 0;
+/** WCAG / platform minimum touch target. */
+const MIN_TOUCH = 44;
 
 // Fewer columns = bigger targets — important for non-literate audience
 function getColumns(width: number): number {
-  if (width >= 900) return 5;
   if (width >= 600) return 4;
   return 3;
 }
@@ -105,9 +111,11 @@ function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.El
     ? { borderWidth: 3, borderColor: door.colorHex }
     : {};
 
+  // Pack colours range from yellow to navy: never draw them unchecked (U3).
   const numberColor = door.visual === 'in-process'
-    ? (door.textColorHex ?? '#FFFFFF')
-    : door.colorHex;
+    ? (door.textColorHex ?? readableTextColor(door.colorHex))
+    : readableAccentColor(door.colorHex, cardBg);
+  const levelFontSize = Math.max(11, Math.floor(size * 0.1));
 
   return (
     <Pressable
@@ -149,7 +157,7 @@ function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.El
       ) : null}
       {door.levelLabel ? (
         <Text
-          style={[styles.levelBadge, { color: numberColor }]}
+          style={[styles.levelBadge, { color: numberColor, fontSize: levelFontSize }]}
           numberOfLines={1}
           accessibilityElementsHidden
           importantForAccessibility="no"
@@ -161,7 +169,7 @@ function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.El
         <Ionicons
           name="checkmark"
           size={14}
-          color={door.colorHex}
+          color={numberColor}
           style={styles.masteryBadge}
           accessibilityElementsHidden
           importantForAccessibility="no"
@@ -194,9 +202,19 @@ export function GameMenuScreenModern({
   selfTest,
 }: GameMenuScreenModernProps): React.JSX.Element {
   const { width } = useWindowDimensions();
-  const numColumns = getColumns(width);
+  // Measured inner width of the scroll content (excludes a desktop scrollbar);
+  // until measured, estimate from the window (U9).
+  const [measuredWidth, setMeasuredWidth] = React.useState(0);
+  const gridWidth = measuredWidth > 0
+    ? measuredWidth
+    : Math.min(width - SCROLLBAR_ALLOWANCE, MAX_GRID_WIDTH) - GRID_PADDING * 2;
+  const numColumns = getColumns(gridWidth + GRID_PADDING * 2);
   const totalGap = CARD_GAP * (numColumns - 1);
-  const cardSize = Math.floor((width - GRID_PADDING * 2 - totalGap) / numColumns);
+  const cardSize = Math.floor((gridWidth - totalGap) / numColumns);
+  const onGridLayout = (w: number) => {
+    const next = Math.floor(w);
+    if (next > 0 && next !== measuredWidth) setMeasuredWidth(next);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -240,6 +258,12 @@ export function GameMenuScreenModern({
         numColumns={numColumns}
         keyExtractor={(item) => String(item.index)}
         contentContainerStyle={[styles.grid, { padding: GRID_PADDING }]}
+        ListHeaderComponent={
+          <View
+            style={styles.measure}
+            onLayout={(e) => onGridLayout(e.nativeEvent.layout.width)}
+          />
+        }
         columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
         ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
         renderItem={({ item }) => (
@@ -333,7 +357,11 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   backButton: {
-    marginEnd: 8,
+    minWidth: MIN_TOUCH,
+    minHeight: MIN_TOUCH,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginEnd: 4,
   },
   avatar: {
     width: 36,
@@ -360,10 +388,21 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   helpButton: {
-    marginStart: 12,
+    minWidth: MIN_TOUCH,
+    minHeight: MIN_TOUCH,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginStart: 8,
   },
   grid: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: MAX_GRID_WIDTH,
+    alignSelf: 'center',
+  },
+  measure: {
+    alignSelf: 'stretch',
+    height: 0,
   },
   card: {
     alignItems: 'center',

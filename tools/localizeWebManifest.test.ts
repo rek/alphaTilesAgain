@@ -15,26 +15,27 @@ function pack(lang: string) {
 }
 
 describe('localizeWebManifest', () => {
-  it('yue: local game name, yue lang tag, yue Play id', () => {
+  it('yue: pack language name, zh-HK UI locale, yue Play id', () => {
     const m = localizeWebManifest(template, pack('yue'));
-    expect(m['name']).toBe('學廣話');
-    expect(m['short_name']).toBe('學廣話');
-    expect(m['lang']).toBe('yue');
+    expect(m['name']).toBe('廣東話');
+    expect(m['short_name']).toBe('廣東話');
+    expect(m['lang']).toBe('zh-HK');
     expect(m['related_applications']).toEqual([{ platform: 'play', id: 'com.makektm.alphatiles' }]);
     expect(m['icons']).toEqual(template['icons']);
   });
 
-  it('eng: canonical en tag, eng Play id (not the yue app)', () => {
+  it('eng: keeps AlphaTiles brand, canonical en tag, eng Play id (not the yue app)', () => {
     const m = localizeWebManifest(template, pack('eng'));
+    expect(m['name']).toBe('AlphaTiles');
     expect(m['lang']).toBe('en');
     expect(m['related_applications']).toEqual([
       { platform: 'play', id: 'org.alphatilesapps.alphatiles.blue.engEnglish4' },
     ]);
   });
 
-  it('no Play link → no related_applications; missing game name → lang name', () => {
+  it('no Play link → no related_applications; missing lang name → game name', () => {
     const m = localizeWebManifest(template, {
-      langInfo: 'Item\tAnswer\n1. Lang Name (In Local Lang)\tXx\n4. Ethnologue code\ttpx\n',
+      langInfo: 'Item\tAnswer\n7. Game Name (In Local Lang)\tXx\n4. Ethnologue code\ttpx\n',
       share: 'Link\n',
     });
     expect(m['name']).toBe('Xx');

@@ -13,4 +13,6 @@ export type Player = {
   createdAt: number;
   /** Date.now() at last selectPlayer call; null until first selection. */
   lastPlayedAt: number | null;
+  /** True once the "where to start" sheet was shown to this player (auto-opens once on first menu visit). */
+  seenPlacementGuidance?: boolean;
 };

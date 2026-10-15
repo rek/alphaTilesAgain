@@ -63,6 +63,7 @@ export function AboutContainer(): React.JSX.Element {
   const thirdPartyLicence = shipsStrokeData
     ? {
         heading: t('chrome:about.thirdParty'),
+        summary: t('chrome:about.thirdPartySummary'),
         attribution: STROKE_DATA_ATTRIBUTION,
         licenceText: ARPHIC_PUBLIC_LICENSE_TEXT,
         expanded: licenceExpanded,
@@ -112,7 +113,12 @@ export function AboutContainer(): React.JSX.Element {
   };
 
   const onWebsiteTap = (): void => { openUrl(PROJECT_URL); };
-  const onReportIssueTap = (): void => { openUrl(ISSUES_URL); };
+  // Learners/parents rarely have a GitHub account: with a real pack contact
+  // email, "Report a problem" opens the in-app feedback mail instead (U13).
+  const onReportIssueTap = (): void => {
+    if (showEmail) router.push('/feedback');
+    else openUrl(ISSUES_URL);
+  };
   const onPrivacyTap = (): void => { openUrl(privacyUrl); };
 
   return (

@@ -140,6 +140,7 @@ describe('AboutScreen', () => {
     const onToggle = jest.fn();
     const licence = {
       heading: 'Open-source licences',
+      summary: 'Stroke data licence summary',
       attribution: 'Stroke-order data: Make Me a Hanzi',
       licenceText: 'ARPHIC PUBLIC LICENSE ...',
       toggleLabel: 'Show licence text',
@@ -150,6 +151,7 @@ describe('AboutScreen', () => {
     );
     expect(collapsed.getByText('Open-source licences')).toBeTruthy();
     expect(collapsed.getByText('Stroke-order data: Make Me a Hanzi')).toBeTruthy();
+    expect(collapsed.getByText('Stroke data licence summary')).toBeTruthy();
     expect(collapsed.queryByText('ARPHIC PUBLIC LICENSE ...')).toBeNull();
     fireEvent.press(collapsed.getByText('Show licence text'));
     expect(onToggle).toHaveBeenCalledTimes(1);

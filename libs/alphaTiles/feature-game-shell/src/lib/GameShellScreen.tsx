@@ -61,6 +61,8 @@ export type GameShellScreenProps = {
   /** Pre-translated accessibility labels (container owns i18n). */
   a11yLabels: {
     advance: string;
+    /** Summary of the 12 trackers for the score bar. */
+    trackers: string;
   };
   // Handlers
   onBackPress: () => void;
@@ -117,6 +119,7 @@ export function GameShellScreen({
         trackerStates={trackerStates}
         score={score}
         scoreLabel={scoreLabel}
+        trackersLabel={a11yLabels.trackers}
         trackerIcons={trackerIcons}
       />
 

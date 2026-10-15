@@ -26,6 +26,9 @@ const meta: Meta<typeof StoryHost> = {
     onStrokeStart: () => undefined,
     onClear: () => undefined,
     loadingLabel: 'Loading…',
+    canvasLabel: 'Write 人',
+    missLabel: 'Not quite — try that stroke again',
+    missed: false,
   },
 };
 export default meta;

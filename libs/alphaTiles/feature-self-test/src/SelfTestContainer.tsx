@@ -16,13 +16,14 @@ import type { ThailandChoiceFeedback, ThailandRef } from '@alphaTiles/feature-ga
 import { buildSelfTest } from './buildSelfTest';
 import type { SelfTestQuestion } from './buildSelfTest';
 import { selfTestScore } from './selfTestScore';
+import { selfTestSuggestion } from './selfTestSuggestion';
 import { SelfTestScreen } from './SelfTestScreen';
 import type { SelfTestScreenProps } from './SelfTestScreen';
 
 /** Pause on the revealed answer before the next question (design D3). */
 const REVEAL_MS = 1200;
-const RIGHT = { backgroundColor: '#2E7D32', textColor: '#FFFFFF' };
-const WRONG = { backgroundColor: '#C62828', textColor: '#FFFFFF' };
+const RIGHT = { backgroundColor: '#2E7D32' };
+const WRONG = { backgroundColor: '#C62828' };
 const FALLBACK_REF_COLOR = '#1565C0';
 
 function isAudioPrompt(ref: ThailandRef) {
@@ -98,6 +99,11 @@ function SelfTestRun({ onTryAgain }: { onTryAgain: () => void }): React.JSX.Elem
 
   if (!question) {
     const { correct, total } = selfTestScore({ questions, answers });
+    const { band, step } = selfTestSuggestion({
+      correct,
+      total,
+      tiers: doors.filter((d) => d.enabled).map((d) => d.tier),
+    });
     return (
       <SelfTestScreen
         {...common}
@@ -106,6 +112,7 @@ function SelfTestRun({ onTryAgain }: { onTryAgain: () => void }): React.JSX.Elem
           endTitle: t('chrome:selfTest.end_title'),
           scoreText: t('chrome:selfTest.score', { correct, total }),
           scoreA11yLabel: t('chrome:selfTest.a11y.score', { correct, total }),
+          suggestion: t(`chrome:selfTest.suggestion_${band}`, { step }),
           tryAgainLabel: t('chrome:selfTest.try_again'),
           backToMenuLabel: t('chrome:selfTest.back_to_menu'),
           onTryAgain,
@@ -140,7 +147,7 @@ function SelfTestRun({ onTryAgain }: { onTryAgain: () => void }): React.JSX.Elem
       onRefPress: () => speakPrompt(question),
       accessibilityRefLabel:
         refDisplay.type === 'audio'
-          ? t('chrome:a11y.play_again')
+          ? t('chrome:a11y.listen_again')
           : refDisplay.type === 'image'
           ? t('chrome:a11y.active_word_picture')
           : refDisplay.text,

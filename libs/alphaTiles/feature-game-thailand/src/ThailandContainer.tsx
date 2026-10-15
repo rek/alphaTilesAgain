@@ -199,7 +199,7 @@ function ThailandGame({
   if (error === 'insufficient-content') {
     return (
       <ThailandScreen
-        refDisplay={{ type: 'text', text: '?', backgroundColor: '#999', textColor: '#FFFFFF' }}
+        refDisplay={{ type: 'text', text: '?', backgroundColor: '#999' }}
         choices={[
           { type: 'text', text: '' },
           { type: 'text', text: '' },
@@ -229,7 +229,7 @@ function ThailandGame({
   // label, so the screen reader doesn't announce the answer.
   const refLabel =
     refDisplay.type === 'audio'
-      ? t('chrome:a11y.play_again')
+      ? t('chrome:a11y.listen_again')
       : refDisplay.type === 'image'
       ? t('chrome:a11y.active_word_picture')
       : refDisplay.text;
@@ -243,7 +243,7 @@ function ThailandGame({
       return i === correctIndex ? null : { backgroundColor: '#FFFFFF' };
     }
     return i === correctIndex
-      ? { backgroundColor: refColor, textColor: '#FFFFFF' }
+      ? { backgroundColor: refColor }
       : null;
   };
   const choiceFeedback: [

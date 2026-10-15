@@ -14,10 +14,10 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { readableTextColor } from '@shared/util-theme';
 
 const GRAYED_BG = '#A9A9A9';
 const GRAYED_TEXT = '#000000';
-const BUTTON_TEXT = '#FFFFFF';
 
 export type PeruChoice = {
   text: string;
@@ -74,7 +74,7 @@ export function PeruScreen({
       <View style={styles.grid}>
         {choices.map((choice, i) => {
           const bg = choice.grayed ? GRAYED_BG : choice.bgColor;
-          const fg = choice.grayed ? GRAYED_TEXT : BUTTON_TEXT;
+          const fg = choice.grayed ? GRAYED_TEXT : readableTextColor(choice.bgColor);
           return (
             <Pressable
               key={i}

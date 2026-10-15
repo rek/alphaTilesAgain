@@ -23,6 +23,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useTranslation } from '@shared/util-i18n';
 import { registerContentNamespaces } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
+import { packDisplayName } from './packDisplayName';
 import { useDoors } from '@alphaTiles/data-doors';
 import { useAudio } from '@alphaTiles/data-audio';
 import { reportApplyIfNeeded } from '@shared/util-ota';
@@ -110,7 +111,7 @@ export function BootGate({ children }: { children: React.ReactNode }): React.JSX
       audioProgress={audioProgress}
       error={error}
       labels={{
-        title: t('loading.title'),
+        title: t('loading.title', { name: packDisplayName(assets.langInfo) }),
         progress: progressLabel,
         error: t('loading.error'),
       }}

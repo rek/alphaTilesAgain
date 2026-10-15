@@ -355,7 +355,7 @@ function GeorgiaGame({
 
       if (choice.text === round.correctText) {
         const grayed = round.choices.map((c, i) =>
-          i === index ? c : { ...c, grayed: true },
+          i === index ? { ...c, correct: true } : { ...c, grayed: true },
         );
         const revealed = stripInstructionCharacters(round.word.wordInLOP);
         setRound({ ...round, choices: grayed, revealedText: revealed });

@@ -24,18 +24,12 @@ import {
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import type { TilePair } from './setupRound';
+import { readableTextColor } from '@shared/util-theme';
 
 const UNSELECTED_BG = '#A9A9A9';
 const IMAGE_BG = '#555555';
 const GAP = 4;
 
-/** Minimum contrast color for text over a hex background. */
-function contrastColor(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return 0.299 * r + 0.587 * g + 0.114 * b > 127.5 ? '#000000' : '#FFFFFF';
-}
 
 export type UnitedStatesScreenProps = {
   /** The tile pairs for this round (length = word tile count). */
@@ -115,7 +109,7 @@ export function UnitedStatesScreen({
           const themeColor = themeColors[pairIdx % Math.max(1, themeColors.length)] ?? '#1565C0';
           const bg = isSelected ? themeColor : UNSELECTED_BG;
           // Selected: white text on theme color; unselected: black text on dark gray (Java 326-329)
-          const textColor = isSelected ? contrastColor(themeColor) : '#000000';
+          const textColor = isSelected ? readableTextColor(themeColor) : '#000000';
           const text = row === 0 ? pair.top : pair.bottom;
           return (
             <Pressable

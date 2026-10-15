@@ -344,9 +344,11 @@ function GameShell({
 
   const score = progress.points;
 
+  const completeTrackers = trackerStates.filter((s) => s === 'complete').length;
   const a11yLabels = useMemo(() => ({
     advance: t('a11y.advance'),
-  }), [t]);
+    trackers: t('a11y.trackers_summary', { done: completeTrackers, total: trackerStates.length }),
+  }), [t, completeTrackers, trackerStates.length]);
 
   const screenProps: GameShellScreenProps = {
     score,

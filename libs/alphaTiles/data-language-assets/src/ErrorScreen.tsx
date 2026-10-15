@@ -2,7 +2,8 @@
  * Minimal fallback screen rendered by LangAssetsProvider when boot fails.
  *
  * Deliberately unstyled — pack is broken so theming is unavailable.
- * No i18n — translations can't load if the pack failed.
+ * Title + hint use the app-bundled chrome strings (initI18n runs at module load,
+ * independent of the pack) with English defaults; technical detail stays English.
  * No retry — pack errors are deterministic; fix requires a rebuild.
  *
  * Sets accessibilityLiveRegion="assertive" so screen readers announce the failure.
@@ -14,6 +15,7 @@ import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { LangAssetsBindError } from '@alphaTiles/data-language-pack';
 import { LangPackParseError } from '@shared/util-lang-pack-parser';
+import { t } from '@shared/util-i18n';
 
 type Props = {
   error: Error;
@@ -45,12 +47,16 @@ export function ErrorScreen({ error }: Props): React.JSX.Element {
       accessibilityRole="alert"
     >
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Language pack failed to load</Text>
+        <Text style={styles.title}>
+          {t('chrome:pack_error.title', { defaultValue: 'Language pack failed to load' })}
+        </Text>
         <Text style={styles.errorName}>{error.name}</Text>
         <Text style={styles.errorMessage}>{formatError(error)}</Text>
         <Text style={styles.hint}>
-          Restart the app after fixing the language pack. If this is a
-          production build, contact the app maintainer.
+          {t('chrome:pack_error.hint', {
+            defaultValue:
+              'Restart the app after fixing the language pack. If this is a production build, contact the app maintainer.',
+          })}
         </Text>
       </ScrollView>
     </View>

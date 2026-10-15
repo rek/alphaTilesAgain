@@ -23,6 +23,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType, ImageStyle } from 'react-native';
+import { readableTextColor } from '@shared/util-theme';
 
 export type MalaysiaRow = {
   /** Standardized text shown to the learner (LOP, post-standardize). */
@@ -31,8 +32,10 @@ export type MalaysiaRow = {
   bgColor: string;
   /** Word image — undefined when the lang pack has no image for this word. */
   image: ImageSourcePropType | undefined;
-  /** Stable identifier for accessibility / keying — typically wordInLWC. */
+  /** Stable identifier for keying — typically wordInLWC. Never shown or spoken. */
   id: string;
+  /** Pre-translated screen-reader label built from `text` (e.g. 「播放：醫生」). */
+  a11yLabel: string;
 };
 
 export type MalaysiaScreenProps = {
@@ -58,18 +61,6 @@ export type MalaysiaScreenProps = {
     nextPage: string;
   };
 };
-
-const TEXT_LIGHT = '#FFFFFF';
-const TEXT_DARK = '#000000';
-
-/** Pick a high-contrast text color over a hex background. */
-function contrastColor(hex: string): string {
-  if (!hex || !hex.startsWith('#') || hex.length < 7) return TEXT_DARK;
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return 0.299 * r + 0.587 * g + 0.114 * b > 127.5 ? TEXT_DARK : TEXT_LIGHT;
-}
 
 export function MalaysiaScreen({
   rows,
@@ -103,14 +94,14 @@ export function MalaysiaScreen({
           A window-height estimate let 11 rows run under the arrows (#47). */}
       <View style={styles.list}>
         {rows.map((row, idx) => {
-          const textColor = contrastColor(row.bgColor);
+          const textColor = readableTextColor(row.bgColor);
           return (
             <Pressable
               key={`${row.id}-${idx}`}
               onPress={disabled ? undefined : () => onPress(idx)}
               disabled={disabled}
               accessibilityRole="button"
-              accessibilityLabel={`Play ${row.id}`}
+              accessibilityLabel={row.a11yLabel}
               accessibilityState={{ disabled }}
               style={[
                 styles.row,
@@ -129,7 +120,8 @@ export function MalaysiaScreen({
                   source={row.image}
                   style={styles.rowImage}
                   resizeMode="contain"
-                  accessibilityLabel={row.id}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
                 />
               ) : (
                 <View style={styles.rowImagePlaceholder} />

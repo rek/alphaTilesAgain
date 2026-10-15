@@ -15,6 +15,7 @@
     "@shared/util-analytics": "*",
     "@shared/util-i18n": "*",
     "expo-router": "~55.0.12",
+    "@alphaTiles/data-doors": "*",
     "react": "*",
     "react-native": "*"
   }

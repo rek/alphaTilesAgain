@@ -1,12 +1,6 @@
 import React from 'react';
 import { Image, ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
-
-function contrastColor(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5 ? '#000' : '#fff';
-}
+import { readableTextColor } from '@shared/util-theme';
 
 export type TrackerState = 'complete' | 'incomplete';
 
@@ -17,6 +11,8 @@ export type ScoreBarProps = {
   trackerStates: TrackerState[]; // always length 12
   score: number;
   scoreLabel: string; // pre-translated
+  /** Pre-translated screen-reader summary of the 12 trackers, e.g. "3 of 12 trackers complete". */
+  trackersLabel: string;
   trackerIcons?: { complete: ImageSourcePropType; incomplete: ImageSourcePropType };
 };
 
@@ -27,9 +23,10 @@ export function ScoreBar({
   trackerStates,
   score,
   scoreLabel,
+  trackersLabel,
   trackerIcons,
 }: ScoreBarProps): React.JSX.Element {
-  const textColor = contrastColor(gameColor);
+  const textColor = readableTextColor(gameColor);
   return (
     <View style={styles.row}>
       {/* Game number badge */}
@@ -46,32 +43,36 @@ export function ScoreBar({
         </Text>
       </View>
 
-      {/* 12 tracker dots */}
-      <View style={styles.trackers}>
-        {trackerStates.map((state, i) => {
-          const n = i + 1;
-          const total = trackerStates.length;
-          const label = `Tracker ${n} of ${total}, ${state}`;
-          if (trackerIcons) {
-            return (
-              <Image
-                key={i}
-                source={state === 'complete' ? trackerIcons.complete : trackerIcons.incomplete}
-                style={styles.dot}
-                accessible
-                accessibilityLabel={label}
-              />
-            );
-          }
-          return (
+      {/* 12 tracker dots — one summary label, dots hidden from screen readers */}
+      <View
+        style={styles.trackers}
+        accessible
+        accessibilityRole="progressbar"
+        accessibilityLabel={trackersLabel}
+        accessibilityValue={{
+          min: 0,
+          max: trackerStates.length,
+          now: trackerStates.filter((s) => s === 'complete').length,
+        }}
+      >
+        {trackerStates.map((state, i) =>
+          trackerIcons ? (
+            <Image
+              key={i}
+              source={state === 'complete' ? trackerIcons.complete : trackerIcons.incomplete}
+              style={styles.dot}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+          ) : (
             <View
               key={i}
               style={[styles.dot, state === 'complete' ? styles.dotComplete : styles.dotIncomplete]}
-              accessible
-              accessibilityLabel={label}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
             />
-          );
-        })}
+          ),
+        )}
       </View>
 
       {/* Score */}

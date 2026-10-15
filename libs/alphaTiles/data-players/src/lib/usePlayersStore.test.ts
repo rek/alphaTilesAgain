@@ -162,3 +162,15 @@ test('clearActivePlayer sets activePlayerId to null', () => {
   clearActivePlayer();
   expect(usePlayersStore.getState().activePlayerId).toBeNull();
 });
+
+// ─── markPlacementGuidanceSeen ────────────────────────────────────────────────
+test('markPlacementGuidanceSeen flags only that player', () => {
+  const { createPlayer, markPlacementGuidanceSeen } = usePlayersStore.getState();
+  const a = createPlayer({ name: 'Lee', avatarIndex: 1 });
+  const b = createPlayer({ name: 'Mo', avatarIndex: 2 });
+  expect(a.seenPlacementGuidance).toBeUndefined();
+  markPlacementGuidanceSeen(a.id);
+  const players = usePlayersStore.getState().players;
+  expect(players.find((p) => p.id === a.id)?.seenPlacementGuidance).toBe(true);
+  expect(players.find((p) => p.id === b.id)?.seenPlacementGuidance).toBeUndefined();
+});
