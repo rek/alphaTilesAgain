@@ -359,6 +359,12 @@ function GeorgiaGame({
         );
         const revealed = stripInstructionCharacters(round.word.wordInLOP);
         setRound({ ...round, choices: grayed, revealedText: revealed });
+        // S mode: drop the pending isolated-syllable clip, or it plays over
+        // (or, via speak()'s stop, truncates) the correct-answer word replay.
+        if (syllableTimerRef.current) {
+          clearTimeout(syllableTimerRef.current);
+          syllableTimerRef.current = null;
+        }
         shell.setInteractionLocked(true);
         // Java updatePointsAndTrackers(2) → TS incrementPointsAndTracker(true).
         shell.incrementPointsAndTracker(true);
