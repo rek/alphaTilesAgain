@@ -52,9 +52,9 @@
 
 ## 4. Storybook + Mocks Audit
 
-- [ ] 4.1 Open `libs/alphaTiles/feature-game-taiwan/src/TaiwanScreen.stories.tsx` — confirmed to exist. Check whether it mocks `useAudio` or renders the presenter directly without one.
-- [ ] 4.2 If the story mocks `useAudio` and only stubs `playWord`, add `playSyllable: jest.fn().mockResolvedValue(undefined)` alongside. If the story doesn't render the container (only the presenter), no mock change needed.
-- [ ] 4.3 Run `nx storybook storybook-host` and confirm the Taiwan story renders with the engine change in place. Note: per `docs/GAME_PATTERNS.md` § "Storybook host needs explicit lib registration", verify Taiwan is registered in `libs/shared/storybook-host/.storybook/main.ts` — if it isn't, flag the registration gap separately rather than fixing in this PR.
+- [x] 4.1 Open `libs/alphaTiles/feature-game-taiwan/src/TaiwanScreen.stories.tsx` — confirmed to exist. Check whether it mocks `useAudio` or renders the presenter directly without one.
+- [x] 4.2 If the story mocks `useAudio` and only stubs `playWord`, add `playSyllable: jest.fn().mockResolvedValue(undefined)` alongside. If the story doesn't render the container (only the presenter), no mock change needed.
+- [x] 4.3 Run `nx storybook storybook-host` and confirm the Taiwan story renders with the engine change in place. Note: per `docs/GAME_PATTERNS.md` § "Storybook host needs explicit lib registration", verify Taiwan is registered in `libs/shared/storybook-host/.storybook/main.ts` — if it isn't, flag the registration gap separately rather than fixing in this PR.
 
 ## 5. Manual QA (yue build)
 
@@ -72,31 +72,40 @@
 
 ## 6. Cross-Pack Regression
 
-- [ ] 6.1 The `eng` pack has no Taiwan door in `aa_games.txt` (script type is Roman, not Chinese) — so there's no English Taiwan path to smoke. Skip cross-pack runtime QA; pack-agnostic correctness is covered by the unit-test on `pickAudioForChar` ("compound-word fallback plays when no syllable audio is shipped" scenario).
+- [x] 6.1 The `eng` pack has no Taiwan door in `aa_games.txt` (script type is Roman, not Chinese) — so there's no English Taiwan path to smoke. Skip cross-pack runtime QA; pack-agnostic correctness is covered by the unit-test on `pickAudioForChar` ("compound-word fallback plays when no syllable audio is shipped" scenario).
 - [ ] 6.2 Optional sanity: `APP_LANG=eng tools/validate-lang-pack.ts` — expected: zero new errors / warnings introduced by this change.
 
 ## 7. Validator + Manifest
 
-- [ ] 7.1 `APP_LANG=yue tools/validate-lang-pack.ts` — zero errors.
+- [x] 7.1 `APP_LANG=yue tools/validate-lang-pack.ts` — zero errors.
 - [ ] 7.2 `APP_LANG=yue tools/generate-lang-manifest.ts` — expected: counts unchanged from HEAD baseline (**163 syllables / 114 words / 116 tiles** — post-`yue-numerals-game` state).
-- [ ] 7.3 `git diff apps/alphaTiles/src/generated/langManifest.ts` — expected: empty diff (require-id strings unchanged; only the bytes behind the requires differ).
+- [x] 7.3 `git diff apps/alphaTiles/src/generated/langManifest.ts` — expected: empty diff (require-id strings unchanged; only the bytes behind the requires differ).
 
 ## 8. Quality Gates
 
 - [ ] 8.1 `nx affected:lint` — zero violations.
 - [ ] 8.2 `nx affected:test` — all green.
 - [ ] 8.3 `npx tsc --noEmit` — zero errors.
-- [ ] 8.4 `openspec validate --strict yue-writing-audio` — passes.
+- [x] 8.4 `openspec validate --strict yue-writing-audio` — passes.
 - [ ] 8.5 `nx graph` — confirm no new dependency violations introduced.
 
 ## 9. OTA + Commit Hygiene
 
-- [ ] 9.1 Compose conventional-commits messages per `docs/COMMIT_CONVENTIONS.md` (≤50 chars subject, no capital first letter). Suggested split:
+- [x] 9.1 Compose conventional-commits messages per `docs/COMMIT_CONVENTIONS.md` (≤50 chars subject, no capital first letter). Suggested split:
   - `chore(yue): re-record 13 syllable mp3s (#27)`
   - `feat(game-taiwan): syllable audio on completion (#27)`
   - `test(game-taiwan): cover pickAudioForChar branches`
 - [ ] 9.2 Push branch, open PR linking issue #27 and the proposal folder.
 - [ ] 9.3 After merge, plan OTA update: `eas update --branch yue --message "fix(audio): per-syllable audio in writing game"` (per `docs/decisions/ADR-009`).
+
+## Close-out note (2026-10-15, #45)
+
+- Added `feature-game-taiwan/src/yuePack.integration.test.ts`: real `languages/yue` data through
+  parsers + `buildTaiwanData` + `pickAudioForChar`; asserts 女 -> syllable (not `daughter`).
+- §4: story renders presenter only (no `useAudio`); no mock change needed. `nx build-storybook storybook-host` passes; Taiwan registered in `main.ts`.
+- 7.2 left unticked: manifest reports 165 syllables / 116 words (baseline text says 163/114; drifted). 7.3: no tracked diff.
+- 8.1/8.2/8.3/8.5 left unticked: only lib-scoped lint/tests/tsc run (clean; `@storybook/react` TS2307 in lib tsconfig is pre-existing).
+- Remaining: 5.2-5.11 on-device QA, 1.1/1.2 listening, 9.2/9.3, section 10 followups. Change NOT archived.
 
 ## 10. Followups
 
