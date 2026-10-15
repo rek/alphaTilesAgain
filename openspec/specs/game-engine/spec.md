@@ -85,7 +85,7 @@ When `trackerCount % 12 === 0` and `trackerCount > 0` and `after12CheckedTracker
 #### Scenario: Crossing the 12-tracker boundary
 
 - **WHEN** a correct answer brings `trackerCount` to 12 and the language pack has `after12CheckedTrackers = 3`
-- **THEN** after `correctSoundDuration + 1800ms` the shell mounts `<Celebration>`; after `4500ms` total, the shell navigates to the next game in `gameList` that has `hasChecked12Trackers === false`
+- **THEN** after `correctSoundDuration + 1800ms` the shell mounts `<Celebration>`; after `4500ms` total, the shell navigates to the next enabled door that is not mastered (`nextUnmasteredDoor`, `@alphaTiles/data-door-progress`)
 
 #### Scenario: `after12CheckedTrackers === 2`
 
@@ -99,7 +99,7 @@ When `trackerCount % 12 === 0` and `trackerCount > 0` and `after12CheckedTracker
 
 #### Scenario: All games completed
 
-- **WHEN** the search for a next-uncompleted-game in `gameList` finds none (every game has `checked12Trackers === true`)
+- **WHEN** the search for a next-uncompleted-game in `gameList` finds none (every enabled door is mastered)
 - **THEN** the shell navigates to `/earth`
 
 ### Requirement: Shell separates container from presenter

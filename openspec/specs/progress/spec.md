@@ -5,7 +5,7 @@ TBD - created by archiving change game-engine-base. Update Purpose after archive
 ## Requirements
 ### Requirement: Per-player per-game per-stage progress store
 
-`libs/alphaTiles/data-progress` SHALL expose a Zustand store `useProgressStore` that holds a map `progress: Record<ProgressKey, ProgressEntry>` where `ProgressEntry = { points, trackerCount, checked12Trackers, lastPlayed }`. Keys SHALL be built by `buildGameUniqueId({ country, challengeLevel, playerId, syllableGame, stage })` and MUST match the Java `uniqueGameLevelPlayerModeStageID` string construction (`className + challengeLevel + playerString + syllableGame + stage`) exactly, substituting `country` for the fully-qualified Java class name to keep keys portable.
+`libs/alphaTiles/data-progress` SHALL expose a Zustand store `useProgressStore` that holds a map `progress: Record<ProgressKey, ProgressEntry>` where `ProgressEntry = { points, trackerCount, lastPlayed, checked12Trackers? (legacy, unread) }`. Keys SHALL be built by `buildGameUniqueId({ country, challengeLevel, playerId, syllableGame, stage })` and MUST match the Java `uniqueGameLevelPlayerModeStageID` string construction (`className + challengeLevel + playerString + syllableGame + stage`) exactly, substituting `country` for the fully-qualified Java class name to keep keys portable.
 
 #### Scenario: Key construction
 
@@ -19,13 +19,13 @@ TBD - created by archiving change game-engine-base. Update Purpose after archive
 
 ### Requirement: Actions for scoring and tracker updates
 
-The store SHALL expose actions: `incrementPoints(key, delta)`, `incrementTracker(key)`, `markChecked12(key)`, `resetGame(key)`. Actions SHALL be deterministic and idempotent within a single invocation (calling `incrementTracker` twice produces `+2`, not `+1`).
+The store SHALL expose actions: `incrementPoints(key, delta)`, `incrementTracker(key)`, `resetGame(key)`. Actions SHALL be deterministic and idempotent within a single invocation (calling `incrementTracker` twice produces `+2`, not `+1`).
 
 #### Scenario: `incrementPoints`
 
-- **WHEN** the entry for key K is `{ points: 5, trackerCount: 3, checked12Trackers: false }`
+- **WHEN** the entry for key K is `{ points: 5, trackerCount: 3 }`
 - **AND** `incrementPoints(K, 4)` is dispatched
-- **THEN** the entry becomes `{ points: 9, trackerCount: 3, checked12Trackers: false, lastPlayed: <now> }`
+- **THEN** the entry becomes `{ points: 9, trackerCount: 3, lastPlayed: <now> }`
 
 #### Scenario: `incrementTracker` with tracker-capable country
 
@@ -37,10 +37,10 @@ The store SHALL expose actions: `incrementPoints(key, delta)`, `incrementTracker
 - **WHEN** key K represents a `Romania` game and `incrementTracker(K)` is dispatched
 - **THEN** `trackerCount` stays unchanged (the store consults `util-scoring.shouldIncrementTracker` based on the `country` portion of the key — or the caller passes `country` explicitly, whichever is implemented)
 
-#### Scenario: `markChecked12`
+#### Scenario: No mastery flag
 
-- **WHEN** `trackerCount` reaches 12 for key K and `markChecked12(K)` is dispatched
-- **THEN** `checked12Trackers` becomes `true` and persists across app restarts (Java: `prefs.putBoolean(uniqueGameLevelPlayerModeStageID + "_hasChecked12Trackers", true)`)
+- **WHEN** `trackerCount` reaches 12 for key K
+- **THEN** nothing else is written; mastery is derived from `trackerCount` by door progress (`@alphaTiles/data-door-progress`). `checked12Trackers` survives only as an optional legacy field in persisted entries and is never read.
 
 #### Scenario: `resetGame`
 
@@ -68,12 +68,7 @@ The store SHALL wrap itself in Zustand's `persist` middleware with an AsyncStora
 
 ### Requirement: Progress selectors expose derived values
 
-The library SHALL expose selector hooks `useProgressEntry(key)` and `useTotalPoints(playerId)`. `useTotalPoints` SHALL sum `progress[k].points` for every key where the `playerId` portion matches — used by the score bar's global-points display (Java `globalPoints`).
-
-#### Scenario: `useProgressEntry` returns default when missing
-
-- **WHEN** `useProgressEntry('NonExistentKey')` is called
-- **THEN** it returns `{ points: 0, trackerCount: 0, checked12Trackers: false, lastPlayed: 0 }` (default, not `undefined`)
+The library SHALL expose the selector hook `useTotalPoints(playerId)` (per-door reads go through door progress, `@alphaTiles/data-door-progress`). `useTotalPoints` SHALL sum `progress[k].points` for every key where the `playerId` portion matches — used by the score bar's global-points display (Java `globalPoints`).
 
 #### Scenario: `useTotalPoints` aggregates
 

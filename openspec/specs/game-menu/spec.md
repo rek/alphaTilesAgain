@@ -35,32 +35,32 @@ Each door's tint color SHALL be resolved once by the Door catalogue as `colorLis
 
 ### Requirement: Door visual state derivation
 
-Each door's visual SHALL be derived by the pure function `deriveVisual(door) → 'not-started' | 'in-process' | 'mastery'`:
+Each door's visual SHALL come from door progress (`doorProgressOf(...).visual`, `@alphaTiles/data-door-progress`) → `'not-started' | 'in-process' | 'mastery'`:
 
-- If `door.noRightWrong` is true → `'in-process'`.
-- Else if `door.trackerCount >= 12` → `'mastery'`.
-- Else if `door.trackerCount > 0` → `'in-process'`.
+- If the door does not track progress (no-right/wrong) → `'in-process'`.
+- Else if `trackerCount >= 12` (mastered) → `'mastery'`.
+- Else if `trackerCount > 0` → `'in-process'`.
 - Else → `'not-started'`.
 
 #### Scenario: Brand-new door
 
 - **WHEN** `trackerCount = 0` and `noRightWrong = false`
-- **THEN** `deriveVisual` returns `'not-started'`
+- **THEN** the visual is `'not-started'`
 
 #### Scenario: In-progress door
 
 - **WHEN** `trackerCount = 7` and `noRightWrong = false`
-- **THEN** `deriveVisual` returns `'in-process'`
+- **THEN** the visual is `'in-process'`
 
 #### Scenario: Mastered door
 
 - **WHEN** `trackerCount = 15` and `noRightWrong = false`
-- **THEN** `deriveVisual` returns `'mastery'`
+- **THEN** the visual is `'mastery'`
 
 #### Scenario: No-right-wrong door
 
 - **WHEN** `noRightWrong = true` (regardless of `trackerCount`)
-- **THEN** `deriveVisual` returns `'in-process'`
+- **THEN** the visual is `'in-process'`
 
 ### Requirement: No-right-wrong classification from `aa_games.txt`
 
@@ -110,19 +110,14 @@ Doors SHALL paginate at `doorsPerPage` per page, where `doorsPerPage` comes from
 - **WHEN** a user navigates away from `/menu` (to a game, or to `/choose-player`) and returns
 - **THEN** the grid shows page 0 again (not the last-visited page)
 
-### Requirement: Tracker-count read from `data-progress` with fallback
+### Requirement: Door progress read from `data-door-progress`
 
-The menu SHALL obtain per-door `trackerCount` via `useTrackerCounts(activePlayerId)` exported by `data-progress` (spec'd by `game-engine-base`). If that module is not yet available at import time, the menu SHALL use a fallback that returns `0` for every door (all doors render as `not-started`).
+The menu SHALL obtain each door's tracker count and visual via `useDoorProgressOf(activePlayerId)` (`@alphaTiles/data-door-progress`), keyed by `Door.progressKey(playerId)` — never by scanning store keys.
 
-#### Scenario: `data-progress` present
+#### Scenario: Progress present
 
-- **WHEN** `data-progress` exports `useTrackerCounts` and the player has `trackerCount = 5` on door 3
+- **WHEN** the player has `trackerCount = 5` on door 3
 - **THEN** door 3 renders as `in-process`
-
-#### Scenario: `data-progress` absent
-
-- **WHEN** `data-progress` is not yet built
-- **THEN** every door renders as `not-started` and the menu logs a one-time `@todo: wire to trackerCount` warning in dev
 
 ### Requirement: Player-bar chrome
 
