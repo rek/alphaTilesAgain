@@ -2,58 +2,61 @@
 
 ### Requirement: Gate visible on web before first gesture
 
-`ui-web-audio-unlock-gate` SHALL render a full-screen overlay with a "Tap to start" prompt when mounted on web and no user gesture has yet occurred. The overlay SHALL be positioned above all game content so no game interaction is possible before unlock.
+`AudioGate` (`@alphaTiles/data-audio`) SHALL wrap every route in the root layout. On web, until the first gesture after audio preload settles, it SHALL render only its locked surface (`renderLocked`, a "Tap to start" prompt from feature-loading `TapToBegin`, presenter `ui-web-audio-unlock-gate`) and never its children, so no game interaction or auto-play happens before unlock. Cold start, reload and deep link are gated the same way.
 
 #### Scenario: Gate renders on initial web load
 
 - **GIVEN** the app is running in a browser (web platform)
 - **AND** no touch or click event has occurred since load
-- **WHEN** the root layout renders
-- **THEN** the `<WebAudioUnlockGate>` overlay is visible
-- **AND** the "Tap to start" label is displayed
-- **AND** game content beneath the overlay is not interactable
+- **WHEN** the root layout renders any route
+- **THEN** the locked "Tap to start" surface is displayed
+- **AND** the route's screen is not rendered
 
-### Requirement: Gate dismissed and AudioContext resumed after first gesture
+#### Scenario: Tap before preload settles is ignored
 
-After the first user touch or click, `<WebAudioUnlockGate>` SHALL hide the overlay, call `resumeAudioContext()`, and render only `children` for the remainder of the session.
+- **GIVEN** the gate is locked and audio preload has not settled
+- **WHEN** the user taps the prompt
+- **THEN** the gate stays locked (the tap could not prime clips that are not loaded yet)
 
-#### Scenario: Tap dismisses gate and resumes audio
+### Requirement: Gate unlocks and primes audio on first gesture
 
-- **GIVEN** the gate overlay is visible
-- **WHEN** the user taps or clicks anywhere on the overlay
-- **THEN** the overlay is removed from the render tree
-- **AND** `resumeAudioContext()` has been called
-- **AND** `AudioContext.prototype.resume` has been invoked (web only)
-- **AND** subsequent calls to `useAudio()` play sounds without error
+After the first tap once preload has settled, `AudioGate` SHALL, inside the press handler, prime every loaded clip in chunks (`primeAudioHandles`; Safari only unlocks elements primed in the gesture) and then render only `children` for the rest of the session.
+
+#### Scenario: Tap unlocks gate and primes audio
+
+- **GIVEN** the gate is locked and preload has settled
+- **WHEN** the user taps the prompt
+- **THEN** every loaded clip is primed in chunks
+- **AND** the locked surface is replaced by the route's screen
+- **AND** subsequent `useAudio()` / pack speech calls play sounds without error
 
 ### Requirement: Analytics event fired on unlock with millisecondsSinceBoot
 
-When the gate is dismissed, the container SHALL call `track({ type: 'audio_unlock_web', props: { millisecondsSinceBoot } })` exactly once, where `millisecondsSinceBoot` is the elapsed time in milliseconds from app start to the gesture.
+When the gate unlocks, it SHALL call `track({ type: 'audio_unlock_web', props: { millisecondsSinceBoot } })` exactly once, where `millisecondsSinceBoot` is the elapsed time in milliseconds from app start to the gesture.
 
 #### Scenario: Analytics fired once on unlock
 
-- **GIVEN** the gate overlay is visible
-- **WHEN** the user taps the overlay
+- **GIVEN** the gate is locked
+- **WHEN** the user taps the prompt after preload
 - **THEN** `track` is called exactly once
 - **AND** the event type is `'audio_unlock_web'`
 - **AND** the `millisecondsSinceBoot` prop is a non-negative number
 
 #### Scenario: Analytics not fired on subsequent renders
 
-- **GIVEN** the gate has already been dismissed
+- **GIVEN** the gate has already unlocked
 - **WHEN** the root layout re-renders
 - **THEN** `track` is NOT called again
 
-### Requirement: Gate never renders on native platforms
+### Requirement: Gate never locks on native platforms
 
-On iOS and Android, `<WebAudioUnlockGate>` SHALL never be mounted or rendered. Native audio SHALL play without any unlock step.
+On iOS and Android, `AudioGate` SHALL pass `children` through immediately and never render the locked surface. Native audio SHALL play without any unlock step.
 
 #### Scenario: Native layout has no gate
 
 - **GIVEN** the app is running on iOS or Android
 - **WHEN** the root layout renders
-- **THEN** no `<WebAudioUnlockGate>` component is in the render tree
-- **AND** `<Slot />` renders directly without an overlay wrapper
+- **THEN** the route's screen renders directly, with no "Tap to start" surface
 
 ### Requirement: PWA manifest served at /manifest.json with required fields
 

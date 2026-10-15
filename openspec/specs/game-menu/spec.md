@@ -237,3 +237,12 @@ Each door SHALL display a neutral "Level N" badge sourced from `tierForGame(clas
 
 - **WHEN** a door's mechanic resolves to tier `4` via `tierForGame`
 - **THEN** the door renders a badge reading "Level 4" (i18n key `menu.level`, no age/audience wording)
+
+### Requirement: Menu offers the self-test
+
+The game menu SHALL show a "Check yourself" button below the door grid when the pack can build a self-test, navigating to `/self-test`.
+
+#### Scenario: yue menu
+- **GIVEN** the yue build
+- **WHEN** the menu renders
+- **THEN** the "Check yourself" button appears after the last door
