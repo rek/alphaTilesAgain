@@ -16,29 +16,27 @@ Owner-delegated calls for the Cantonese pack; one line each.
 - **L2 tile stages** — `aa_gametiles.txt` had the authored grouping shifted diagonally (medical+numerals `1` in col 14, school/family `2` in col 15 = Type2 stage, everything else `3` in col 16 = Type3 stage, with Type2/3 = `none`). Normalized to col 14 = `1`, cols 15/16 = `-` for every tile. Not moved into col 14 because yue doors are all `StagesIncluded = -` (fixed stage 1, no progression), so stage 2/3 tiles would be hidden forever in stage-aware games. To restore staging later: medical+numerals = 1, school/family = 2, rest = 3, *and* give doors stage values. Guarded by `tools/yue-doors.test.ts`.
 - **L10 orphan assets** — deleted 89 unreferenced yue files (72 `audio/tiles`, 9 `audio/words`, 8 `images/words`: old English-named takes superseded by `zz_*`/LWC-named ones). Checked against aa_gametiles AudioName/2/3, aa_wordlist LWC (+`<lwc>2` images), aa_syllables, and a repo-wide grep (tools, Taiwan writing audio, split-syllable tool all key off aa_* files). Manifest generator unchanged (already emits only referenced keys); validator now reports 0 orphans.
 - **M7 celebration** — removed the lottiefiles.com default URL. New in-house Lottie (`celebrationAnimation` in `@shared/ui-celebration`: star pop, ring burst, 16 confetti pieces; 3 s, 30 fps) authored as a TS object, repo licence. It's the `GameShellScreen` default and works offline on native and web (LottieView accepts objects). Deleted the unused `apps/alphaTiles/assets/lottie/celebration.json` placeholder. Celebration sources must never be remote.
-- **M11 audio players** — boot still probes every clip once (durations must stay synchronous: the shell picks word clip vs syllable chain from `getWordDuration`), but `@alphaTiles/data-audio` now keeps only an LRU pool of live players (`createPlayerPool`, 24 on native) and re-creates evicted ones on play. Peak live ≈ 24 + 32 probes + 3 chimes, down from ~400. Web pool is unbounded (Safari gesture priming, #25). Needs a device check: first-play latency of evicted clips on low-end Android.
+- **M11 audio players** — boot still probes every clip once (durations must stay synchronous: pack speech returns expected ms from `speak`/`durationOf`), but `@alphaTiles/data-audio` now keeps only an LRU pool of live players (`createPlayerPool`, 24 on native) and re-creates evicted ones on play. Peak live ≈ 24 + 32 probes + 3 chimes, down from ~400. Web pool is unbounded (Safari gesture priming, #25). Needs a device check: first-play latency of evicted clips on low-end Android.
 
 ---
 
-## Syllable-chain audio fallback in shell (from yue-composite-numerals)
+## Pack speech — games speak items, never audio keys
 
-When a word entry has no `audio/words/<lwc>.mp3` but its `wordInLOP` fully decomposes into known syllables, the shell plays each constituent syllable's clip in sequence with a `GAP_MS` natural pause (`150 ms` initial value). Pattern lives in `GameShellContainer.playWordAudio` (exposed on `useGameShell()`; `replayWord` delegates to it) — branches on `audio.getWordDuration(lwc)`:
+**Games never name an audio map or id.** They pass the pack row to `shell.speak(item)` (inside `<GameShellContainer>`) or `usePackSpeech(pack).speak(item)` (menu etc.), where `item` is `{ tile }`, `{ word }`, `{ syllable }` or `{ instruction: id }`. `useAudio()` no longer exposes `playTile/playWord/playSyllable/playInstruction` or the duration getters — only chimes + load/unlock — so the old bug class (passing `AudioName` instead of `tile.base`, bypassing the syllable chain → silent rounds; 5082fef, cad76a1, fd46edd, Italy-T numerals) can't be written.
 
-- **A — handle present:** `audio.playWord(lwc)` (legacy path).
-- **B — handle absent + decomposable:** schedule recursive `setTimeout(playStep(i+1), getSyllableDuration(syll) ?? FALLBACK_MS + GAP_MS)`, lock interaction for the chain's lifetime, then **restore the lock state found at chain start** (a chain replayed after a correct answer must not unlock a solved round — Georgia point-farming bug).
+Module: `libs/alphaTiles/data-audio/src/lib/createPackSpeech.ts` (+ `planSpeech.ts`; production adapter `usePackSpeech.ts`). It owns:
 
-**Games must call `shell.playWordAudio(word)` (and `shell.getWordAudioDuration(word)` for timers), never `audio.playWord` directly** — the direct call is silent for words with no recording, which in WORD_AUDIO rounds makes the round unanswerable.
-- **C — handle absent + indecomposable:** fall through to `audio.playWord` (warn-once no-op).
+- **Keys** — tile → `tile.base`, word → `wordInLWC`, syllable → syllable text, instruction → InstructionAudio id (what `resolveAudio` binds; never the AudioName column).
+- **Word → syllable chain** — unrecorded word whose LOP decomposes into syllables that all have clips (yue composite numerals `zz_20` 二十 … `zz_203` 二百零三, `zz_1000000` 一百萬) plays each syllable with a `GAP_MS` (150 ms) pause, `FALLBACK_MS` (700) for an unmeasured clip. The decomposable rule is one function, `syllableChainFor` (`@shared/util-phoneme`), shared by the binder (`resolveAudio`), the validator (`checkAudioReferences` downgrades `MISSING_WORD_AUDIO` to a warning) and speech.
+- **Syllable → containing word** — unrecorded syllable plays the first word whose LOP contains it (Taiwan single hanzi, yue-writing-audio D5). Syllable clip always wins (女 → 女, not daughter).
+- **Durations** — `speak` returns expected ms (chain = clips + gaps); `durationOf(item)` gives the same without playing. Use them for follow-up timers.
+- **Lock** — a chain holds the shell's interaction lock and restores the lock it found when done (a chain replayed after a correct answer must not unlock a solved round — Georgia point-farming bug); if the mechanic wrote the lock meanwhile, the mechanic wins. Single clips don't lock.
+- **Cancellation** — every `speak` cancels speech in flight; the shell also stops it on `setRefWord`, AppState `background|inactive`, and unmount.
+- **Silence** — an item with no route is a warn-once no-op (`speak` returns undefined).
 
-Critical: this is **NOT smoothed concat**. Each syllable's leading/trailing micro-silence is preserved and the `GAP_MS` gap is intentional — pedagogically the gap *is* a teaching cue ("this is X, this is Y, together = XY"). Concatenating clips end-to-end was rejected for tone-sandhi and connected-speech reasons.
+Chains are **NOT smoothed concat**: each syllable's micro-silence is preserved and the gap is a teaching cue ("this is X, this is Y, together = XY"); end-to-end concat was rejected for tone-sandhi / connected-speech reasons.
 
-Timer-ref hygiene (mirrors `docs/GAME_PATTERNS.md` "Deferred audio after a clip"):
-- Single-slot ref `chainTimerRef`, overwritten each step.
-- Cleared at every `setRefWord` transition (wrapped setter exposed via context).
-- Cleared on AppState `background|inactive`.
-- Cleared in unmount cleanup.
-
-Validator: `checkAudioReferences` downgrades `MISSING_WORD_AUDIO` from `error` to `warning` when `Has syllable audio: TRUE` and the LOP decomposes — keeps the build green while signaling the missing recording. When Curtis-style real recordings arrive, the warning vanishes automatically.
+Tests: `createPackSpeech.test.ts` (in-memory clips + recording player) and `tools/yue-speech.test.ts` (real yue pack: every word/tile/syllable/instruction audible; only the 5 composite numerals chain).
 
 ---
 
@@ -54,7 +52,7 @@ Check before proposing a new lib: does an archived class already implement the m
 
 ### Deferred audio after a clip: timer-ref, not chained promise
 
-`audio.playWord` / `playSyllable` resolve when playback *starts*, not ends. To play clip B after clip A, schedule `setTimeout(getXDuration(a) ?? FALLBACK_MS)`, store the id in a `useRef`, and clear it at the top of `startRound` **and** in the unmount cleanup — same shape as the Italy auto-advance timer. `getWordDuration` is the real measured ms (from the loaded handle), not the `aa_wordlist.txt` duration column.
+`shell.speak(a)` starts playback and returns its expected ms. To play B after A, schedule `setTimeout(() => shell.speak(b), shell.speak(a) ?? FALLBACK_MS)`, store the id in a `useRef`, and clear it at the top of `startRound` **and** in the unmount cleanup — same shape as the Italy auto-advance timer. The ms is the real measured clip length (chain = clips + gaps), not the `aa_wordlist.txt` duration column.
 
 ## Per-pack audio generation tooling (from yue-syllable-game)
 
@@ -614,7 +612,7 @@ Existing call sites (`shell.incrementPointsAndTracker(true)`) are unchanged. New
 
 ### `setOnRepeat(fn | null)` → use `useShellRepeat`
 
-Mirror of `setOnAdvance`. The shell's default repeat button calls `replayWord()` which plays a word clip via `audio.playWord(refWord.wordInLWC)`. For syllable-mode games (Italy S, Thailand syllable refs, etc.) the current "call" is a syllable — `playWord` would silently no-op on a missing handle.
+Mirror of `setOnAdvance`. The shell's default repeat button calls `replayWord()`, which speaks `{ word: refWord }`. For syllable-mode games (Italy S, Thailand syllable refs, Taiwan chars) the current "call" isn't the ref word — register a repeat that speaks the call item.
 
 ```ts
 // Use the hook — never manual useEffect([..., shell]):

@@ -11,7 +11,6 @@ import { useTranslation } from 'react-i18next';
 import { useHanziWriter } from '@jamsch/react-native-hanzi-writer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
-import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
@@ -21,7 +20,6 @@ import {
 } from '@alphaTiles/feature-game-shell';
 import { TaiwanScreen } from './TaiwanScreen';
 import { pickTaiwanCharacters } from './pickTaiwanCharacters';
-import { pickAudioForChar } from './pickAudioForChar';
 import { createInkResetScheduler } from './inkResetScheduler';
 import type { TaiwanData } from './buildTaiwanData';
 import type { StrokeData } from '@alphaTiles/data-stroke-data';
@@ -68,7 +66,6 @@ export function TaiwanInner(props: TaiwanInnerProps): React.JSX.Element {
 function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
   const shell = useGameShell();
   const assets = useLangAssets();
-  const audio = useAudio();
   const taiwanData = usePrecompute<TaiwanData>('taiwan');
   const { t } = useTranslation('chrome');
 
@@ -101,15 +98,10 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
 
   // Syllable-first with compound-word fallback (yue-writing-audio § D1, D6 —
   // Curtis confirmed on issue #27 that repeat and completion play the same audio).
+  // Pack speech owns the fallback: syllable clip, else first word containing it.
   const playCharAudio = useCallback(() => {
-    const choice = pickAudioForChar({
-      char: currentChar,
-      syllables: assets.audio.syllables,
-      audioForChar: taiwanData.audioForChar,
-    });
-    if (choice.kind === 'syllable') void audio.playSyllable(choice.char);
-    else if (choice.kind === 'word') void audio.playWord(choice.lwc);
-  }, [audio, assets.audio.syllables, currentChar, taiwanData.audioForChar]);
+    shell.speak({ syllable: { syllable: currentChar } });
+  }, [shell, currentChar]);
   useShellRepeat(playCharAudio);
 
   // Move to the next character; reshuffle + restart when the round is done.

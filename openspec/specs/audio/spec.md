@@ -49,41 +49,41 @@ Preload SHALL probe each referenced clip once (load check + duration in ms) but 
 #### Scenario: Evicted clip replays
 
 - **GIVEN** clip `a` was evicted from the pool
-- **WHEN** `playTile('a')` is called
+- **WHEN** `speak({ tile: a })` is called
 - **THEN** a new player is created from `a`'s source and played, evicting the LRU player
 
 ### Requirement: Settings-gated preload of tiles and syllables
 
-When `audioConfig.hasTileAudio === false`, `preloadAudio` SHALL skip loading tile audio entirely and the resulting `tiles` handle map SHALL be empty. Same rule for `hasSyllableAudio === false` and the `syllables` map. Calls to `playTile(id)` / `playSyllable(id)` against an empty map MUST be no-ops that emit one dev-mode warning per unique id and never throw.
+When `audioConfig.hasTileAudio === false`, `preloadAudio` SHALL skip loading tile audio entirely and the resulting `tiles` handle map SHALL be empty. Same rule for `hasSyllableAudio === false` and the `syllables` map. Calls to tile / syllable speech against an empty map MUST be no-ops that emit one dev-mode warning per unique id and never throw.
 
 #### Scenario: Pack without tile audio
 
-- **WHEN** `aa_settings.txt` has `Has tile audio = FALSE` and `playTile('a')` is called
+- **WHEN** `aa_settings.txt` has `Has tile audio = FALSE` and `speak({ tile: a })` is called
 - **THEN** the call resolves as a no-op, a warning is logged exactly once for id `'a'` in `__DEV__` mode, and no error is thrown
 
 #### Scenario: Pack with tile audio
 
-- **WHEN** `aa_settings.txt` has `Has tile audio = TRUE` and `playTile('a')` is called with `'a'` preloaded
+- **WHEN** `aa_settings.txt` has `Has tile audio = TRUE` and `speak({ tile: a })` is called with `'a'` preloaded
 - **THEN** the clip plays and no warning is emitted
 
 ### Requirement: Hook API surface
 
-`useAudio()` SHALL return an object containing `playTile`, `playWord`, `playSyllable`, `playInstruction`, `playCorrect`, `playIncorrect`, `playCorrectFinal`, `getTileDuration`, `getWordDuration`, `getSyllableDuration`, `isAudioUnlocked`, and `unlockAudio`. All `play*` methods MUST return `Promise<void>` and MUST swallow per-call errors internally (logging, never throwing).
+`useAudio()` SHALL return chimes and lifecycle only: `playCorrect`, `playIncorrect`, `playCorrectFinal`, `isLoading`, `loadProgress`, `awaitLoaded`, `isAudioUnlocked`, `unlockAudio`. Pack content (tiles, words, syllables, instructions) SHALL be played only through pack speech: `usePackSpeech(pack, holdLock?)` → `{ speak(item), durationOf(item), stop() }`, where `item` is `{ tile }`, `{ word }`, `{ syllable }` or `{ instruction }` (the pack row, never an audio key). Inside a game, mechanics use the shell's `speak` / `durationOf`. Nothing MUST throw; a missing clip is a warn-once no-op.
 
-#### Scenario: Tap handler calls playTile
+#### Scenario: Tap handler speaks a tile
 
-- **WHEN** a tile-tap handler calls `playTile('a')` without awaiting
-- **THEN** the audio starts playing and the handler continues synchronously
+- **WHEN** a tile-tap handler calls `speak({ tile })`
+- **THEN** the clip bound to `tile.base` starts playing and `speak` returns its duration in ms synchronously
 
-#### Scenario: getTileDuration for preloaded tile
+#### Scenario: Unrecorded word
 
-- **WHEN** `getTileDuration('a')` is called after preload
-- **THEN** it returns the tile's duration in milliseconds (`number`), cached from `getStatusAsync` at preload
+- **WHEN** `speak({ word })` is called for a word with no clip whose LOP decomposes into syllables that all have clips
+- **THEN** each syllable plays in order with a 150 ms gap, the interaction lock is held until the chain ends, and `speak` returns the chain's total ms
 
-#### Scenario: getTileDuration for unknown tile
+#### Scenario: Nothing resolves
 
-- **WHEN** `getTileDuration('nonexistent')` is called
-- **THEN** it returns `undefined` and does not throw
+- **WHEN** `speak(item)` is called and no clip or fallback resolves
+- **THEN** nothing plays, it returns `undefined`, warns once per item, and does not throw
 
 ### Requirement: Overlapping playback — platform-specific strategy
 
@@ -91,12 +91,12 @@ On iOS and Android, a second call to the same handle's `play` while it is still 
 
 #### Scenario: Native double-tap on a tile
 
-- **WHEN** on iOS or Android, `playTile('a')` is called twice within 50ms
+- **WHEN** on iOS or Android, `speak({ tile: a })` is called twice within 50ms
 - **THEN** both plays are audible — the second starts while the first is still playing
 
 #### Scenario: Web double-tap on a tile
 
-- **WHEN** on web, `playTile('a')` is called twice within 50ms
+- **WHEN** on web, `speak({ tile: a })` is called twice within 50ms
 - **THEN** the first play is cut off and the second play starts from the beginning
 
 ### Requirement: Base chimes ship with app shell, not the pack
@@ -138,6 +138,6 @@ During audio init, the library SHALL call `Audio.setAudioModeAsync({ playsInSile
 
 #### Scenario: iOS with silent switch on
 
-- **WHEN** the device is iOS, the silent switch is on, and `playTile('a')` is called
+- **WHEN** the device is iOS, the silent switch is on, and `speak({ tile: a })` is called
 - **THEN** the clip is audible through the device speaker at system volume
 

@@ -177,7 +177,7 @@ function BrazilGame({
         correctText: correctSyllable.syllable,
       });
       shell.setRefWord({ wordInLOP: word.wordInLOP, wordInLWC: word.wordInLWC });
-      shell.playWordAudio(word);
+      shell.speak({ word });
       return;
     }
 
@@ -237,7 +237,7 @@ function BrazilGame({
       correctText: correctTile.base,
     });
     shell.setRefWord({ wordInLOP: result.word.wordInLOP, wordInLWC: result.word.wordInLWC });
-    shell.playWordAudio(result.word);
+    shell.speak({ word: result.word });
   }, [
     isSyllableMode,
     challengeLevel,
@@ -286,11 +286,11 @@ function BrazilGame({
         shell.incrementPointsAndTracker(true);
         audio.playCorrect().then(() => {
           if (!isMountedRef.current) return;
-          shell.playWordAudio(round.word);
+          shell.speak({ word: round.word });
         });
         // Schedule advance after chime + measured replay duration + a small gap,
         // so the next round's audio doesn't overlap the replay (issue #24).
-        const replayMs = shell.getWordAudioDuration(round.word) ?? FALLBACK_REPLAY_MS;
+        const replayMs = shell.durationOf({ word: round.word }) ?? FALLBACK_REPLAY_MS;
         if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
         advanceTimerRef.current = setTimeout(() => {
           if (isMountedRef.current) startRound();
@@ -312,7 +312,7 @@ function BrazilGame({
 
   const onWordImagePress = useCallback(() => {
     if (!round) return;
-    shell.playWordAudio(round.word);
+    shell.speak({ word: round.word });
   }, [round, shell]);
 
   if (error === 'insufficient-content') {

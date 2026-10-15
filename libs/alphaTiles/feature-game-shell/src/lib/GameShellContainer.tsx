@@ -4,7 +4,7 @@
  * Ports GameActivity.java abstract class (~1217 LOC) decomposed per design.md §D1:
  * - Route-param extraction (expo-router useLocalSearchParams)
  * - Progress store read/write (@alphaTiles/data-progress)
- * - Audio replay + correct/incorrect/final sounds (@alphaTiles/data-audio)
+ * - Pack speech (speak/durationOf, chain lock) + correct/final chimes (@alphaTiles/data-audio)
  * - i18n strings (react-i18next via @shared/util-i18n)
  * - AppState listener — pause audio when backgrounded (GameActivity.java: Android lifecycle)
  * - "After 12 checked trackers" mode 1/2/3 (GameActivity.java:319-412)
@@ -24,12 +24,12 @@ import { AppState, BackHandler, Platform } from 'react-native';
 import { Redirect, useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
-import { useAudio } from '@alphaTiles/data-audio';
+import { useAudio, usePackSpeech } from '@alphaTiles/data-audio';
+import type { SpeechItem } from '@alphaTiles/data-audio';
 import { useActivePlayer } from '@alphaTiles/data-players';
 import { useProgressStore, useProgressEntry } from '@alphaTiles/data-progress';
 import { useDoor, useDoors } from '@alphaTiles/data-doors';
 import type { Door } from '@alphaTiles/data-doors';
-import { parseWordIntoSyllables } from '@shared/util-phoneme';
 import { GameShellContextProvider } from './GameShellContext';
 import { GameShellScreen } from './GameShellScreen';
 import type { GameShellScreenProps, GameShellIcons } from './GameShellScreen';
@@ -43,13 +43,6 @@ const NEXT_GAME_DELAY_MS = 4500;   // total delay before navigating to next game
 // Java LoadingScreen.java:270 derives this from zz_correct's length + 200 ms;
 // it is not a pack setting. 800 ≈ the bundled chime + 200.
 const CORRECT_SOUND_DURATION_MS = 800;
-
-// Syllable-chain fallback constants (yue-composite-numerals)
-// GAP_MS: silent pause between syllables — teaching cue, not concat.
-// FALLBACK_MS: per-syllable duration when getSyllableDuration returns undefined
-// (matches observed mean of yue base-numeral clips ~400–940ms).
-const GAP_MS = 150;
-const FALLBACK_MS = 700;
 
 type GameShellContainerProps = {
   /** The mechanic. Pass a function to receive the routed Door (challenge level, variant, …). */
@@ -135,12 +128,31 @@ function GameShell({
   // In-flight state (not persisted — mirrors GameActivity.java fields)
   const [interactionLocked, setInteractionLockedState] = useState(false);
   // Synchronous mirror so a syllable chain can restore the lock it found
-  // (state is stale inside the callbacks that start a chain).
+  // (state is stale inside the callbacks that start a chain). `lockWrites`
+  // counts every write so a chain's release can tell whether a mechanic set
+  // the lock meanwhile (then the mechanic's value wins).
   const interactionLockedRef = useRef(false);
+  const lockWritesRef = useRef(0);
   const setInteractionLocked = useCallback((locked: boolean) => {
+    lockWritesRef.current++;
     interactionLockedRef.current = locked;
     setInteractionLockedState(locked);
   }, []);
+  // Pack speech holds this while a syllable chain plays, then restores the
+  // lock it found (a chain replayed after a correct answer must not unlock a
+  // solved round — Georgia point-farming bug).
+  const holdLockForSpeech = useCallback(() => {
+    const before = interactionLockedRef.current;
+    setInteractionLocked(true);
+    const writes = lockWritesRef.current;
+    return () => {
+      if (lockWritesRef.current === writes) setInteractionLocked(before);
+    };
+  }, [setInteractionLocked]);
+  const speech = usePackSpeech(
+    { words: assets.words.rows, syllables: assets.syllables.rows },
+    holdLockForSpeech,
+  );
   const [showCelebration, setShowCelebration] = useState(false);
   const [refWord, setRefWord] = useState<{ wordInLOP: string; wordInLWC: string } | null>(null);
   const [repeatLocked, setRepeatLocked] = useState(true);
@@ -148,14 +160,6 @@ function GameShell({
   // Timer refs — cleared on unmount (mirrors GameActivity.java soundSequencer + nextScreenTimer)
   const celebrationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nextGameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Syllable-chain fallback timer (single slot, overwritten each step).
-  const chainTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const clearChain = useCallback(() => {
-    if (chainTimerRef.current) {
-      clearTimeout(chainTimerRef.current);
-      chainTimerRef.current = null;
-    }
-  }, []);
 
   // Leaving the game must cancel pending mastery navigation: a pushed menu keeps
   // this screen mounted, so unmount cleanup alone never clears these timers.
@@ -189,18 +193,14 @@ function GameShell({
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'background' || state === 'inactive') {
-        // useAudio doesn't expose pauseAll; we stop current sounds via a no-op
-        // The expo-audio system doesn't play in background so this is a guard.
-        // Cancel any in-flight syllable chain so it doesn't fire on resume.
-        if (chainTimerRef.current) {
-          clearTimeout(chainTimerRef.current);
-          chainTimerRef.current = null;
-        }
+        // expo-audio doesn't play in background; cancel any in-flight
+        // syllable chain so it doesn't fire on resume.
+        speech.stop();
       }
       // Audio resumes naturally when the app returns to 'active'.
     });
     return () => sub.remove();
-  }, []);
+  }, [speech]);
 
   // Android hardware-back (GameActivity.java:156-161 OnBackPressedCallback)
   useEffect(() => {
@@ -226,18 +226,17 @@ function GameShell({
     return () => {
       if (celebrationTimerRef.current) clearTimeout(celebrationTimerRef.current);
       if (nextGameTimerRef.current) clearTimeout(nextGameTimerRef.current);
-      if (chainTimerRef.current) clearTimeout(chainTimerRef.current);
     };
   }, []);
 
-  // Wrap setRefWord so a round transition cancels any in-flight syllable chain
-  // from the previous word (yue-composite-numerals).
+  // Wrap setRefWord so a round transition cancels any in-flight speech
+  // (syllable chain) from the previous word.
   const setRefWordWithChainClear = useCallback(
     (next: { wordInLOP: string; wordInLWC: string } | null) => {
-      clearChain();
+      speech.stop();
       setRefWord(next);
     },
-    [clearChain],
+    [speech],
   );
 
   // ── after12checkedTrackers handling (GameActivity.java:316-413) ──────────
@@ -313,69 +312,15 @@ function GameShell({
     [door, gameUniqueId, incrementPoints, incrementTracker, handleMastery],
   );
 
-  // Expected ms playWordAudio(word) plays: word clip, or syllable chain + gaps.
-  const getWordAudioDuration = useCallback(
-    (word: { wordInLOP: string; wordInLWC: string }): number | undefined => {
-      const wordMs = audio.getWordDuration(word.wordInLWC);
-      if (wordMs !== undefined) return wordMs;
-      const parts = parseWordIntoSyllables(word.wordInLOP, assets.syllables.rows);
-      if (parts.length === 0) return undefined;
-      return parts.reduce(
-        (sum, p, i) => sum + (audio.getSyllableDuration(p.syllable) ?? FALLBACK_MS) + (i > 0 ? GAP_MS : 0),
-        0,
-      );
-    },
-    [audio, assets.syllables.rows],
-  );
-
-  // playWordAudio — plays a word's audio, three branches:
-  //   A: per-word audio handle exists → play it (legacy single-clip path).
-  //   B: no word handle but LOP fully decomposes into known syllables →
-  //      schedule a syllable chain via setTimeout timer-ref. Locks interaction
-  //      for the chain's duration, then restores the lock state it found
-  //      (so a chain after a correct answer can't unlock a solved round).
-  //   C: neither resolves → no-op (audio layer's warn-once handles the log).
-  // Returns the expected playback length in ms (undefined when unknown) so
-  // mechanics can schedule follow-up audio/advance timers.
-  const playWordAudio = useCallback(
-    (word: { wordInLOP: string; wordInLWC: string }): number | undefined => {
-      clearChain();
-      const wordMs = audio.getWordDuration(word.wordInLWC);
-      if (wordMs !== undefined) {
-        audio.playWord(word.wordInLWC);
-        return wordMs;
-      }
-      const parts = parseWordIntoSyllables(word.wordInLOP, assets.syllables.rows);
-      if (parts.length === 0) {
-        // Branch C: fall through to playWord which emits the warn-once message.
-        audio.playWord(word.wordInLWC);
-        return undefined;
-      }
-      const lockedBefore = interactionLockedRef.current;
-      setInteractionLocked(true);
-      const durations = parts.map((p) => audio.getSyllableDuration(p.syllable) ?? FALLBACK_MS);
-      const playStep = (i: number) => {
-        audio.playSyllable(parts[i].syllable);
-        if (i + 1 < parts.length) {
-          chainTimerRef.current = setTimeout(() => playStep(i + 1), durations[i] + GAP_MS);
-        } else {
-          chainTimerRef.current = setTimeout(() => {
-            chainTimerRef.current = null;
-            setInteractionLocked(lockedBefore);
-          }, durations[i]);
-        }
-      };
-      playStep(0);
-      return getWordAudioDuration(word);
-    },
-    [audio, assets.syllables.rows, clearChain, setInteractionLocked, getWordAudioDuration],
-  );
+  // Pack speech: games speak items, never audio keys (see usePackSpeech).
+  const speak = useCallback((item: SpeechItem) => speech.speak(item), [speech]);
+  const durationOf = useCallback((item: SpeechItem) => speech.durationOf(item), [speech]);
 
   // replayWord — replays the current reference word (shell repeat button).
   const replayWord = useCallback(() => {
     if (!refWord) return;
-    playWordAudio(refWord);
-  }, [refWord, playWordAudio]);
+    speech.speak({ word: refWord });
+  }, [refWord, speech]);
 
   const handleBackPress = useCallback(() => {
     if (showCelebration) return;
@@ -397,9 +342,9 @@ function GameShell({
 
   const handleInstructionsPress = useCallback(() => {
     if (instructionAudioId) {
-      audio.playInstruction(instructionAudioId);
+      speech.speak({ instruction: instructionAudioId });
     }
-  }, [instructionAudioId, audio]);
+  }, [instructionAudioId, speech]);
 
   const handleAdvancePress = useCallback(() => {
     setRepeatLocked(false);
@@ -463,8 +408,8 @@ function GameShell({
   const contextValue = useMemo(() => ({
     incrementPointsAndTracker,
     replayWord,
-    playWordAudio,
-    getWordAudioDuration,
+    speak,
+    durationOf,
     interactionLocked,
     setInteractionLocked,
     refWord,
@@ -476,8 +421,8 @@ function GameShell({
   }), [
     incrementPointsAndTracker,
     replayWord,
-    playWordAudio,
-    getWordAudioDuration,
+    speak,
+    durationOf,
     interactionLocked,
     setInteractionLocked,
     refWord,

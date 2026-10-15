@@ -19,7 +19,7 @@ import type { ParsedPack } from '@shared/util-lang-pack-parser';
 import type { FileInventory } from '../FileInventory';
 import { ISSUE_CODES } from '../issueCodes';
 import { wordDistance } from '../levenshtein';
-import { parseWordIntoSyllables } from '@shared/util-phoneme';
+import { syllableChainFor } from '@shared/util-phoneme';
 
 const CATEGORY = 'audio-reference';
 
@@ -138,11 +138,9 @@ export function checkAudioReferences(
     if (!inventory.wordAudio.includes(lwc)) {
       const decomposable =
         hasSyllableAudio &&
-        (() => {
-          const parts = parseWordIntoSyllables(row.wordInLOP, syllables.rows);
-          if (parts.length === 0) return false;
-          return parts.every((s) => inventory.syllableAudio.includes(s.audioName));
-        })();
+        syllableChainFor(row.wordInLOP, syllables.rows, (s) =>
+          inventory.syllableAudio.includes(s.audioName),
+        ).length > 0;
       const suggestion = decomposable
         ? null
         : findTypoSuggestion(lwc, inventory.wordAudio);
@@ -154,7 +152,7 @@ export function checkAudioReferences(
         line: lineNumber,
         column: 'wordInLWC',
         message: decomposable
-          ? `Word "${lwc}" has no audio/words/${lwc}.mp3; shell will play syllable chain for "${row.wordInLOP}"`
+          ? `Word "${lwc}" has no audio/words/${lwc}.mp3; pack speech will play syllable chain for "${row.wordInLOP}"`
           : `Word "${lwc}" is missing audio file audio/words/${lwc}.mp3${suggestion ? ` (did you mean "${suggestion}"?)` : ''}`,
         context: { audioName: lwc, word: lwc, suggestion, decomposable },
       });

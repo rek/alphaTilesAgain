@@ -48,7 +48,7 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
   const shell = useGameShell();
   const {
     setRefWord, setInteractionLocked, incrementPointsAndTracker,
-    interactionLocked,
+    interactionLocked, speak,
   } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
@@ -186,9 +186,9 @@ function ChinaGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
       if (!currentWords) return;
       const word = i === 3 ? currentWords.threeTileWord : currentWords.four[i];
       setRefWord({ wordInLOP: word.wordInLOP, wordInLWC: word.wordInLWC });
-      audio.playWord(word.wordInLWC);
+      speak({ word });
     },
-    [currentWords, setRefWord, audio],
+    [currentWords, setRefWord, speak],
   );
 
   const rowColors: ('solved' | 'unsolved' | 'blank')[][] = [0, 1, 2, 3].map((row) => {

@@ -12,7 +12,7 @@
  * The token 'naWhileMPOnly' in InstructionAudio is also silently skipped (design.md §4.1.5).
  */
 
-import { parseWordIntoSyllables } from '@shared/util-phoneme';
+import { syllableChainFor } from '@shared/util-phoneme';
 import type { LangAssets } from '../LangAssets';
 import { LangAssetsBindError } from '../LangAssetsBindError';
 
@@ -45,21 +45,6 @@ type ParsedPack = {
   games: { rows: Array<{ instructionAudio: string }> };
 };
 
-/**
- * True when wordInLOP greedily parses into syllables that every have audio in
- * the manifest. An empty manifest (no syllable audio) yields false for any word.
- */
-function isDecomposable(
-  wordInLOP: string,
-  syllableRows: Array<{ syllable: string; audioName: string }>,
-  manifestSyllables: Record<string, number>,
-): boolean {
-  if (!wordInLOP) return false;
-  const parts = parseWordIntoSyllables(wordInLOP, syllableRows);
-  if (parts.length === 0) return false;
-  return parts.every((s) => manifestSyllables[s.audioName] !== undefined);
-}
-
 export function resolveAudio(
   manifestAudio: ManifestAudio,
   parsed: ParsedPack,
@@ -82,12 +67,14 @@ export function resolveAudio(
     const h = manifestAudio.words[word.wordInLWC];
     if (h === undefined) {
       // Missing per-word audio is tolerated IFF the LOP fully decomposes into
-      // syllables whose audio is present — the shell plays a syllable chain
-      // instead (yue composite numerals, e.g. zz_20 "二十"). Mirrors the
-      // validator's decomposable downgrade in checkAudioReferences.ts.
-      if (isDecomposable(word.wordInLOP, parsed.syllables.rows, manifestAudio.syllables)) {
-        continue; // leave words[lwc] unset; shell falls back to syllable chain
-      }
+      // syllables whose audio is present — pack speech plays the syllable
+      // chain instead (yue composite numerals, e.g. zz_20 "二十").
+      const chain = syllableChainFor(
+        word.wordInLOP,
+        parsed.syllables.rows,
+        (s) => manifestAudio.syllables[s.audioName] !== undefined,
+      );
+      if (chain.length > 0) continue; // leave words[lwc] unset
       throw new LangAssetsBindError({
         category: 'word-audio',
         key: word.wordInLWC,

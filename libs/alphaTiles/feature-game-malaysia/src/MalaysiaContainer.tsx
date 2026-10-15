@@ -2,7 +2,7 @@
  * Container for the Malaysia non-scored word browser.
  *
  * Outer:  <MalaysiaContainer> wraps <GameShellContainer> (chrome + i18n).
- * Inner:  <MalaysiaGame> consumes useGameShell() / useLangAssets() / useAudio()
+ * Inner:  <MalaysiaGame> consumes useGameShell() (speak) / useLangAssets()
  *         and owns the page state. NO_TRACKER guard: this container MUST NOT
  *         call shell.incrementPointsAndTracker (Malaysia is in
  *         NO_TRACKER_COUNTRIES; spec ADDED Requirement: NO_TRACKER Guard).
@@ -10,13 +10,7 @@
  * Port of Malaysia.java — see openspec/changes/game-malaysia/design.md for the
  * full mapping table.
  */
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
@@ -24,9 +18,9 @@ import {
   useLangAssets,
   usePrecompute,
 } from '@alphaTiles/data-language-assets';
-import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
+  useGameShell,
   type GameShellIcons,
 } from '@alphaTiles/feature-game-shell';
 import {
@@ -45,7 +39,7 @@ type RouteParams = Record<string, string | string[] | GameShellIcons | undefined
 
 function MalaysiaGame(): React.JSX.Element {
   const assets = useLangAssets();
-  const audio = useAudio();
+  const { speak } = useGameShell();
   const data = usePrecompute<MalaysiaData>('malaysia');
   const params = useLocalSearchParams<{ stage?: string }>();
   const { t } = useTranslation();
@@ -73,18 +67,9 @@ function MalaysiaGame(): React.JSX.Element {
   const pageCount = pages.length;
 
   const [page, setPage] = useState(0);
-  const [disabled, setDisabled] = useState(false);
-
-  // Track the latest play to ignore re-enables from a stale audio promise after
-  // a page change (Malaysia spec: "Page change cancels pending audio").
-  const playTokenRef = useRef(0);
-  const isMountedRef = useRef(true);
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
+  // speak() starts playback synchronously (unrecorded words chain their
+  // syllables under the shell lock), so rows never need a disabled window.
+  const disabled = false;
 
   // Compute presenter rows for the current page (text via standardizeWordSequence,
   // background via the pyramid in colorList, image looked up by wordInLWC).
@@ -121,46 +106,23 @@ function MalaysiaGame(): React.JSX.Element {
 
   const onPress = useCallback(
     (rowIndex: number) => {
-      if (disabled) return;
-      const word = pages[page]?.[rowIndex];
-      if (!word) return;
-      const myToken = ++playTokenRef.current;
-      setDisabled(true);
       // Image tap and text tap share this same handler — Malaysia.java:214-216
       // (`clickPicHearAudio` delegates to `onWordClick`).
-      audio
-        .playWord(word.wordInLWC)
-        .catch(() => {
-          // Swallow audio errors; we still want to re-enable below.
-        })
-        .finally(() => {
-          if (!isMountedRef.current) return;
-          // Stale token (page changed mid-play) — leave disabled state to the
-          // page-change handler, which already reset it.
-          if (playTokenRef.current !== myToken) return;
-          setDisabled(false);
-        });
+      const word = pages[page]?.[rowIndex];
+      if (word) speak({ word });
     },
-    [audio, disabled, page, pages],
+    [speak, page, pages],
   );
-
-  const cancelInFlight = useCallback(() => {
-    // Bumping the token invalidates any pending re-enable from `playWord`.
-    playTokenRef.current++;
-    setDisabled(false);
-  }, []);
 
   const onPrev = useCallback(() => {
     if (page <= 0) return;
-    cancelInFlight();
     setPage((p) => Math.max(0, p - 1));
-  }, [page, cancelInFlight]);
+  }, [page]);
 
   const onNext = useCallback(() => {
     if (page >= pageCount - 1) return;
-    cancelInFlight();
     setPage((p) => Math.min(pageCount - 1, p + 1));
-  }, [page, pageCount, cancelInFlight]);
+  }, [page, pageCount]);
 
   const prevArrowSource = assets.images.icon as ImageSourcePropType | undefined;
   const nextArrowSource = assets.images.icon as ImageSourcePropType | undefined;

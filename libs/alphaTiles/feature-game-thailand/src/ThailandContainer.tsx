@@ -12,7 +12,6 @@ import {
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { decodeThailandChallengeLevel } from './decodeThailandChallengeLevel';
-import { refAudioKey } from './refAudioKey';
 import { setupThailandRound } from './setupThailandRound';
 import type { ThailandRound, ThailandRef, ThailandChoice } from './setupThailandRound';
 import { stripInstructionCharacters } from './stripInstructionCharacters';
@@ -103,6 +102,13 @@ function buildChoiceDisplay(
   return { type: 'text', text: stripInstructionCharacters(wordRow.wordInLOP) };
 }
 
+/** The pack item a reference speaks; pack speech resolves its clip. */
+function refSpeechItem(ref: ThailandRef) {
+  if (ref.kind === 'tile') return { tile: ref.tileRow };
+  if (ref.kind === 'word') return { word: ref.wordRow };
+  return { syllable: ref.syllableRow };
+}
+
 function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
@@ -136,35 +142,20 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     };
   }, []);
 
-  // Audio maps are keyed by tile.base / wordInLWC / syllable (see refAudioKey),
-  // not the pack AudioName column — keying by audioName silenced TILE_AUDIO doors.
   const playRefAudio = useCallback(
     (ref: ThailandRef) => {
-      const { category, key } = refAudioKey(ref);
-      if (category === 'tile') {
-        audio.playTile(key);
-      } else if (category === 'word' && ref.kind === 'word') {
+      if (ref.kind === 'word') {
         const word = { wordInLOP: ref.wordRow.wordInLOP, wordInLWC: ref.wordRow.wordInLWC };
         shell.setRefWord(word);
-        // Shell fallback: syllable chain for words with no recording (M3).
-        shell.playWordAudio(word);
-      } else if (category === 'syllable') {
-        audio.playSyllable(key);
       }
+      shell.speak(refSpeechItem(ref));
     },
-    [audio, shell],
+    [shell],
   );
 
   const getRefDurationMs = useCallback(
-    (ref: ThailandRef): number | undefined => {
-      const { category, key } = refAudioKey(ref);
-      if (category === 'tile') return audio.getTileDuration(key);
-      if (category === 'word' && ref.kind === 'word') {
-        return shell.getWordAudioDuration({ wordInLOP: ref.wordRow.wordInLOP, wordInLWC: key });
-      }
-      return audio.getSyllableDuration(key);
-    },
-    [audio, shell],
+    (ref: ThailandRef): number | undefined => shell.durationOf(refSpeechItem(ref)),
+    [shell],
   );
 
   const startRound = useCallback(() => {

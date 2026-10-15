@@ -8,3 +8,4 @@ export type { ScriptParser } from './scriptRegistry';
 export { combineTilesToMakeWord } from './combineTilesToMakeWord';
 export { standardizeWordSequence } from './standardizeWordSequence';
 export { parseWordIntoSyllables } from './parseWordIntoSyllables';
+export { syllableChainFor } from './syllableChainFor';
