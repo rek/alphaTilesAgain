@@ -54,6 +54,6 @@ _Avoid_: test/quiz mode, assessment (nothing is graded or reported).
 
 **Decomposable word**: a word whose LOP parses into syllables that all have clips (`syllableChainFor` in `@shared/util-phoneme`). The binder accepts it without a word clip and the validator downgrades its missing clip to a warning.
 
-**Containing-word fallback**: how pack speech says a syllable with no clip — the clip of the first word whose LOP contains it (Taiwan single hanzi).
+**Containing-word fallback**: how pack speech says a syllable with no clip — the clip of the first word whose LOP contains it. Opt-in per call (`{ syllable, orContainingWord: true }`, Taiwan single hanzi only); otherwise an unrecorded syllable is silent.
 
 **Composite numeral**: a yue number word with no recording of its own (`zz_20`, `zz_30`, `zz_50`, `zz_203`, `zz_1000000`); spoken as a syllable chain.

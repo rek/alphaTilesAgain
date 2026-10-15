@@ -101,7 +101,7 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
   // Curtis confirmed on issue #27 that repeat and completion play the same audio).
   // Pack speech owns the fallback: syllable clip, else first word containing it.
   const playCharAudio = useCallback(() => {
-    shell.speak({ syllable: { syllable: currentChar } });
+    shell.speak({ syllable: { syllable: currentChar }, orContainingWord: true });
   }, [shell, currentChar]);
   useShellRepeat(playCharAudio);
 
