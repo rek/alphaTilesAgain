@@ -74,7 +74,7 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/see_more_of_tile` | See More Words Starting With This Game Tile | 查看更多以此字塊開頭的詞語 | ⚠ Key term: "tile" rendered 字塊 everywhere (a11y/tile, game_tile, empty_tile, join_tiles). Alternatives: 字卡, 方塊. Please confirm one term app-wide. |
 | `chrome/expired_title` | Expired | 已過期 |  |
 | `chrome/expired_message` | This app has expired. | 此應用程式已過期。 |  |
-| `chrome/loading/title` | Loading AlphaTiles | 正在載入 AlphaTiles | Brand name AlphaTiles left in Latin script. |
+| `chrome/loading/title` | Loading {{name}} | 正在載入{{name}} | ⚠ Changed (review 2, U14): {{name}} = the app name (yue: 廣東話). Only shown while loading; the tap-to-start screen shows just the name. |
 | `chrome/loading/progress` | Loading {{percent}}% | 載入中 {{percent}}% |  |
 | `chrome/loading/tap_to_begin` | Tap to begin | 輕按開始 | ⚠ "Tap": 輕按 (Android HK) vs 點按 (Apple HK). Alternative: 按此開始. |
 | `chrome/loading/error` | Something went wrong. Please restart. | 發生錯誤，請重新啟動。 |  |
@@ -195,4 +195,8 @@ Screen-reader labels (`a11y`) are heard, not seen. Please check they sound natur
 | `chrome/selfTest/suggestion_low` | Keep going! Start with the games from Step {{step}}. | 繼續加油！可以由第 {{step}} 階的遊戲開始。 | 0–4 correct. ⚠ Tone for young learners: 加油 OK? |
 | `chrome/pack_error/title` | Language pack failed to load | 語言包載入失敗 | Developer-facing error screen; rarely seen. |
 | `chrome/pack_error/hint` | Restart the app after fixing the language pack. If this is a production build, contact the app maintainer. | 修正語言包後請重新啟動應用程式。如果這是正式版本，請聯絡應用程式維護人員。 | As above. |
+| `chrome/taiwan/canvas` | Write {{char}} | 寫「{{char}}」 | Screen-reader label for the writing area. |
+| `chrome/taiwan/miss` | Not quite — try that stroke again | 未對，請再寫這一筆 | ⚠ Shown briefly in red after a wrong stroke. Alternative: 差一點，再試這一筆. |
 | `chrome/about.thirdPartySummary` | The stroke-order data for the writing game is used under the Arphic Public License. The licence text is in English. | 寫字遊戲的筆順資料按 Arphic Public License 授權使用。授權條款原文為英文。 | Lead-in above the English legal text on the About page. Licence name stays in English. |
+
+> **⚠ App name — please confirm (review 2).** The pack's `aa_langinfo.txt` gives *Game Name (In Local Lang)* = **學廣話**, which reads unusually (“learn Cantonese” is normally 學廣東話 or 學粵語). The web app (tab title, home-screen name) and the loading / tap-to-start screens now use the pack's own language name instead, exactly as the pack spells it: **廣東話** (*Lang Name (In Local Lang)*). The Android app name and the feedback-email subject still use 學廣話 until the pack's Game Name is confirmed or corrected. Options: keep 廣東話; or set Game Name to 學廣東話 / 學粵語 / another name.

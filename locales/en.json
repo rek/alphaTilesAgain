@@ -13,7 +13,9 @@
       "progress": "Character {{current}} of {{total}}",
       "no_content": "No stroke data available.",
       "clear": "Clear",
-      "well_done": "✓"
+      "well_done": "✓",
+      "canvas": "Write {{char}}",
+      "miss": "Not quite — try that stroke again"
     },
     "next": "Next",
     "game_door_level": "Door {{door}} · Level {{level}}",
@@ -51,7 +53,7 @@
     "expired_title": "Expired",
     "expired_message": "This app has expired.",
     "loading": {
-      "title": "Loading AlphaTiles",
+      "title": "Loading {{name}}",
       "progress": "Loading {{percent}}%",
       "tap_to_begin": "Tap to begin",
       "error": "Something went wrong. Please restart."

@@ -13,7 +13,9 @@
       "progress": "第 {{current}} 個字，共 {{total}} 個字",
       "no_content": "沒有筆順資料。",
       "clear": "清除",
-      "well_done": "✓"
+      "well_done": "✓",
+      "canvas": "寫「{{char}}」",
+      "miss": "未對，請再寫這一筆"
     },
     "next": "下一個",
     "game_door_level": "門 {{door}} · 第 {{level}} 級",
@@ -51,7 +53,7 @@
     "expired_title": "已過期",
     "expired_message": "此應用程式已過期。",
     "loading": {
-      "title": "正在載入 AlphaTiles",
+      "title": "正在載入{{name}}",
       "progress": "載入中 {{percent}}%",
       "tap_to_begin": "輕按開始",
       "error": "發生錯誤，請重新啟動。"
