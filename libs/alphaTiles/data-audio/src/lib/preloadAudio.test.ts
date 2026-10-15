@@ -103,8 +103,27 @@ describe('preloadAudio — full successful preload', () => {
       baseChimes: BASE_CHIMES,
     });
 
-    expect(handles.durations.get('a')).toBe(2300);
-    expect(handles.durations.get('act')).toBe(2300);
+    expect(handles.durations.tiles.get('a')).toBe(2300);
+    expect(handles.durations.words.get('act')).toBe(2300);
+  });
+
+  it('keeps durations per category so colliding keys do not overwrite (L4)', async () => {
+    createPlayerSpy.mockImplementation(((source: number) =>
+      makeMockPlayer(source === 1 ? 0.5 : 1.25)) as never);
+
+    const handles = await preloadAudio({
+      manifest: {
+        tiles: { '二': 1 },
+        words: {},
+        syllables: { '二': 2 },
+        instructions: {},
+      },
+      audioConfig: { hasTileAudio: true, hasSyllableAudio: true },
+      baseChimes: BASE_CHIMES,
+    });
+
+    expect(handles.durations.tiles.get('二')).toBe(500);
+    expect(handles.durations.syllables.get('二')).toBe(1250);
   });
 
   it('calls setAudioModeAsync with playsInSilentMode: true', async () => {
