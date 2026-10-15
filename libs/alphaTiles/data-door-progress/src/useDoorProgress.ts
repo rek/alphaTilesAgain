@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useDoors } from '@alphaTiles/data-doors';
+import { useLadderDoors } from '@alphaTiles/data-doors';
 import type { Door } from '@alphaTiles/data-doors';
 import { useProgressStore } from '@alphaTiles/data-progress';
 import { useEffectiveSettings } from '@alphaTiles/data-settings';
@@ -12,12 +12,12 @@ import { recordCorrectAnswer } from './recordCorrectAnswer';
  * - `recordCorrect(points?)` — `recordCorrectAnswer` with the effective
  *   "After 12 checked trackers" mode; returns the mastery action or null.
  * - `nextDoor()` — `nextUnmasteredDoor` from this door, read at call time.
- *   Play order is the catalogue's file order (difficulty ladder #52: swap in
- *   its tier order here).
+ *   Play order is the difficulty ladder (`useLadderDoors`: tier, then file
+ *   order) — the same order as the menu grid.
  */
 export function useDoorProgress(door: Door, playerId: string | null) {
   const all = useProgressStore((state) => state.progress);
-  const order = useDoors();
+  const order = useLadderDoors();
   const { afterTwelveCheckedTrackers } = useEffectiveSettings();
 
   const progress = useMemo(

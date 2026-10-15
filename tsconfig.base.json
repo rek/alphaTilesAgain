@@ -77,6 +77,7 @@
       "@shared/storybook-host": ["libs/shared/storybook-host/src/index.ts"],
       "@alphaTiles/util-scoring": ["libs/alphaTiles/util-scoring/src/index.ts"],
       "@alphaTiles/util-stages": ["libs/alphaTiles/util-stages/src/index.ts"],
+      "@alphaTiles/util-curriculum-tiers": ["libs/alphaTiles/util-curriculum-tiers/src/index.ts"],
       "@alphaTiles/data-progress": [
         "libs/alphaTiles/data-progress/src/index.ts"
       ],

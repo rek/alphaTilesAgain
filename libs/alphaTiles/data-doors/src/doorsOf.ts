@@ -1,5 +1,6 @@
 import type { LangAssets } from '@alphaTiles/data-language-pack';
 import { displayChallengeLevel } from '@alphaTiles/util-scoring';
+import { tierForGame } from '@alphaTiles/util-curriculum-tiers';
 import { isStrokeGameEnabled } from './internal/isStrokeGameEnabled';
 
 const FALLBACK_COLOR = '#666666';
@@ -14,7 +15,7 @@ export type DoorPack = Pick<LangAssets, 'games' | 'colors' | 'settings' | 'strok
 /**
  * Door catalogue: every `aa_games.txt` row resolved once into a Door — the one
  * place class, variant, challenge level, stage, colour, instruction audio,
- * name, progress rule and visibility are derived. Menu, shell, next-game search and
+ * name, curriculum tier, progress rule and visibility are derived. Menu, shell, next-game search and
  * game containers all read Doors; none read `games.rows` directly.
  *
  * Invariants:
@@ -46,6 +47,11 @@ export function doorsOf(pack: DoorPack) {
       challengeLevel: row.challengeLevel,
       /** Level shown in the shell header (Java GameActivity display rules). */
       displayLevel: displayChallengeLevel(row.country, row.challengeLevel),
+      /**
+       * Curriculum tier 0–6 of the door's class (difficulty ladder, menu
+       * "Level N" badge). Display/ordering only — never changes `index`.
+       */
+      tier: tierForGame(row.classKey),
       /** `S` = syllable mode, `T` = tile mode. */
       variant,
       stage,

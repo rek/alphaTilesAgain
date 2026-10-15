@@ -7,6 +7,7 @@ const result: Door = {
   classKey: 'united-states',
   challengeLevel: 1,
   displayLevel: 1,
+  tier: 4,
   variant: 'T',
   stage: 1,
   colorHex: '#000000',

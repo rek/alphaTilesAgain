@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parseColors, parseGames, parseSettings } from '@shared/util-lang-pack-parser';
 import { doorsOf } from './doorsOf';
+import { ladderOrder } from './ladderOrder';
 import type { DoorPack } from './doorsOf';
 
 const LANGUAGES = path.resolve(__dirname, '../../../../languages');
@@ -96,6 +97,28 @@ describe('doorsOf — yue', () => {
     const hidden = doorsOf({ ...pack, settings });
     expect(hidden.filter((d) => !d.enabled).map((d) => d.index)).toEqual([6, 7, 8]);
     expect(hidden[8].classKey).toBe('georgia');
+  });
+
+  it('each door carries its class tier (difficulty ladder)', () => {
+    const tierOf = (index: number) => doors[index - 1].tier;
+    expect(tierOf(1)).toBe(2); // Thailand
+    expect(tierOf(6)).toBe(4); // Taiwan
+    expect(tierOf(9)).toBe(2); // Georgia S
+    expect(tierOf(12)).toBe(3); // Mexico
+    expect(tierOf(20)).toBe(4); // Colombia
+    expect(tierOf(26)).toBe(0); // Malaysia
+  });
+
+  it('ladder order: tier asc, file order within a tier; index never renumbered', () => {
+    const ladder = ladderOrder(doors);
+    expect(ladder.map((d) => d.index)).toEqual([
+      26, 27, 28, // tier 0: Malaysia, Sudan, Iraq
+      1, 2, 3, 4, 5, 9, 10, 11, 16, 17, 18, 19, // tier 2: Thailand, Georgia
+      12, 13, 14, 15, // tier 3: Mexico, Ecuador
+      6, 7, 8, 20, 21, 22, 23, 24, 25, // tier 4: Taiwan, Colombia, Brazil, Italy
+    ]);
+    // Every door still resolves to its own raw row (the route lookup).
+    ladder.forEach((door) => expect(doors[door.index - 1]).toBe(door));
   });
 });
 

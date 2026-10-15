@@ -5,7 +5,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { parseColors, parseGames, parseSettings } from '@shared/util-lang-pack-parser';
-import { doorsOf } from '@alphaTiles/data-doors';
+import { doorsOf, ladderOrder } from '@alphaTiles/data-doors';
 import type { Door, DoorPack } from '@alphaTiles/data-doors';
 import { useProgressStore } from '@alphaTiles/data-progress';
 import { effectiveSettingsOf } from '@alphaTiles/data-settings';
@@ -165,6 +165,13 @@ describe('nextUnmasteredDoor (yue)', () => {
   it('follows the given play order (ladder), matching doors by index', () => {
     const reversed = [...doors].reverse();
     expect(next(doors[4], reversed)).toBe(4);
+  });
+
+  it('in the yue ladder, the last tier-0 door leads to the first tier-2 door', () => {
+    const ladder = ladderOrder(doors);
+    expect(next(doors[27], ladder, 'p3')).toBe(1); // Iraq (tier 0) → Thailand door 1 (tier 2)
+    expect(next(doors[4], ladder, 'p3')).toBe(9); // Thailand door 5 → Georgia door 9 (same tier, file order)
+    expect(next(doors[24], ladder, 'p3')).toBe(26); // Italy (last, tier 4) wraps → Malaysia (tier 0)
   });
 
   it('null when every enabled door in the order is mastered', () => {
