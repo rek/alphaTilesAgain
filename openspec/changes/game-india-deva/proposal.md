@@ -17,9 +17,9 @@ Tibetan Uchen was scoped out: zero OSS data exists, would require human authorin
 - **NEW** `tools/build-stroke-data-deva.ts` — SVG-extractor prebuild step. Fetches Wikimedia category, parses each SVG, extracts stroke paths from `<g inkscape:label="4">`, computes medians via arc-length sampling, emits per-char JSON.
 - **NEW** `tools/data/wikimedia-deva-cache/` — gitignored cache of downloaded SVGs.
 - **MODIFIED** `tsconfig.base.json` — alias for new lib.
-- **MODIFIED** `apps/alphaTiles/app/registerPrecomputes.ts` — register `'india-deva'` precompute.
+- **MODIFIED** `apps/alphaTiles/src/gameClassKeys.ts` + `gameClasses.ts` — add `'india-deva'` registry entry (Container + precompute).
 - **MODIFIED** `apps/alphaTiles/NOTICE.md` — attribution for each Wikimedia artist (CC BY-SA 3.0 requires attribution).
-- **NEW** route `apps/alphaTiles/app/games/india-deva.tsx`.
+- No new route file — `/games/india-deva` is served by `app/games/[classKey].tsx` from the registry.
 - **NEW** `apps/alphaTiles/app/spike-deva.tsx` — throwaway smoke target during Phase 1.
 
 Out of scope for this change:

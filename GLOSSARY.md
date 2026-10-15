@@ -10,6 +10,10 @@ _Avoid_: game row, game number, level (for the whole door)
 
 **Door name**: optional menu label for a Door, from the `GameName` column (9th) of `aa_games.txt`; `Door.name`. Pack content in the language of play, not chrome. Absent → unlabelled door.
 
+**Game class**:
+A mechanic (`aa_games.txt` Country, e.g. `UnitedStates`; kebab `classKey` `united-states`). Many Doors share one. Wired into the app only by the game-class registry (`apps/alphaTiles/src/gameClasses.ts`), which the one game route reads.
+_Avoid_: game type, route (there is one route)
+
 ## Settings
 
 **Player preferences**: sparse per-player overrides (`usePlayerPreferencesStore` in `@alphaTiles/data-players`); unset = pack default. Written only via `useSetPreference`.

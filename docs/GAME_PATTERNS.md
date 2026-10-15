@@ -80,7 +80,7 @@ src/
   <otherPureHelpers>.test.ts
 ```
 
-Route: `apps/alphaTiles/app/games/<name>.tsx` renders `<NameContainer />` directly.
+No route file. Add a game = one entry in the game-class registry (`apps/alphaTiles/src/gameClassKeys.ts` key + `apps/alphaTiles/src/gameClasses.ts` `{ Container, precompute? }`; the `Record<GameClassKey, …>` type makes a missing half a compile error). The one route `apps/alphaTiles/app/games/[classKey].tsx` resolves the Door from `doorIndex`, looks its class up in the registry and renders `<Container {...params} icons={gameIcons} />` — chrome icons are injected there once for every game. URL stays `/games/<classKey>?doorIndex=…`; web export prerenders one page per registry key (`generateStaticParams`). Prebuild (`tools/assertGameClassesForGames.ts`) fails when a pack names a class with no entry.
 
 ---
 
@@ -221,11 +221,9 @@ export function build<Name>Data(assets: LangAssets): <Name>Data { ... }
 ```
 
 ```ts
-// apps/alphaTiles/app/registerPrecomputes.ts — central registry
-import { registerPrecompute } from '@shared/util-precompute';
-import { build<Name>Data } from '@alphaTiles/feature-game-<name>';
-
-registerPrecompute('<name>', build<Name>Data);
+// apps/alphaTiles/src/gameClasses.ts — game-class registry entry
+'<name>': { Container: <Name>Container, precompute: build<Name>Data },
+// app/registerPrecomputes.ts registers every entry's precompute under its classKey.
 ```
 
 ```ts
@@ -233,7 +231,7 @@ registerPrecompute('<name>', build<Name>Data);
 const data = usePrecompute<<Name>Data>('<name>');
 ```
 
-**Why central, not module-load:** registering inside `build<Name>Data.ts` pulls every game's container + screen into the boot bundle as a transitive import. The central `registerPrecomputes.ts` imports *only* the pure `build*Data` functions, so game UI stays out of the main chunk and is loaded lazily per route. When adding a new game with a precompute, add one line to `registerPrecomputes.ts`.
+**Why on the registry entry, not module-load:** registering as a side effect of importing `build<Name>Data.ts` is order-dependent and invisible. The precompute key is the classKey, so `usePrecompute('<name>')` in the container matches the entry automatically. (Routes are not async, so game UI is in the main bundle either way.)
 
 When a precompute has too little data (empty buckets), **log a warning and return empty arrays — do not throw.** Let the container detect empty state and show a friendly error screen with a back button.
 
@@ -302,7 +300,7 @@ Every game needs at minimum:
 1. Library Scaffold
    - nx generate command (exact)
    - tsconfig.base.json alias
-   - Route file
+   - Game-class registry entry (`gameClassKeys.ts` + `gameClasses.ts`) — no route file
 2. Pure Logic & Helpers (one task per file, with test task paired)
 3. Presenter: <NameScreen>
    - Props type definition
@@ -799,15 +797,13 @@ useEffect(() => {
 
 Track started-state in a ref (not state) so the effect doesn't re-render on the start. Reset the ref when `currentChar` changes.
 
-## New game routes must inject chrome assets (found 2026-08-19)
+## App chrome assets are injected once, by the game route (issue #51)
 
 `type:ui` libs can't resolve app assets, so `ScoreBar`'s tracker icons come from one
-app-level module, `apps/alphaTiles/src/gameIcons.ts` (Metro static `require`s).
-
-Every route passes it: `<XContainer {...params} icons={gameIcons} />`, and the container
-forwards `icons` to `GameShellContainer`. Jest guard `gameRoutesUseGameIcons.test.ts`
-fails if a route under `app/games/` omits it. Missing icons used to fall back silently
-(issue #51: 10 of 19 routes, incl. thailand).
+app-level module, `apps/alphaTiles/src/gameIcons.ts` (Metro static `require`s), passed by
+the single game route to every container (`icons={gameIcons}`), which forwards it to
+`GameShellContainer`. Per-class route files used to each repeat this and drifted (issue #51:
+10 of 19 dropped icons); with one route the injection holds by construction.
 
 **Generalises:** any prop a presenter treats as optional-with-fallback is a place where
-per-route wiring drifts. Grep every route before assuming a chrome feature is live.
+per-call-site wiring drifts — wire it in one place.

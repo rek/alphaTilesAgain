@@ -146,7 +146,7 @@ When a character is completed, the container SHALL play tile audio for the chara
 
 ### Requirement: Route Registration
 
-`apps/alphaTiles/app/games/taiwan.tsx` SHALL render `<TaiwanContainer />` with `challengeLevel` parsed from the route params, and pass any other props the shell expects.
+The game-class registry (`apps/alphaTiles/src/gameClasses.ts`) SHALL map `taiwan` to `<TaiwanContainer />`; the one game route (`app/games/[classKey].tsx`) renders it with route params + shell icons.
 
 #### Scenario: Route renders the container
 - **WHEN** the user navigates to `/games/taiwan?challengeLevel=2`

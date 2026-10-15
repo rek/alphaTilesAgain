@@ -19,7 +19,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { parseGametiles, parseSyllables, parseWordlist } from '../libs/shared/util-lang-pack-parser/src';
-import { assertRoutesForGames } from './assertRoutesForGames';
+import { assertGameClassesForGames } from './assertGameClassesForGames';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -402,7 +402,7 @@ function main(): void {
 
   generateManifest(lang, langDir, outPath);
   try {
-    assertRoutesForGames(repoRoot, langDir);
+    assertGameClassesForGames(langDir);
   } catch (e) {
     die((e as Error).message);
   }
