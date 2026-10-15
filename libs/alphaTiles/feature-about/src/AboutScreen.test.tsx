@@ -130,4 +130,33 @@ describe('AboutScreen', () => {
     );
     expect(getByText('English (USA)')).toBeTruthy();
   });
+
+  it('hides the third-party licence block when the pack ships no stroke data', () => {
+    const { queryByText } = render(<AboutScreen {...BASE_PROPS} />);
+    expect(queryByText('Open-source licences')).toBeNull();
+  });
+
+  it('shows attribution, and licence text only when expanded (Arphic PL stroke data)', () => {
+    const onToggle = jest.fn();
+    const licence = {
+      heading: 'Open-source licences',
+      attribution: 'Stroke-order data: Make Me a Hanzi',
+      licenceText: 'ARPHIC PUBLIC LICENSE ...',
+      toggleLabel: 'Show licence text',
+      onToggle,
+    };
+    const collapsed = render(
+      <AboutScreen {...BASE_PROPS} thirdPartyLicence={{ ...licence, expanded: false }} />,
+    );
+    expect(collapsed.getByText('Open-source licences')).toBeTruthy();
+    expect(collapsed.getByText('Stroke-order data: Make Me a Hanzi')).toBeTruthy();
+    expect(collapsed.queryByText('ARPHIC PUBLIC LICENSE ...')).toBeNull();
+    fireEvent.press(collapsed.getByText('Show licence text'));
+    expect(onToggle).toHaveBeenCalledTimes(1);
+
+    const expanded = render(
+      <AboutScreen {...BASE_PROPS} thirdPartyLicence={{ ...licence, expanded: true }} />,
+    );
+    expect(expanded.getByText('ARPHIC PUBLIC LICENSE ...')).toBeTruthy();
+  });
 });
