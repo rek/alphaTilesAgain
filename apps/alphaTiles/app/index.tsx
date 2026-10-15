@@ -1,1 +1,1 @@
-export { LoadingContainer as default } from '@alphaTiles/feature-loading';
+export { EntryRedirect as default } from '@alphaTiles/feature-loading';

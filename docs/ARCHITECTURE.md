@@ -226,7 +226,8 @@ not app logic. The `data-language-assets` and `data-language-pack` libs use this
 `expo-audio`, wrapped by `libs/alphaTiles/data-audio`.
 
 - **Preload at loading screen** — all `tiles/*.mp3`, `words/*.mp3`, `syllables/*.mp3` loaded into a keyed map. Same flow as Android `SoundPool`.
-- **Web caveat** — browsers block audio until a user gesture. One module owns it: `AudioGate` (data-audio), wrapping every route in the root layout (`renderLocked` = feature-loading `TapToBegin`). Locked on web until a tap *after* preload; the tap primes every clip in chunks (Safari needs per-element priming; priming all at once killed Chromium tabs). Cold start, reload and deep link all hit the same gate; boot sequence knows nothing of it. Native passes through. Overlapping playback on web is best-effort (one `<audio>` per key). See `openspec/changes/web-platform-parity/design.md` I1–I6.
+- **Web caveat** — browsers block audio until a user gesture. One module owns it: `AudioGate` (data-audio), wrapping every route in the root layout (`renderLocked` = feature-loading `TapToBegin`). Locked on web until a tap *after* preload; the tap primes every clip in chunks (Safari needs per-element priming; priming all at once killed Chromium tabs). Cold start, reload and deep link all hit the same gate; boot sequence knows nothing of it.
+- **Boot** — feature-loading `AppRoot` is the whole root layout (`<AppRoot><Stack /></AppRoot>`): i18n → language pack → AudioProvider → fonts/theme → AudioGate → `BootGate`. BootGate wraps every route, so cold start at `/`, web reload and native deep link all hide the splash, register content namespaces, await audio + players hydration and start the OTA check before any screen mounts. `/` is `EntryRedirect` (→ `/choose-player` or `/menu`). Native passes through. Overlapping playback on web is best-effort (one `<audio>` per key). See `openspec/changes/web-platform-parity/design.md` I1–I6.
 - **Base sounds** (`correct.mp3`, `incorrect.mp3`, `correctFinal.mp3`) ship in the app bundle, not the pack.
 - **Pack speech** — the only way to play pack content. `speak(item)` / `durationOf(item)` / `stop()` where `item` is `{ tile } | { word } | { syllable } | { instruction }` (a pack row, never an audio key). Lives in `data-audio` (`createPackSpeech` + `planSpeech`, adapter `usePackSpeech`) on top of the player pool and web priming; games reach it via `useGameShell().speak`, which lends the shell's interaction lock to syllable chains. Owns key resolution, word → syllable-chain fallback (decomposable rule = `syllableChainFor` in `util-phoneme`, shared with `resolveAudio` + the validator), syllable → containing-word fallback, gap timing, durations, warn-once. `useAudio()` keeps only chimes + load/unlock. See `docs/GAME_PATTERNS.md` "Pack speech".
 
@@ -237,8 +238,8 @@ Some game classes precompute data at boot (Android: `Chile.chilePreProcess()`). 
 ```ts
 // apps/alphaTiles/src/gameClasses.ts — on the class's registry entry:
 chile: { Container: ChileContainer, precompute: chilePreProcess },
-// app/registerPrecomputes.ts (imported by _layout) loops the registry:
-registerPrecompute(classKey, gameClass.precompute);
+// src/registerPrecomputes.ts (imported first by app/_layout) loops the registry:
+registerGameClassPrecomputes(gameClasses); // feature-game-shell → registerPrecompute(classKey, …)
 
 // during lang boot:
 runPrecomputes(assets); // iterates the registry, fills a per-key cache
@@ -379,7 +380,7 @@ Menu visuals, the shell's tracker bar / score / mastery action and the next-door
 
 `apps/alphaTiles/src/gameClasses.ts` maps classKey → `{ Container, precompute? }`, typed `Record<GameClassKey, …>` over the plain key list `gameClassKeys.ts` (plain so `tools/` can import it). It is the one place a game class is wired into the app — **add a game = one registry entry**. App-level because only the app may import every `feature-game-*` lib and resolve app assets.
 
-One route serves every Door: `app/games/[classKey].tsx` → `useDoor(params)` → `gameClasses[door.classKey].Container` with route params + `gameIcons` (chrome icons injected once). URL: `/games/<classKey>?doorIndex=…&challengeLevel=…` (menu, next-door navigation and deep links). `generateStaticParams` prerenders one web page per registry key. A class missing from the registry renders a "game unavailable" screen at runtime and fails prebuild (`tools/assertGameClassesForGames.ts`; its test also checks every pack under `languages/`).
+One route serves every Door: `app/games/[classKey].tsx` → feature-game-shell `GameRouteContainer` (given `gameClasses` + `gameIcons`) → `resolveGameRoute`: the routed Door (`useDoor(params)`) names the class; with no `doorIndex` (static page, bare deep link) the first Door of the URL's class, none → `/menu` → `gameClasses[classKey].Container` with route params + `gameIcons` (chrome icons injected once). URL: `/games/<classKey>?doorIndex=…&challengeLevel=…` (menu, next-door navigation and deep links). `generateStaticParams` prerenders one web page per registry key. A class missing from the registry renders a "game unavailable" screen at runtime and fails prebuild (`tools/assertGameClassesForGames.ts`; its test also checks every pack under `languages/`).
 
 ### V1 port scope
 

@@ -227,7 +227,8 @@ export function build<Name>Data(assets: LangAssets): <Name>Data { ... }
 ```ts
 // apps/alphaTiles/src/gameClasses.ts — game-class registry entry
 '<name>': { Container: <Name>Container, precompute: build<Name>Data },
-// app/registerPrecomputes.ts registers every entry's precompute under its classKey.
+// src/registerPrecomputes.ts (imported first by app/_layout) registers every entry's
+// precompute under its classKey (feature-game-shell `registerGameClassPrecomputes`).
 ```
 
 ```ts
@@ -766,7 +767,7 @@ categories exist on Commons). Reusable bits live in `tools/skeletonize.ts`.
    `extractCharFromTitle()` (Devanagari is U+0900–U+097F; Bengali is
    U+0980–U+09FF).
 3. Run once. Inspect rejection log for any new SVG quirks the heuristics
-   don't yet handle. Eyeball-validate via a `spike-<lang>.tsx` route.
+   don't yet handle. Eyeball-validate via an uncommitted `app/spike-<lang>.tsx` route (committed spikes live unrouted in `apps/alphaTiles/src/dev/`).
 4. If many chars get rejected for "inconsistent path counts" or similar, the
    artist used a different convention; widen the heuristics rather than
    hand-author per-char overrides.
