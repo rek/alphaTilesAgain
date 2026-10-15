@@ -9,7 +9,9 @@ export type OtaCheckResult =
   | { kind: 'no-update' }
   | { kind: 'timeout' }
   | { kind: 'error'; error: string }
-  | { kind: 'applied'; updateId: string };
+  | { kind: 'applied'; updateId: string }
+  /** Update downloaded; expo-updates launches it on the next cold start. */
+  | { kind: 'downloaded'; updateId: string };
 
 /**
  * Minimal track function type accepted by util-ota functions.

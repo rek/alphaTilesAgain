@@ -17,7 +17,7 @@ declare module 'expo-updates' {
 
   export interface UpdateCheckResult {
     isAvailable: boolean;
-    updateId?: string;
+    manifest?: { id: string };
   }
 
   export interface UpdateFetchResult {

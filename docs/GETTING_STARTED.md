@@ -180,7 +180,7 @@ eas update --channel eng --message "fix: corrected audio for tile 'a'"
 eas update --channel tpx --message "fix: updated wordlist"
 ```
 
-Users receive the update on next cold launch. The loading screen checks for updates automatically via `runOtaCheck()`.
+The loading screen checks for updates on every native launch via `runOtaCheck()` and downloads in the background; users get the update on their next cold launch (so: two launches after publish).
 
 ### Rollback
 
@@ -194,8 +194,8 @@ Users get the rolled-back version on next cold launch.
 
 ### Version-skew policy
 
-- **Content-only changes** (JS bundle, images, audio reachable from JS): ship via `eas update`. Do NOT bump `version` in `app.config.ts`.
-- **Native-surface changes** (new native module, Expo SDK bump, new `app.config.ts` plugin, changes to `android`/`ios` native blocks): bump `version`, create a new EAS Build, submit to the store. OTA updates do NOT reach users on an older binary (the `appVersion` runtime-version policy enforces this).
+- **Content-only changes** (JS bundle, images, audio reachable from JS): ship via `eas update`. Do NOT bump `APP_VERSION` in `app.config.ts`.
+- **Native-surface changes** (new native module, Expo SDK bump, new `app.config.ts` plugin, changes to `android`/`ios` native blocks): bump `APP_VERSION`, create a new EAS Build, submit to the store. OTA updates do NOT reach users on an older binary (the `appVersion` runtime-version policy enforces this).
 
 ### What ships via OTA vs. rebuild
 

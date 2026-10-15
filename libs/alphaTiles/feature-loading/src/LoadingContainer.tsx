@@ -6,6 +6,8 @@
  * (mounted in _layout.tsx) so that direct-URL entry routes also get audio.
  * This container awaits the already-in-flight awaitLoaded Promise from useAudio().
  *
+ * Native: kicks off a background OTA check at mount (applied next cold start).
+ *
  * One permitted useEffect site (useMountEffect pattern — empty deps, one-shot kickoff).
  * All other state transitions happen inside the promise chain from bootSequence.
  */
@@ -17,11 +19,14 @@ import { useTranslation } from '@shared/util-i18n';
 import { registerContentNamespaces } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
+import { reportApplyIfNeeded } from '@shared/util-ota';
+import { track } from '@shared/util-analytics';
 import { bootSequence } from './bootSequence';
 import type { Phase } from './bootSequence';
 import { awaitPlayersHydrated } from './awaitPlayersHydrated';
 import { resolveEntryRoute } from './resolveEntryRoute';
 import { LoadingScreen } from './LoadingScreen';
+import { startOtaCheck } from './startOtaCheck';
 
 export function LoadingContainer(): React.JSX.Element {
   const router = useRouter();
@@ -37,6 +42,8 @@ export function LoadingContainer(): React.JSX.Element {
   // One-shot mount effect — permitted per CODE_STYLE.md for boot-time kickoffs.
   useEffect(() => {
     SplashScreen.hideAsync().catch(() => void 0);
+    const isNative = Platform.OS !== 'web';
+    if (isNative) startOtaCheck();
 
     bootSequence({
       platform: Platform.OS === 'web' ? 'web' : 'native',
@@ -78,6 +85,8 @@ export function LoadingContainer(): React.JSX.Element {
       awaitHydration: awaitPlayersHydrated,
     })
       .then(() => {
+        // Post-mount: record which OTA update (if any) this launch is running.
+        if (isNative) reportApplyIfNeeded({ track }).catch(() => void 0);
         router.replace(resolveEntryRoute());
       })
       .catch((err: unknown) => {
