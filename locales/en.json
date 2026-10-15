@@ -16,6 +16,8 @@
       "well_done": "✓"
     },
     "next": "Next",
+    "game_door_level": "Door {{door}} · Level {{level}}",
+    "game_unavailable": "Game not yet implemented",
     "instructions": "Instructions",
     "play_again": "Play Again",
     "celebrate": "Great job! You found correct answers to 12 questions on this game!",

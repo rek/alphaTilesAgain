@@ -15,15 +15,17 @@ export default function GamePlaceholderRoute() {
   return (
     <View style={styles.root}>
       <Text style={styles.title}>{classKey}</Text>
-      <Text style={styles.sub}>Door {doorIndex} · Level {challengeLevel}</Text>
-      <Text style={styles.note}>Game not yet implemented</Text>
+      <Text style={styles.sub}>
+        {t('chrome:game_door_level', { door: doorIndex, level: challengeLevel })}
+      </Text>
+      <Text style={styles.note}>{t('chrome:game_unavailable')}</Text>
       <Pressable
         style={styles.back}
         onPress={() => router.back()}
         accessibilityRole="button"
         accessibilityLabel={t('chrome:back')}
       >
-        <Text style={styles.backLabel}>← Back</Text>
+        <Text style={styles.backLabel}>{t('chrome:back')}</Text>
       </Pressable>
     </View>
   );
