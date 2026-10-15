@@ -65,7 +65,39 @@ Add a small "?" / info button on `/menu` (new `feature-placement-guidance` conta
 - **Tier map is a hand-authored constant, can drift from future new mechanics** (issue #13's next 20 proposals) → mitigate: `tierForGame` defaults unmapped `classKey`s to tier 3 instead of failing, and adding a mechanic requires a one-line map entry (documented in `GAME_PATTERNS.md` as part of task work).
 - **Scope creep temptation to fold in issue #42 (self-test) or #44 (game-names toggle)** → explicitly out of scope; this change only touches ordering/labeling and the explainer.
 
+## Implementation decisions (#52, 2026-10)
+
+Choices the decisions above left open, made at apply time. Simplest sound option each.
+
+- **I1 Tier is a Door field.** `Door.tier = tierForGame(classKey)` in `doorsOf` (`@alphaTiles/data-doors`) — ARCHITECTURE "a new per-door fact is one field in `doorsOf`". Nobody calls `tierForGame` outside the catalogue. Still engine-owned per D1: no `aa_games.txt` column, no pack edit.
+- **I2 Classes #13's table names but D1's list omitted / classes newer than #13.** `united-states` = 4 (in #13's table, construction/keyboard). `taiwan` (stroke-order tracing, #13 proposal #21, shipped later) = 4: producing a character stroke by stroke is construction. Unmapped default stays 3.
+- **I3 One ordering function.** `ladderOrder(doors)` (data-doors): stable sort by `(tier, index)`, returns a new array, never touches `index`. `useLadderDoors()` memoizes it. The menu (`buildMenuDoors`) and the shell's next-door search both use it.
+- **I4 Play order = ladder order.** Mastery mode 3 ("celebrate, then next door") searches `nextUnmasteredDoor({ order: useLadderDoors() })`, so "next" is the next door on screen, not the next file row. Spec delta: `specs/game-engine` (Celebration requirement).
+- **I5 Pagination.** The shipped menu (`GameMenuScreenModern`) is one scrolling grid; the paged classic screen is disabled. D2's "pagination slices the tier-sorted sequence" holds trivially — sorting happens before the presenter.
+- **I6 Badge.** Small "Level N" text in the card's top-start corner (mastery tick stays top-end), same colour as the door number. Door a11y label gains the level: `menu.a11y.door_with_level` = `{{door}}, {{level}}`.
+- **I7 i18n keys live in `chrome`.** Only the `chrome` namespace exists for UI text (the `onboarding` namespace never landed), so "namespace `placementGuidance`" = `chrome:placementGuidance.*`; badge = `chrome:menu.level`. zh-HK badge is 第 N 階, not 級, because the shell header already says 第 N 級 for a game's own challenge level (`game_door_level`). English "Level" collides with that header (flagged to owner).
+- **I8 Explainer placement (open question 2).** Inside `feature-game-menu`: `PlacementGuidanceSheet` presenter (RN `Modal`) + one `useState` in `GameMenuContainer`; opened by a "?" (help-circle) button at the end of the top bar. Surface is trivial, so no new lib.
+- **I9 Bands (open question 1).** 3 bands — 0–1 listen & explore, 2–3 match & recognise, 4–6 build & solve — each with a "start here if…" line by reading skill, plus a one-line "move up when…" tip. Copy in `locales/*.json`, zh-HK rows in `docs/translations/zh-HK-review.md` (content review pending there).
+- **I10 Not built.** No placement step, no stored per-player tier/start choice (Non-goals: no new preference). Tutors place learners by reading the sheet and picking a door.
+
+### yue door → tier (derived, 28 doors)
+
+| Tier | Doors (`aa_games.txt` row) | Class |
+|---|---|---|
+| 0 | 26, 27, 28 | Malaysia, Sudan (S), Iraq — browse/hear |
+| 1 | — | (no Romania door in yue) |
+| 2 | 1–5, 16–19 · 9–11 | Thailand (picture/word/audio match) · Georgia S (syllable listen-and-tap) |
+| 3 | 12–14 · 15 | Mexico (memory pairs) · Ecuador (word→image) |
+| 4 | 6–8 · 20–22 · 23 · 24–25 | Taiwan (stroke order) · Colombia S (build word) · Brazil S (missing syllable) · Italy T/S (lotería) |
+| 5–6 | — | (no Chile/Japan/Myanmar/China door in yue) |
+
+Grid order: 26 27 28 · 1 2 3 4 5 9 10 11 16 17 18 19 · 12 13 14 15 · 6 7 8 20 21 22 23 24 25. Pinned by `doorsOf.test.ts` ("ladder order") and `buildMenuDoors.test.ts` (real yue pack: every pressed door routes to the row it shows).
+
+### Release note
+
+"Menu doors are now grouped by difficulty level (Level 0–6, shown on each door) with a "?" guide to where to start. Door numbers, progress and game content are unchanged; doors may sit in a different place on the menu. After mastering a game, "next game" now follows the level order."
+
 ## Open Questions
 
-- Exact tier→band grouping text for the explainer (3 bands vs. 7 individual tier descriptions) — recommend 3 bands (0–1, 2–3, 4–6) for brevity; confirm with content/PM before writing copy.
-- Whether the info affordance lives inside `game-menu`'s existing feature lib or as a standalone `feature-placement-guidance` lib — recommend standalone per one-function/one-concern library convention, but a small addition to the menu feature is acceptable if the surface stays trivial.
+- ~~Tier→band grouping text~~ — resolved I9 (3 bands). Copy still needs content/PM review (zh-HK review sheet).
+- ~~Info affordance placement~~ — resolved I8 (inside `feature-game-menu`).

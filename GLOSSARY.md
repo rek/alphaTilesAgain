@@ -8,6 +8,11 @@ Literacy-game generator: a language community's asset pack becomes a set of tile
 One playable game instance on the menu: an `aa_games.txt` row (game class + challenge level + tile/syllable mode + stage) resolved against the pack, identified by its 1-based row position (`index`, the route `doorIndex`). Resolved only by `@alphaTiles/data-doors` (`doorsOf`).
 _Avoid_: game row, game number, level (for the whole door)
 
+**Tier** / **Level**: a Door's curriculum step 0–6 (`Door.tier`), from its game class (`tierForGame`, `@alphaTiles/util-curriculum-tiers`; issue #13's ladder: hear → see → match → recognise → build → analyse → puzzle). Shown on the menu as "Level N". Never an age or audience.
+_Avoid_: track, adult/children mode; challenge level (that's the class-specific `challengeLevel`).
+
+**Ladder order**: Doors sorted by `(tier, index)` (`ladderOrder` / `useLadderDoors`, `@alphaTiles/data-doors`) — the menu grid order and the play order. Never renumbers `index`.
+
 **Door name**: optional menu label for a Door, from the `GameName` column (9th) of `aa_games.txt`; `Door.name`. Pack content in the language of play, not chrome. Absent → unlabelled door.
 
 **Game class**:
@@ -22,7 +27,7 @@ _Avoid_: reading `useProgressStore` entries directly for a door.
 **Mastered**: a Door that tracks progress with ≥ 12 checked trackers (Java `Earth` / `hasChecked12Trackers`). Never depends on the "After 12 checked trackers" setting; no-right/wrong Doors are never mastered.
 _Avoid_: completed, checked12, "finished game".
 
-**Mastery action**: what the shell does when a correct answer checks the 12th tracker (and each 12th after) — `keep-playing` / `return-to-menu` / `celebrate-then-next-door`, from the "After 12 checked trackers" effective setting (1 / 2 / 3). Next door = first enabled, unmastered Door after this one in play order.
+**Mastery action**: what the shell does when a correct answer checks the 12th tracker (and each 12th after) — `keep-playing` / `return-to-menu` / `celebrate-then-next-door`, from the "After 12 checked trackers" effective setting (1 / 2 / 3). Next door = first enabled, unmastered Door after this one in ladder order.
 
 ## Settings
 

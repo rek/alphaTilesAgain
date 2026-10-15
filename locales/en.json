@@ -73,6 +73,7 @@
     },
     "menu": {
       "score": "Score: {{points}}",
+      "level": "Level {{n}}",
       "a11y": {
         "door": "Game {{index}}, {{state}}",
         "door_named": "Game {{index}}, {{name}}, {{state}}",
@@ -89,7 +90,9 @@
         "resources": "Resources",
         "audio_instructions": "Play audio instructions",
         "settings": "Settings",
-        "toggle_layout": "Toggle layout"
+        "toggle_layout": "Toggle layout",
+        "door_with_level": "{{door}}, {{level}}",
+        "how_levels_work": "How levels work"
       },
       "tabs": {
         "about": "About",
@@ -103,6 +106,18 @@
       "title": "Settings",
       "show_game_names": "Show game names on doors",
       "show_game_names_hint": "Turn off to show only coloured, numbered doors (for children who find games by colour)."
+    },
+    "placementGuidance": {
+      "title": "Where to start",
+      "intro": "Games are grouped by level, from Level 0 (easiest) to Level 6. Each door shows its level.",
+      "band_0_1_title": "Levels 0–1 · Listen and explore",
+      "band_0_1": "Tap tiles and words to hear them. Start here with a new reader.",
+      "band_2_3_title": "Levels 2–3 · Match and recognise",
+      "band_2_3": "Match sounds, pictures and written words. Start here if the learner already knows some words.",
+      "band_4_6_title": "Levels 4–6 · Build and solve",
+      "band_4_6": "Spell words, take them apart and solve word puzzles. For confident readers.",
+      "tip": "Move up a level when the learner gets most answers right. A tick on a door means it is mastered.",
+      "close": "Close"
     },
     "a11y": {
       "tile": "Tile {{letter}}",

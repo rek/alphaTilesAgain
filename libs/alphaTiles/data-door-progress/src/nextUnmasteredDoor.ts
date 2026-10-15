@@ -7,8 +7,8 @@ import { doorProgressOf } from './doorProgressOf';
  * `order`, wrapping, that is enabled and not mastered (`doorProgressOf`).
  * Ports GameActivity.java:356-411's search, plus "never a hidden door".
  *
- * `order` is the play order — today the Door catalogue's file order; the
- * difficulty ladder (#52) passes its tier-sorted sequence. Doors are matched
+ * `order` is the play order — the shell passes the difficulty ladder
+ * (`useLadderDoors`: tier, then file order). Doors are matched
  * by `index`, never by position, so any order works. `from` itself is
  * checked last. Null when every enabled door is mastered (→ menu).
  */

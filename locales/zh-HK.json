@@ -73,6 +73,7 @@
     },
     "menu": {
       "score": "分數：{{points}}",
+      "level": "第 {{n}} 階",
       "a11y": {
         "door": "遊戲 {{index}}，{{state}}",
         "door_named": "遊戲 {{index}}：{{name}}，{{state}}",
@@ -89,7 +90,9 @@
         "resources": "資源",
         "audio_instructions": "播放語音說明",
         "settings": "設定",
-        "toggle_layout": "切換版面"
+        "toggle_layout": "切換版面",
+        "door_with_level": "{{door}}，{{level}}",
+        "how_levels_work": "各階說明"
       },
       "tabs": {
         "about": "關於",
@@ -103,6 +106,18 @@
       "title": "設定",
       "show_game_names": "在門上顯示遊戲名稱",
       "show_game_names_hint": "關閉後，門上只顯示顏色和號碼（適合靠顏色找遊戲的兒童）。"
+    },
+    "placementGuidance": {
+      "title": "從哪一階開始？",
+      "intro": "遊戲按難度分為第 0 階（最容易）至第 6 階。每扇門都會顯示它的階數。",
+      "band_0_1_title": "第 0–1 階 · 聆聽和探索",
+      "band_0_1": "點按字塊和詞語，聆聽讀音。剛開始學習閱讀的學習者由這裏開始。",
+      "band_2_3_title": "第 2–3 階 · 配對和認字",
+      "band_2_3": "把讀音、圖片和文字配對。已認識一些詞語的學習者由這裏開始。",
+      "band_4_6_title": "第 4–6 階 · 組字和解謎",
+      "band_4_6": "拼出詞語、拆解詞語和解答文字謎題。適合有信心的讀者。",
+      "tip": "學習者答對大部分題目時，便可升上一階。門上有剔號，表示已掌握該遊戲。",
+      "close": "關閉"
     },
     "a11y": {
       "tile": "字塊 {{letter}}",

@@ -3,7 +3,7 @@
 Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome` namespace) for the Cantonese (yue) release. Tracked in issue #55.
 
 - **Source:** `locales/en.json` → **draft:** `locales/zh-HK.json`
-- **Keys:** 110. **Flagged for decision (⚠):** 16.
+- **Keys:** 123. **Flagged for decision (⚠):** 18.
 - **Locale selection:** the yue build always shows zh-HK UI text, whatever the phone's language. Any key missing from zh-HK falls back to English.
 - **Scope:** UI text only. Game content (tiles, words, instructions audio) comes from the language pack and is not covered here.
 
@@ -88,6 +88,7 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/players/validation/too_long` | Max 20 characters | 最多 20 個字 | ⚠ "characters" rendered 字. For Latin-script input, 字元 is more precise. |
 | `chrome/players/validation/duplicate` | Name already used | 此名字已被使用 |  |
 | `chrome/menu/score` | Score: {{points}} | 分數：{{points}} |  |
+| `chrome/menu/level` | Level {{n}} | 第 {{n}} 階 | ⚠ New (#52). Difficulty badge on each door, {{n}} = 0–6. 階 (step) chosen so it is not confused with `game_door_level` 第 N 級, which is a game's own challenge level. Alternative: 程度 {{n}}. |
 | `chrome/menu/a11y/door` | Game {{index}}, {{state}} | 遊戲 {{index}}，{{state}} | {{state}} is one of the three `door_state` labels below. |
 | `chrome/menu/a11y/door_named` | Game {{index}}, {{name}}, {{state}} | 遊戲 {{index}}：{{name}}，{{state}} | New (#37). Screen-reader label for a door with a game name; {{name}} is the pack's Cantonese game name, read as-is. |
 | `chrome/menu/a11y/door_state/not_started` | not started | 未開始 | Door state read after the game number. |
@@ -102,6 +103,8 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/menu/a11y/audio_instructions` | Play audio instructions | 播放語音說明 |  |
 | `chrome/menu/a11y/settings` | Settings | 設定 | New (#44). Screen-reader label for the Settings tab. |
 | `chrome/menu/a11y/toggle_layout` | Toggle layout | 切換版面 |  |
+| `chrome/menu/a11y/door_with_level` | {{door}}, {{level}} | {{door}}，{{level}} | New (#52). Screen-reader door label plus its level badge, e.g. 遊戲 3，未開始，第 2 階. |
+| `chrome/menu/a11y/how_levels_work` | How levels work | 各階說明 | New (#52). Screen-reader label for the "?" button on the menu that opens the "Where to start" sheet. |
 | `chrome/menu/tabs/about` | About | 關於 |  |
 | `chrome/menu/tabs/share` | Share | 分享 |  |
 | `chrome/menu/tabs/resources` | Library | 資源庫 | ⚠ English is "Library"; 資源庫 (resource library) chosen to match the Resources screen. Alternative: 圖書館 (literal library) seems wrong here. |
@@ -110,6 +113,16 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/settings/title` | Settings | 設定 | New (#44). Settings screen heading. |
 | `chrome/settings/show_game_names` | Show game names on doors | 在門上顯示遊戲名稱 | ⚠ New (#44). First settings toggle. "Door" = 門 as elsewhere; reviewers may prefer 遊戲門. |
 | `chrome/settings/show_game_names_hint` | Turn off to show only coloured, numbered doors (for children who find games by colour). | 關閉後，門上只顯示顏色和號碼（適合靠顏色找遊戲的兒童）。 | New (#44). Explains the toggle to parents/teachers. |
+| `chrome/placementGuidance/title` | Where to start | 從哪一階開始？ | New (#52). Heading of the sheet opened by the menu "?" button. For parents/teachers choosing where a learner starts. |
+| `chrome/placementGuidance/intro` | Games are grouped by level, from Level 0 (easiest) to Level 6. Each door shows its level. | 遊戲按難度分為第 0 階（最容易）至第 6 階。每扇門都會顯示它的階數。 | New (#52). |
+| `chrome/placementGuidance/band_0_1_title` | Levels 0–1 · Listen and explore | 第 0–1 階 · 聆聽和探索 | New (#52). Band heading. |
+| `chrome/placementGuidance/band_0_1` | Tap tiles and words to hear them. Start here with a new reader. | 點按字塊和詞語，聆聽讀音。剛開始學習閱讀的學習者由這裏開始。 | ⚠ New (#52). Must not mention age (no 兒童/成人): reading level only. Alternative for "new reader": 初學者. |
+| `chrome/placementGuidance/band_2_3_title` | Levels 2–3 · Match and recognise | 第 2–3 階 · 配對和認字 | New (#52). |
+| `chrome/placementGuidance/band_2_3` | Match sounds, pictures and written words. Start here if the learner already knows some words. | 把讀音、圖片和文字配對。已認識一些詞語的學習者由這裏開始。 | New (#52). |
+| `chrome/placementGuidance/band_4_6_title` | Levels 4–6 · Build and solve | 第 4–6 階 · 組字和解謎 | New (#52). |
+| `chrome/placementGuidance/band_4_6` | Spell words, take them apart and solve word puzzles. For confident readers. | 拼出詞語、拆解詞語和解答文字謎題。適合有信心的讀者。 | New (#52). In yue, "spell" = build a word from its characters. |
+| `chrome/placementGuidance/tip` | Move up a level when the learner gets most answers right. A tick on a door means it is mastered. | 學習者答對大部分題目時，便可升上一階。門上有剔號，表示已掌握該遊戲。 | New (#52). 剔號 = tick (HK usage); matches `door_state/mastery` 已掌握. |
+| `chrome/placementGuidance/close` | Close | 關閉 | New (#52). |
 | `chrome/a11y/tile` | Tile {{letter}} | 字塊 {{letter}} |  |
 | `chrome/a11y/word` | Word {{word}} | 詞語 {{word}} |  |
 | `chrome/a11y/active_word_picture` | Picture of Active Word | 目前詞語的圖片 |  |

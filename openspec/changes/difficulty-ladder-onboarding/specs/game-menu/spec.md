@@ -2,7 +2,7 @@
 
 ### Requirement: Door grid derived from `aa_games.txt`
 
-`/menu` SHALL render one door per row of `aa_games.txt` (as parsed into `langAssets.gameList`). Each door's `index` (1-based) SHALL be its position in raw `aa_games.txt` file order, computed identically to today — this value is unaffected by grid/display ordering (see "Tier-grouped door layout") and remains the value sent as `doorIndex` on press per the "Door-press navigation contract".
+`/menu` SHALL render one door per row of `aa_games.txt` (resolved as Doors by `@alphaTiles/data-doors`, `useDoors()`), in difficulty-ladder order (see "Tier-grouped door layout"). Each door SHALL display its `index`. Each door's `index` (1-based) SHALL be its position in raw `aa_games.txt` file order, computed identically to today — this value is unaffected by grid/display ordering (see "Tier-grouped door layout") and remains the value sent as `doorIndex` on press per the "Door-press navigation contract".
 
 #### Scenario: Small gameList
 
@@ -18,7 +18,7 @@
 
 ### Requirement: Tier-grouped door layout
 
-The door grid's *rendering position* (independent of each door's `index`/`doorIndex`) SHALL be ordered by `(tierForGame(classKey), original aa_games.txt row order)` — doors group by curriculum tier ascending, and within a tier keep their original file order. Pagination (`doorsPerPage` slicing) SHALL operate on this tier-sorted sequence. This ordering MUST NOT alter any door's `index` value or the `doorIndex` sent on press.
+The door grid's *rendering position* (independent of each door's `index`/`doorIndex`) SHALL be ordered by `(tierForGame(classKey), original aa_games.txt row order)` — `ladderOrder` over `Door.tier` (`@alphaTiles/data-doors`) — doors group by curriculum tier ascending, and within a tier keep their original file order. Pagination (`doorsPerPage` slicing) SHALL operate on this tier-sorted sequence. This ordering MUST NOT alter any door's `index` value or the `doorIndex` sent on press.
 
 #### Scenario: Two games share a tier
 

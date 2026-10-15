@@ -1,0 +1,18 @@
+{
+  "name": "util-curriculum-tiers",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/util-curriculum-tiers/src",
+  "projectType": "library",
+  "tags": ["type:util", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/util-curriculum-tiers",
+        "main": "libs/alphaTiles/util-curriculum-tiers/src/index.ts",
+        "tsConfig": "libs/alphaTiles/util-curriculum-tiers/tsconfig.lib.json"
+      }
+    }
+  }
+}

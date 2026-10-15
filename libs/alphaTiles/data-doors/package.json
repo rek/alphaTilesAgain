@@ -11,6 +11,7 @@
     "@alphaTiles/data-language-pack": "*",
     "@shared/util-lang-pack-parser": "*",
     "util-scoring": "*",
+    "@alphaTiles/util-curriculum-tiers": "*",
     "react": "*"
   }
 }
