@@ -84,11 +84,7 @@ export function MalaysiaScreen({
   onNext,
   a11yLabels,
 }: MalaysiaScreenProps): React.JSX.Element {
-  const { width, height } = useWindowDimensions();
-
-  // Reserve ~30% of the height for shell chrome / arrows; remaining for rows.
-  const listHeight = Math.max(220, height * 0.7 - 60);
-  const rowHeight = rows.length > 0 ? Math.floor(listHeight / rows.length) : 0;
+  const { width } = useWindowDimensions();
 
   const showPrev = page > 0;
   // pageCount comes in as a count (length), so the last page index is pageCount-1.
@@ -103,7 +99,9 @@ export function MalaysiaScreen({
 
   return (
     <View style={[styles.root, { width }]}>
-      <View style={[styles.list, { height: listHeight }]}>
+      {/* List fills the space above the arrow bar; rows share it (flex: 1).
+          A window-height estimate let 11 rows run under the arrows (#47). */}
+      <View style={styles.list}>
         {rows.map((row, idx) => {
           const textColor = contrastColor(row.bgColor);
           return (
@@ -116,10 +114,7 @@ export function MalaysiaScreen({
               accessibilityState={{ disabled }}
               style={[
                 styles.row,
-                {
-                  backgroundColor: row.bgColor,
-                  height: rowHeight || undefined,
-                },
+                { backgroundColor: row.bgColor },
               ]}
             >
               <Text
@@ -198,6 +193,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   list: {
+    flex: 1,
     flexDirection: 'column',
     width: '100%',
     paddingHorizontal: 8,
@@ -209,7 +205,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginVertical: 2,
     borderRadius: 6,
-    minHeight: 40,
+    flex: 1,
+    maxHeight: 64,
   },
   rowText: {
     flex: 1,
@@ -219,7 +216,8 @@ const styles = StyleSheet.create({
   },
   rowImage: {
     width: 48,
-    height: 48,
+    height: '100%',
+    maxHeight: 48,
   },
   rowImagePlaceholder: {
     width: 48,

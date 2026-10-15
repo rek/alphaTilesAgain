@@ -97,7 +97,9 @@ const styles = StyleSheet.create({
   },
   badge: {
     minWidth: 36,
-    height: 36,
+    // minHeight, not height: the score badge stacks number + label and must
+    // grow rather than clip when the label wraps/scales (#47).
+    minHeight: 36,
     borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
@@ -110,7 +112,7 @@ const styles = StyleSheet.create({
   },
   levelBadge: {
     minWidth: 36,
-    height: 36,
+    minHeight: 36,
     borderRadius: 4,
     backgroundColor: '#FFC107',
     alignItems: 'center',

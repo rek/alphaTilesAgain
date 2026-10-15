@@ -103,7 +103,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    // HanziWriter is a fixed 300×300 surface (touch maths depend on it), so no
+    // horizontal padding: 300 + 2×16 overflowed 320px viewports (#47).
+    paddingVertical: 16,
     gap: 16,
   },
   progress: {
