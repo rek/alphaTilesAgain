@@ -7,8 +7,11 @@
  * this config only passes scriptDirection through extra so the entry can read it.
  *
  * OTA updates (expo-updates):
- *   - runtimeVersion.policy = "appVersion" — updates pool by app version.
- *   - updates.checkAutomatically = "NEVER" — manual check via runOtaCheck().
+ *   - runtimeVersion.policy = "appVersion" — updates pool by APP_VERSION below.
+ *     Bump APP_VERSION for every native release (store build), never for OTA.
+ *   - updates.checkAutomatically = "NEVER" — the loading screen runs runOtaCheck()
+ *     on launch (native), downloads in the background, and expo-updates applies
+ *     the update on the next cold start. No mid-session reload.
  *   - extra.eas.projectId must be set (run `eas init` once — see docs/GETTING_STARTED.md).
  *   - Build fails if EAS_PROJECT_ID / extra.eas.projectId is missing in production.
  *
@@ -23,6 +26,21 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 import * as fs from 'fs';
 import * as path from 'path';
+
+// Store identity. Android package / iOS bundle ID are permanent once published.
+// The primary pack (yue, first store release) owns the bare ID; every other pack
+// gets `<base>.<lang>`. Keep languages/<lang>/aa_share.txt in sync.
+const APP_ID_BASE = 'com.makektm.alphatiles';
+const PRIMARY_PACK = 'yue';
+
+// Marketing version + OTA runtime version (runtimeVersion policy "appVersion").
+// Bump on every native release so OTA updates never reach an older binary.
+// Android versionCode is auto-incremented remotely by EAS (apps/alphaTiles/eas.json).
+const APP_VERSION = '1.0.0';
+
+function resolveAppId(lang: string): string {
+  return lang === PRIMARY_PACK ? APP_ID_BASE : `${APP_ID_BASE}.${lang}`;
+}
 
 // Inline minimal langinfo parser — avoids requiring the TS lib in Node's config-load context.
 function parseLangInfo(src: string): { find: (label: string) => string | undefined } {
@@ -97,12 +115,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ? `../../languages/${lang}/images/splash.png`
     : './assets/images/splash-icon.png';
 
+  const appId = resolveAppId(lang);
+
   return {
     ...config,
     name: langInfo.gameNameInLocalLang || langInfo.nameInLocalLang,
     owner: 'alpha-tiles',
     slug: 'alpha-tiles-again',
-    version: config.version ?? '1.0.0',
+    version: APP_VERSION,
     orientation: 'portrait',
     icon: resolvedIcon,
     scheme: `alphatiles-${lang}`,
@@ -111,10 +131,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...({ newArchEnabled: true } as Record<string, unknown>),
     ios: {
       supportsTablet: true,
-      bundleIdentifier: `org.alphatilesapp.alphatilesagain.${lang}`,
+      bundleIdentifier: appId,
     },
     android: {
-      package: `org.alphatilesapp.alphatilesagain.${lang}`,
+      package: appId,
       adaptiveIcon: {
         backgroundColor: '#E6F4FE',
         foregroundImage: './assets/images/android-icon-foreground.png',
@@ -151,8 +171,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       url: easProjectId
         ? `https://u.expo.dev/${easProjectId}`
         : undefined,
-      // Manual check only — runOtaCheck() drives the update flow.
-      // See openspec/changes/ota-updates/design.md D10.
+      // Manual check only — LoadingContainer calls runOtaCheck({ reload: false })
+      // on launch; downloaded updates apply on next cold start.
       checkAutomatically: 'NEVER' as const,
       enabled: true,
     },

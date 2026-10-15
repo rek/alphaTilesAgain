@@ -6,7 +6,8 @@
   "scripts": {
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo web"
+    "web": "expo web",
+    "eas-build-post-install": "npm --prefix ../.. run prebuild-lang"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

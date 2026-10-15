@@ -44,7 +44,9 @@ function resolveChannel(): string {
  * - Short-circuits if `Updates.isEnabled === false` (dev builds).
  * - Races `checkForUpdateAsync` against `checkTimeoutMs`.
  * - On update available: races `fetchUpdateAsync` against `fetchTimeoutMs`,
- *   then calls `reloadAsync`.
+ *   then calls `reloadAsync` — unless `reload: false`, in which case it
+ *   returns `downloaded` and expo-updates runs the new bundle on the next
+ *   cold start (release policy: check on launch, apply next launch).
  * - All failures fall through; never throws.
  *
  * Callers (loading-screen boot flow) invoke this after i18n init and before
@@ -54,6 +56,8 @@ export async function runOtaCheck(opts?: {
   checkTimeoutMs?: number;
   fetchTimeoutMs?: number;
   track?: AnalyticsTrack;
+  /** Default true. false = keep the downloaded update for the next cold start. */
+  reload?: boolean;
 }): Promise<OtaCheckResult> {
   const checkTimeoutMs = opts?.checkTimeoutMs ?? DEFAULT_CHECK_TIMEOUT_MS;
   const fetchTimeoutMs = opts?.fetchTimeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS;
@@ -85,7 +89,7 @@ export async function runOtaCheck(opts?: {
   }
 
   // update available — fire event then fetch
-  const updateId: string = checkResult.updateId ?? 'unknown';
+  const updateId: string = checkResult.manifest?.id ?? 'unknown';
   trackFn?.('app_update_available', { updateId, channel });
 
   // --- fetch phase ---
@@ -105,6 +109,10 @@ export async function runOtaCheck(opts?: {
   if (!fetchResult.isNew) {
     // Nothing new to apply — continue with bundled
     return { kind: 'no-update' };
+  }
+
+  if (opts?.reload === false) {
+    return { kind: 'downloaded', updateId };
   }
 
   // --- reload phase ---

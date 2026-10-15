@@ -48,9 +48,6 @@ dist/storybook/
 
 # Language packs — fully committed (2 packs, ~51MB total)
 
-# Generated prebuild artifacts — recreated by generate-lang-manifest
-apps/alphaTiles/src/generated/
-
 # Stroke-data cache — fetched on demand by tools/build-stroke-data.ts
 tools/data/stroke-cache/*.json
 

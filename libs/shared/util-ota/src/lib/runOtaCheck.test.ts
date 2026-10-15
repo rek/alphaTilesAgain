@@ -130,12 +130,30 @@ describe('when checkForUpdateAsync throws', () => {
 });
 
 // ---------------------------------------------------------------------------
+// reload: false — download now, apply on next cold start
+// ---------------------------------------------------------------------------
+
+describe('when update available and reload is false', () => {
+  it('returns kind downloaded without calling reloadAsync', async () => {
+    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: { id: 'new-id' } });
+    mockFetchUpdateAsync.mockResolvedValue({ isNew: true });
+    const track = makeTrackSpy();
+
+    const result = await runOtaCheck({ track, reload: false });
+
+    expect(result).toEqual({ kind: 'downloaded', updateId: 'new-id' });
+    expect(mockReloadAsync).not.toHaveBeenCalled();
+    expect(track).toHaveBeenCalledWith('app_update_available', { updateId: 'new-id', channel: 'eng' });
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 5.6.5 — update available + fetch + reload → app_update_available fired, reloadAsync called
 // ---------------------------------------------------------------------------
 
 describe('when update available, fetch succeeds, reload succeeds', () => {
   it('fires app_update_available and calls reloadAsync', async () => {
-    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, updateId: 'new-id' });
+    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: { id: 'new-id' } });
     mockFetchUpdateAsync.mockResolvedValue({ isNew: true });
     mockReloadAsync.mockResolvedValue(undefined);
     const track = makeTrackSpy();
@@ -152,7 +170,7 @@ describe('when update available, fetch succeeds, reload succeeds', () => {
   });
 
   it('does not fire app_update_failed on success path', async () => {
-    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, updateId: 'new-id' });
+    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: { id: 'new-id' } });
     mockFetchUpdateAsync.mockResolvedValue({ isNew: true });
     mockReloadAsync.mockResolvedValue(undefined);
     const track = makeTrackSpy();
@@ -172,7 +190,7 @@ describe('when update available, fetch succeeds, reload succeeds', () => {
 
 describe('when fetchUpdateAsync times out', () => {
   it('returns kind timeout and fires app_update_failed with stage fetch, reason timeout', async () => {
-    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, updateId: 'new-id' });
+    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: { id: 'new-id' } });
     // Never resolves
     mockFetchUpdateAsync.mockReturnValue(new Promise(() => undefined));
     const track = makeTrackSpy();
@@ -195,7 +213,7 @@ describe('when fetchUpdateAsync times out', () => {
 
 describe('when reloadAsync throws', () => {
   it('returns kind error and fires app_update_failed with stage reload, reason error', async () => {
-    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, updateId: 'new-id' });
+    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: { id: 'new-id' } });
     mockFetchUpdateAsync.mockResolvedValue({ isNew: true });
     mockReloadAsync.mockRejectedValue(new Error('Reload failed'));
     const track = makeTrackSpy();
@@ -218,7 +236,7 @@ describe('when reloadAsync throws', () => {
 
 describe('when fetchUpdateAsync throws', () => {
   it('returns kind error and fires app_update_failed with stage fetch, reason error', async () => {
-    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, updateId: 'new-id' });
+    mockCheckForUpdateAsync.mockResolvedValue({ isAvailable: true, manifest: { id: 'new-id' } });
     mockFetchUpdateAsync.mockRejectedValue(new Error('Fetch error'));
     const track = makeTrackSpy();
 

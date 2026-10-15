@@ -5,7 +5,10 @@
   },
   "build": {
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "android": {
+        "credentialsSource": "remote"
+      }
     },
     "development": {
       "developmentClient": true,
@@ -26,6 +29,14 @@
       "channel": "yue",
       "env": {
         "APP_LANG": "yue"
+      }
+    },
+    "yue-apk": {
+      "extends": "yue",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "credentialsSource": "remote"
       }
     }
   },

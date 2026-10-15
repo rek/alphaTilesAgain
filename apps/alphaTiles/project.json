@@ -46,16 +46,16 @@
       "options": {
         "commands": [
           {
-            "command": "cd apps/alphaTiles/android && ./gradlew assembleRelease --warning-mode=all",
-            "description": "Build release APK"
+            "command": "test -n \"$APP_LANG\" || { echo 'APP_LANG required (e.g. APP_LANG=yue)'; exit 1; }",
+            "description": "Require APP_LANG"
           },
           {
             "command": "mkdir -p dist/apps/alphaTiles",
             "description": "Create dist directory"
           },
           {
-            "command": "cp apps/alphaTiles/android/app/build/outputs/apk/release/app-release.apk dist/apps/alphaTiles/alphaTiles-release.apk",
-            "description": "Copy APK to dist"
+            "command": "cd apps/alphaTiles && eas build --local --non-interactive --platform android --profile \"$APP_LANG-apk\" --output \"../../dist/apps/alphaTiles/alphaTiles-$APP_LANG.apk\"",
+            "description": "Local EAS build: clean prebuild + eas-build-post-install manifest regen + EAS-managed release keystore"
           }
         ],
         "parallel": false
@@ -103,7 +103,11 @@
       }
     },
     "prebuild-lang": {
-      "executor": "nx:noop"
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run prebuild-lang",
+        "cwd": "{workspaceRoot}"
+      }
     },
     "android-eng": {
       "executor": "nx:run-commands",
