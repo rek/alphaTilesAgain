@@ -12,9 +12,10 @@ import type { ThailandType } from './decodeThailandChallengeLevel';
 
 // Java 588-595 correct-feedback parity: when the player taps the correct
 // choice and choiceType !== WORD_IMAGE the correct button takes refColor +
-// white text; when choiceType === WORD_IMAGE the THREE non-correct buttons
-// instead get a white background. The container computes the choice colours
-// (it knows refColor + choiceType) and passes them via `choiceFeedback`.
+// white text (black where white fails WCAG AA large, e.g. yellow); when
+// choiceType === WORD_IMAGE the THREE non-correct buttons instead get a white
+// background. The container computes the choice colours (it knows refColor +
+// choiceType) and passes them via `choiceFeedback`.
 //
 // TODO(thailand-spec-drift): thailand2 larger layout variant when
 // choiceType === WORD_TEXT (Java 89-96) is deferred — see CLAUDE.md task list.
@@ -26,8 +27,8 @@ const CHOICE_TEXT_COLOR = '#000000';
 const WHITE = '#FFFFFF';
 
 export type ThailandRefDisplay =
-  // textColor: legacy, ignored — derived from backgroundColor via readableTextColor.
-  | { type: 'text'; text: string; backgroundColor: string; textColor?: string }
+  // Text colour is derived from backgroundColor (readableTextColor, WCAG AA).
+  | { type: 'text'; text: string; backgroundColor: string }
   | { type: 'image'; imageSource: ImageSourcePropType | undefined; wordLabel: string }
   | { type: 'audio'; refType: ThailandType };
 
@@ -38,13 +39,12 @@ export type ThailandChoiceDisplay =
 /**
  * Per-choice visual override applied when correctIndex !== null. The
  * container builds this once, encoding Java 588-595 semantics:
- *   - non-WORD_IMAGE rounds: correct = { bg: refColor, fg: white }, others = null
+ *   - non-WORD_IMAGE rounds: correct = { bg: refColor } (text colour derived), others = null
  *   - WORD_IMAGE rounds: correct = null, others = { bg: white }
  */
 export type ThailandChoiceFeedback = {
+  /** Text colour is derived from it (readableTextColor, WCAG AA). */
   backgroundColor?: string;
-  /** Legacy, ignored — the text colour is derived from backgroundColor (WCAG AA). */
-  textColor?: string;
 } | null;
 
 export type ThailandScreenProps = {

@@ -22,8 +22,8 @@ import type { SelfTestScreenProps } from './SelfTestScreen';
 
 /** Pause on the revealed answer before the next question (design D3). */
 const REVEAL_MS = 1200;
-const RIGHT = { backgroundColor: '#2E7D32', textColor: '#FFFFFF' };
-const WRONG = { backgroundColor: '#C62828', textColor: '#FFFFFF' };
+const RIGHT = { backgroundColor: '#2E7D32' };
+const WRONG = { backgroundColor: '#C62828' };
 const FALLBACK_REF_COLOR = '#1565C0';
 
 function isAudioPrompt(ref: ThailandRef) {

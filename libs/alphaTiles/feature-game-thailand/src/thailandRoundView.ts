@@ -18,14 +18,12 @@ function buildRefDisplay(
         type: 'text',
         text: ref.kind === 'tile' ? ref.tileRow.base : '',
         backgroundColor: refColor,
-        textColor: '#FFFFFF',
       };
     case 'TILE_UPPER':
       return {
         type: 'text',
         text: ref.kind === 'tile' ? (ref.tileRow.upper || ref.tileRow.base) : '',
         backgroundColor: refColor,
-        textColor: '#FFFFFF',
       };
     case 'TILE_AUDIO':
       return { type: 'audio', refType: ref.display };
@@ -34,7 +32,6 @@ function buildRefDisplay(
         type: 'text',
         text: ref.kind === 'word' ? stripInstructionCharacters(ref.wordRow.wordInLOP) : '',
         backgroundColor: '#FFFFFF',
-        textColor: '#000000',
       };
     case 'WORD_IMAGE':
       return {
@@ -49,12 +46,11 @@ function buildRefDisplay(
         type: 'text',
         text: ref.kind === 'syllable' ? ref.syllableRow.syllable : '',
         backgroundColor: refColor,
-        textColor: '#FFFFFF',
       };
     case 'SYLLABLE_AUDIO':
       return { type: 'audio', refType: ref.display };
     default:
-      return { type: 'text', text: '', backgroundColor: refColor, textColor: '#FFFFFF' };
+      return { type: 'text', text: '', backgroundColor: refColor };
   }
 }
 
