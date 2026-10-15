@@ -377,7 +377,7 @@ Menu visuals, the shell's tracker bar / score / mastery action and the next-door
 
 ### Game-class registry and the one game route
 
-`apps/alphaTiles/src/gameClasses.ts` maps classKey → `{ Container, precompute? }`, typed `Record<GameClassKey, …>` over the plain key list `gameClassKeys.ts` (plain so `tools/` can import it). It is the one place a game class is wired into the app — **add a game = one registry entry**. App-level because only the app may import every `feature-game-*` lib and resolve app assets.
+`apps/alphaTiles/src/gameClasses.ts` maps classKey → `{ Container, precompute? }`, typed `Record<GameClassKey, …>` over the plain key list `gameClassKeys.ts` (plain so `tools/` can import it). It is the one place a game class is wired into the app — **add a game = one registry entry + one curriculum tier** (`TIER_BY_CLASS_KEY`, util-curriculum-tiers; `tools/curriculumTiers.test.ts` fails on a missing tier). App-level because only the app may import every `feature-game-*` lib and resolve app assets.
 
 One route serves every Door: `app/games/[classKey].tsx` → `useDoor(params)` → `gameClasses[door.classKey].Container` with route params + `gameIcons` (chrome icons injected once). URL: `/games/<classKey>?doorIndex=…&challengeLevel=…` (menu, next-door navigation and deep links). `generateStaticParams` prerenders one web page per registry key. A class missing from the registry renders a "game unavailable" screen at runtime and fails prebuild (`tools/assertGameClassesForGames.ts`; its test also checks every pack under `languages/`).
 

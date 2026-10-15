@@ -140,7 +140,7 @@ Do not add new params to the menu push or the shell's `useLocalSearchParams` —
 
 ### Difficulty ladder: a new game class needs a tier (#52)
 
-Every class has a curriculum tier 0–6 in `libs/alphaTiles/util-curriculum-tiers/src/lib/tierForGame.ts` (`TIER_BY_CLASS_KEY`). **Adding a game class = registry entry (above) + one tier entry** (+ a case in `tierForGame.test.ts`). Pick by skill, issue #13's ladder: 0 hear/browse · 1 symbol scan · 2 cross-modal match · 3 whole-word recognition · 4 construction (spell, fill, write) · 5 decoding/analysis · 6 spatial puzzle. A missing entry falls back to 3 — no crash, but the door lands mid-ladder, so don't rely on it. The menu grid and the next-door search both sort by `(tier, index)` (`ladderOrder`); `index`/`doorIndex` never changes. Tier is per class, not per door or pack: two doors of one class always share a level.
+Every class has a curriculum tier 0–6 in `libs/alphaTiles/util-curriculum-tiers/src/lib/TIER_BY_CLASS_KEY.ts`. **Adding a game class = registry entry (above) + one tier entry**; `tools/curriculumTiers.test.ts` fails when a registered class has no tier. Pick by skill, issue #13's ladder: 0 hear/browse · 1 symbol scan · 2 cross-modal match · 3 whole-word recognition · 4 construction (spell, fill, write) · 5 decoding/analysis · 6 spatial puzzle. A missing entry falls back to 3 — no crash, but the door lands mid-ladder, so don't rely on it. The menu grid and the next-door search both sort by `(tier, index)` (`ladderOrder`); `index`/`doorIndex` never changes. Tier is per class, not per door or pack: two doors of one class always share a level.
 
 ---
 
