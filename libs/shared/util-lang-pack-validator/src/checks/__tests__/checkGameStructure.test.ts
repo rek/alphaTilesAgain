@@ -96,4 +96,34 @@ describe('checkGameStructure', () => {
       severity: 'error',
     }));
   });
+
+  describe('GameName', () => {
+    it('no name issues when no door is named', () => {
+      const parsed = mkParsed({ gameRows: [mkGameRow({ door: 1 }), mkGameRow({ door: 2 })] });
+      const codes = checkGameStructure(parsed, mkInventory()).map((i) => i.code);
+      expect(codes).not.toContain('GAME_NAMES_INCOMPLETE');
+      expect(codes).not.toContain('GAME_NAME_TOO_LONG');
+    });
+
+    it('info when only some doors are named', () => {
+      const parsed = mkParsed({
+        gameRows: [mkGameRow({ door: 1, gameName: '聽字揀圖' }), mkGameRow({ door: 2 })],
+      });
+      expect(checkGameStructure(parsed, mkInventory())).toContainEqual(
+        expect.objectContaining({ code: 'GAME_NAMES_INCOMPLETE', severity: 'info', context: { doors: [2] } }),
+      );
+    });
+
+    it('warns when a name is longer than 12 characters (counts code points)', () => {
+      const parsed = mkParsed({
+        gameRows: [
+          mkGameRow({ door: 1, gameName: '一二三四五六七八九十一二' }), // 12 — ok
+          mkGameRow({ door: 2, gameName: 'Listening bingo words' }),
+        ],
+      });
+      const long = checkGameStructure(parsed, mkInventory()).filter((i) => i.code === 'GAME_NAME_TOO_LONG');
+      expect(long).toHaveLength(1);
+      expect(long[0]).toMatchObject({ severity: 'warning', line: 3 });
+    });
+  });
 });

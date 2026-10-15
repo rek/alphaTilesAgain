@@ -3,7 +3,9 @@ import { splitLines } from './internal/splitLines';
 import { splitRow } from './internal/splitRow';
 
 const FILE = 'aa_games.txt';
-const EXPECTED_COLS = 8;
+const BASE_COLS = 8;
+/** Optional 9th column (AlphaTilesAgain extension; Java reads cols 0–7 only). */
+const NAME_HEADER = 'gamename';
 
 /**
  * Convert a clean PascalCase token to kebab-case.
@@ -31,7 +33,12 @@ function toKebabCase(pascal: string): string {
 
 /**
  * Parse aa_games.txt — eight columns:
- * Door, Country, ChallengeLevel, Color, InstructionAudio, AudioDuration, SyllOrTile, StagesIncluded.
+ * Door, Country, ChallengeLevel, Color, InstructionAudio, AudioDuration, SyllOrTile, StagesIncluded,
+ * plus an optional 9th `GameName` column (door label shown on the menu).
+ *
+ * `GameName` is detected from the header. When present, rows may omit the
+ * last cell (editors strip trailing tabs) — the name is then `''`. Without
+ * the header column every row is 8 columns as in Java.
  *
  * Java reference: Start.java buildGameList() (~line 664).
  * - Door and ChallengeLevel stored as numbers (matches Java Game constructor usage).
@@ -41,7 +48,7 @@ function toKebabCase(pascal: string): string {
  *
  * Fixture: engEnglish4/res/raw/aa_games.txt (90 data rows)
  *
- * @returns `{ rows: Array<{door, country, challengeLevel, color, instructionAudio, audioDuration, syllOrTile, stagesIncluded}> }`
+ * @returns `{ rows: Array<{door, country, challengeLevel, color, instructionAudio, audioDuration, syllOrTile, stagesIncluded, gameName}> }`
  */
 export function parseGames(src: string) {
   const lines = splitLines(src);
@@ -49,11 +56,18 @@ export function parseGames(src: string) {
     throw new LangPackParseError({ file: FILE, line: 0, reason: 'file is empty' });
   }
 
+  const header = lines[0].split('\t').map((c) => c.trim().toLowerCase());
+  const hasNameColumn = header[BASE_COLS] === NAME_HEADER;
+  const expectedCols = hasNameColumn ? BASE_COLS + 1 : BASE_COLS;
+
   const dataLines = lines.slice(1); // skip header
 
   const rows = dataLines.map((line, i) => {
     const lineNumber = i + 2;
-    const row = splitRow(line, EXPECTED_COLS, FILE, lineNumber);
+    // Named file, row without the trailing name cell → treat as empty name.
+    const padded =
+      hasNameColumn && line.split('\t').length === BASE_COLS ? `${line}\t` : line;
+    const row = splitRow(padded, expectedCols, FILE, lineNumber);
 
     const door = parseInt(row[0], 10);      // col 0 — Door (number)
     if (isNaN(door)) {
@@ -99,6 +113,7 @@ export function parseGames(src: string) {
       audioDuration: row[5],           // col 5 — AudioDuration (string; cast at call site)
       syllOrTile,                      // col 6 — SyllOrTile ('T' | 'S')
       stagesIncluded: row[7],          // col 7 — StagesIncluded
+      gameName: row[8] ?? '',          // col 8 — GameName (optional; '' = unlabelled)
     };
   });
 

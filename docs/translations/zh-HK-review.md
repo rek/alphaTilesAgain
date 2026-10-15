@@ -3,7 +3,7 @@
 Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome` namespace) for the Cantonese (yue) release. Tracked in issue #55.
 
 - **Source:** `locales/en.json` → **draft:** `locales/zh-HK.json`
-- **Keys:** 104. **Flagged for decision (⚠):** 15.
+- **Keys:** 105. **Flagged for decision (⚠):** 15.
 - **Locale selection:** the yue build always shows zh-HK UI text, whatever the phone's language. Any key missing from zh-HK falls back to English.
 - **Scope:** UI text only. Game content (tiles, words, instructions audio) comes from the language pack and is not covered here.
 
@@ -89,6 +89,7 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/players/validation/duplicate` | Name already used | 此名字已被使用 |  |
 | `chrome/menu/score` | Score: {{points}} | 分數：{{points}} |  |
 | `chrome/menu/a11y/door` | Game {{index}}, {{state}} | 遊戲 {{index}}，{{state}} | {{state}} is one of the three `door_state` labels below. |
+| `chrome/menu/a11y/door_named` | Game {{index}}, {{name}}, {{state}} | 遊戲 {{index}}：{{name}}，{{state}} | New (#37). Screen-reader label for a door with a game name; {{name}} is the pack's Cantonese game name, read as-is. |
 | `chrome/menu/a11y/door_state/not_started` | not started | 未開始 | Door state read after the game number. |
 | `chrome/menu/a11y/door_state/in_process` | in progress | 進行中 | Started, not yet mastered. Also used for games with no right/wrong answers. |
 | `chrome/menu/a11y/door_state/mastery` | mastered | 已掌握 | ⚠ All 12 trackers earned. Alternative: 已完成 (completed). |

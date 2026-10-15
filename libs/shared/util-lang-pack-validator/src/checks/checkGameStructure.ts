@@ -14,6 +14,8 @@
  * - Sudan tiles requires tile audio; tile audio requires Sudan tiles
  * - Colombia CL4 Syllable is forbidden
  * - Brazil level 7 requires tonal tiles (type T); tonal tiles without Brazil7 = recommendation
+ * - GameName (optional col 9, menu door label): > MAX_GAME_NAME_CHARS = warning;
+ *   some doors named, others not = info (unnamed doors render unlabelled)
  */
 
 import type { Issue } from '../Issue';
@@ -22,6 +24,8 @@ import type { FileInventory } from '../FileInventory';
 import { ISSUE_CODES } from '../issueCodes';
 
 const CATEGORY = 'game-structure';
+/** Longest door label that fits the smallest menu door (3 columns on a phone). */
+const MAX_GAME_NAME_CHARS = 12;
 
 const VALID_COUNTRIES = new Set([
   'Brazil', 'Chile', 'China', 'Colombia', 'Ecuador', 'Georgia',
@@ -182,6 +186,36 @@ export function checkGameStructure(
         context: { door: row.door },
       });
     }
+  }
+
+  // GameName (optional menu door label)
+  for (let i = 0; i < games.rows.length; i++) {
+    const row = games.rows[i];
+    const length = Array.from(row.gameName).length;
+    if (length > MAX_GAME_NAME_CHARS) {
+      issues.push({
+        severity: 'warning',
+        code: ISSUE_CODES.GAME_NAME_TOO_LONG,
+        category: CATEGORY,
+        file: 'aa_games.txt',
+        line: i + 2,
+        column: 'GameName',
+        message: `Games row ${i + 2}: name "${row.gameName}" is ${length} characters — may be cut off on the menu door (max ${MAX_GAME_NAME_CHARS})`,
+        context: { door: row.door, length, max: MAX_GAME_NAME_CHARS },
+      });
+    }
+  }
+  const unnamed = games.rows.filter((r) => r.gameName === '').map((r) => r.door);
+  if (unnamed.length > 0 && unnamed.length < games.rows.length) {
+    issues.push({
+      severity: 'info',
+      code: ISSUE_CODES.GAME_NAMES_INCOMPLETE,
+      category: CATEGORY,
+      file: 'aa_games.txt',
+      column: 'GameName',
+      message: `${unnamed.length} door(s) have no GameName and will show unlabelled: ${unnamed.join(', ')}`,
+      context: { doors: unnamed },
+    });
   }
 
   return issues;

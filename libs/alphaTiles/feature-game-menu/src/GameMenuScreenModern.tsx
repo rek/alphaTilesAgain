@@ -15,7 +15,10 @@ import type { ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { MenuDoor } from './buildMenuDoors';
 
-type DoorData = Pick<MenuDoor, 'index' | 'colorHex' | 'visual' | 'textColorHex'>;
+/** `name` is the pack's door label; absent → unlabelled door (number only). */
+type DoorData = Pick<MenuDoor, 'index' | 'colorHex' | 'visual' | 'textColorHex'> & {
+  name?: string;
+};
 
 export type GameMenuScreenModernProps = {
   allDoors: DoorData[];
@@ -68,7 +71,9 @@ type CardProps = {
 };
 
 function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.Element {
-  const fontSize = Math.floor(size * 0.38);
+  // Named doors shrink the number to make room for the label underneath.
+  const fontSize = Math.floor(size * (door.name ? 0.26 : 0.38));
+  const nameFontSize = Math.max(11, Math.floor(size * 0.13));
 
   const cardBg = door.visual === 'not-started'
     ? '#FFFFFF'
@@ -110,6 +115,18 @@ function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.El
       >
         {door.index}
       </Text>
+      {door.name ? (
+        <Text
+          style={[styles.doorName, { fontSize: nameFontSize, color: numberColor }]}
+          numberOfLines={2}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        >
+          {door.name}
+        </Text>
+      ) : null}
       {door.visual === 'mastery' && (
         <Ionicons
           name="checkmark"
@@ -285,6 +302,12 @@ const styles = StyleSheet.create({
   doorNumber: {
     fontWeight: '700',
     fontVariant: ['tabular-nums'],
+  },
+  doorName: {
+    fontWeight: '600',
+    textAlign: 'center',
+    paddingHorizontal: 6,
+    marginTop: 2,
   },
   masteryBadge: {
     position: 'absolute',

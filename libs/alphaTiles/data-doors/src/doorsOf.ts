@@ -14,7 +14,7 @@ export type DoorPack = Pick<LangAssets, 'games' | 'colors' | 'settings' | 'strok
 /**
  * Door catalogue: every `aa_games.txt` row resolved once into a Door — the one
  * place class, variant, challenge level, stage, colour, instruction audio,
- * progress rule and visibility are derived. Menu, shell, next-game search and
+ * name, progress rule and visibility are derived. Menu, shell, next-game search and
  * game containers all read Doors; none read `games.rows` directly.
  *
  * Invariants:
@@ -30,6 +30,7 @@ export function doorsOf(pack: DoorPack) {
   return pack.games.rows.map((row, i) => {
     const variant = row.syllOrTile;
     const stage = row.stagesIncluded === '-' ? 1 : parseInt(row.stagesIncluded, 10) || 1;
+    const name = row.gameName.trim();
     const instructionAudio =
       row.instructionAudio && row.instructionAudio in pack.audio.instructions
         ? row.instructionAudio
@@ -49,6 +50,11 @@ export function doorsOf(pack: DoorPack) {
       variant,
       stage,
       colorHex: pack.colors.hexByIndex[parseInt(row.color, 10) || 0] ?? FALLBACK_COLOR,
+      /**
+       * Menu label from the optional `GameName` column (pack content, language
+       * of play). Undefined → unlabelled door.
+       */
+      name: name === '' ? undefined : name,
       /** Instruction clip id, only when the pack bundles it. */
       instructionAudio,
       /** False for no-right/wrong classes (Romania, Sudan, Malaysia, Iraq). */

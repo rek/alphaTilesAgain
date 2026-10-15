@@ -10,6 +10,7 @@ const result: Door = {
   variant: 'T',
   stage: 1,
   colorHex: '#000000',
+  name: undefined,
   instructionAudio: undefined,
   tracksProgress: true,
   enabled: true,

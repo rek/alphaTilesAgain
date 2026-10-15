@@ -75,6 +75,7 @@
       "score": "Score: {{points}}",
       "a11y": {
         "door": "Game {{index}}, {{state}}",
+        "door_named": "Game {{index}}, {{name}}, {{state}}",
         "door_state": {
           "not_started": "not started",
           "in_process": "in progress",

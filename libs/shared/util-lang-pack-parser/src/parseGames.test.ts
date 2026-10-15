@@ -83,6 +83,34 @@ describe('parseGames', () => {
     });
   });
 
+  describe('GameName column (optional)', () => {
+    const base =
+      'Door\tCountry\tChallengeLevel\tColor\tInstructionAudio\tAudioDuration\tSyllOrTile\tStagesIncluded';
+
+    it('8-column file → gameName is empty', () => {
+      const result = parseGames(`${base}\n1\tChina\t1\t9\tzzz_china\t1999\tS\t-`);
+      expect(result.rows[0].gameName).toBe('');
+    });
+
+    it('reads the name when the header has GameName', () => {
+      const result = parseGames(`${base}\tGameName\n1\tChina\t1\t9\tzzz_china\t1999\tS\t-\t 聽字揀圖 `);
+      expect(result.rows[0].gameName).toBe('聽字揀圖');
+    });
+
+    it('named file accepts rows without the trailing name cell', () => {
+      const result = parseGames(
+        `${base}\tGameName\n1\tChina\t1\t9\tzzz_china\t1999\tS\t-\n2\tChina\t2\t9\tzzz_china\t1999\tS\t-\tWords`,
+      );
+      expect(result.rows.map((r) => r.gameName)).toEqual(['', 'Words']);
+    });
+
+    it('a 9th value without the GameName header is still rejected', () => {
+      expect(() => parseGames(`${base}\n1\tChina\t1\t9\tzzz_china\t1999\tS\t-\tWords`)).toThrow(
+        LangPackParseError,
+      );
+    });
+  });
+
   describe('error handling', () => {
     it('throws on empty input', () => {
       expect(() => parseGames('')).toThrow(LangPackParseError);

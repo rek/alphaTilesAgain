@@ -25,6 +25,7 @@ const BOOLEAN_SETTINGS = [
   'Show filter options for Game 001',
   'In Game 001 (Romania) bold non-initial tiles when in focus? (boldNonInitialFocusTiles)',
   'In Game 001 (Romania) bold initial tiles when in focus? (boldInitialFocusTiles)',
+  'Show game names',
 ] as const;
 
 const INT_SETTINGS = [

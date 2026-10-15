@@ -74,3 +74,13 @@ export const Mixed: Story = {
     score: 180,
   },
 };
+
+/** Doors labelled from the pack's GameName column (#37); door 3 has no name. */
+export const Named: Story = {
+  args: {
+    allDoors: makeDoors(9).map((d, i) => ({
+      ...d,
+      name: i === 2 ? undefined : ['聽字揀圖', '寫字', '揀第一個字', '記憶配對', '搵字', '砌字', '賓果', '詞語'][i % 8],
+    })),
+  },
+};

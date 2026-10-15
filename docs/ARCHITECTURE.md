@@ -353,7 +353,7 @@ A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pa
 - `doorsOf(pack) → Door[]` — pure; all rows, file order, `doors[i].index === i + 1`. Tested against the real `yue` + `eng` packs.
 - `useDoors()` / `useDoor(routeParams)` — the same, memoized from `useLangAssets()`.
 
-`Door = { index, classKey, country, challengeLevel, displayLevel, variant, stage, colorHex, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }`. The menu (enabled doors + trackers), `GameShellContainer` (routed door, progress key, next-door search) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
+`Door = { index, classKey, country, challengeLevel, displayLevel, variant, stage, colorHex, name?, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }` (`name` = optional `GameName` column 9 of `aa_games.txt`, the menu door label). The menu (enabled doors + trackers), `GameShellContainer` (routed door, progress key, next-door search) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
 
 ### V1 port scope
 

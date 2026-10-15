@@ -102,8 +102,10 @@ export function GameMenuContainer(): React.JSX.Element {
       resources: t('menu.tabs.resources'),
       audioInstructions: t('menu.tabs.audio'),
     },
-    doorLabel: (door: { index: number; visual: keyof typeof doorStates }) =>
-      t('menu.a11y.door', { index: door.index, state: doorStates[door.visual] }),
+    doorLabel: (door: { index: number; name?: string; visual: keyof typeof doorStates }) =>
+      door.name
+        ? t('menu.a11y.door_named', { index: door.index, name: door.name, state: doorStates[door.visual] })
+        : t('menu.a11y.door', { index: door.index, state: doorStates[door.visual] }),
   };
 
   return <GameMenuScreenModern {...commonProps} allDoors={allDoors} />;

@@ -75,6 +75,7 @@
       "score": "分數：{{points}}",
       "a11y": {
         "door": "遊戲 {{index}}，{{state}}",
+        "door_named": "遊戲 {{index}}：{{name}}，{{state}}",
         "door_state": {
           "not_started": "未開始",
           "in_process": "進行中",
