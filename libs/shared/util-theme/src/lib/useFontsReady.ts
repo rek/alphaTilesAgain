@@ -10,7 +10,11 @@
  *   if (!ready) return null;
  *
  * fontMap — Record<string, FontSource> matching expo-font's useFonts signature.
- * Typically: { primary: require(...ttf), primaryBold: require(...ttf) }
+ * Typically: { primary: require(...ttf), primaryBold: require(...ttf) }; empty
+ * map (pack without fonts/) is ready immediately.
+ *
+ * A load error (e.g. web FontFaceObserver 12s timeout) counts as ready so the
+ * app falls back to the system font instead of rendering nothing forever.
  *
  * See design.md §D5.
  */
@@ -18,6 +22,6 @@ import { useFonts } from 'expo-font';
 import type { FontSource } from 'expo-font';
 
 export function useFontsReady(fontMap: Record<string, FontSource>): boolean {
-  const [loaded] = useFonts(fontMap);
-  return loaded;
+  const [loaded, error] = useFonts(fontMap);
+  return loaded || error != null;
 }
