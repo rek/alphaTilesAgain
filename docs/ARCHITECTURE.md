@@ -135,8 +135,8 @@ aa_share.txt
 aa_syllables.txt
 aa_wordlist.txt
 
-fonts/
-  <primary>.ttf
+fonts/                  # optional — omit to use the system font (e.g. yue/CJK)
+  <primary>.ttf         # must be redistributable (e.g. OFL)
   <primary>_bold.ttf    # optional
 
 images/

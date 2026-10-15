@@ -25,8 +25,8 @@ type ManifestInput = {
   code: string;
   rawFiles: Record<string, string>;
   fonts: {
-    primary?: number;
-    // Generator emits `null` when no bold font exists (see tools/generate-lang-manifest.ts).
+    // Generator emits `null` for absent fonts (see tools/generate-lang-manifest.ts).
+    primary?: number | null;
     primaryBold?: number | null;
   };
   images: {

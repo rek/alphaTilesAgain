@@ -39,11 +39,12 @@ void initI18n({ deviceLocale });
 // Shape matches langManifest.fonts: { primary: require(...ttf), primaryBold?: require(...ttf) }
 const FONT_ASSET_MAP = Object.fromEntries(
   Object.entries(langManifest.fonts).filter(([, v]) => v != null),
-) as Record<string, FontSource>;
+) as unknown as Record<string, FontSource>;
 
 // Font-family name strings are the keys used in useFonts() — must match exactly.
 const FONT_NAME_MAP = {
-  primary: 'primary',
+  // Pack without fonts/ → undefined → system font.
+  primary: langManifest.fonts.primary != null ? 'primary' : undefined,
   primaryBold: langManifest.fonts.primaryBold != null ? 'primaryBold' : undefined,
 } as const;
 

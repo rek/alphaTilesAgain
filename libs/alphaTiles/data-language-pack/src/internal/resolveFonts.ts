@@ -1,30 +1,24 @@
 /**
  * Resolves manifest font require() numbers into LangAssets.fonts.
  *
- * primary is required; throws LangAssetsBindError if absent.
- * primaryBold is optional.
+ * Both entries optional. A pack with no fonts/ (e.g. yue, CJK) renders with
+ * the platform system font. Generator emits `null` for absent fonts.
  *
  * See design.md §D3.
  */
 
 import type { LangAssets } from '../LangAssets';
-import { LangAssetsBindError } from '../LangAssetsBindError';
 
 type ManifestFonts = {
-  primary?: number;
-  // Generator emits `null` when no bold font exists; treat null as absent.
+  primary?: number | null;
   primaryBold?: number | null;
 };
 
 export function resolveFonts(manifestFonts: ManifestFonts): LangAssets['fonts'] {
-  if (manifestFonts.primary === undefined) {
-    throw new LangAssetsBindError({
-      category: 'font',
-      key: 'primary',
-      reason: 'fonts.primary is required but absent from manifest',
-    });
+  const result: LangAssets['fonts'] = {};
+  if (manifestFonts.primary != null) {
+    result.primary = manifestFonts.primary;
   }
-  const result: LangAssets['fonts'] = { primary: manifestFonts.primary };
   if (manifestFonts.primaryBold != null) {
     result.primaryBold = manifestFonts.primaryBold;
   }

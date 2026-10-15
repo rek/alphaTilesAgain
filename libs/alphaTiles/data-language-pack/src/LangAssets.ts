@@ -33,8 +33,9 @@ export interface LangAssets {
   colors: ReturnType<typeof parseColors>;
   /** Bare share-link string from aa_share.txt. */
   share: string;
+  /** Both optional: pack without fonts/ uses the platform system font. */
   fonts: {
-    primary: number;
+    primary?: number;
     primaryBold?: number;
   };
   images: {

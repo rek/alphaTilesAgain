@@ -67,12 +67,7 @@ export function validateLangPack(langDir: string): ValidationResult {
     }
   }
 
-  const fonts = listFiles(path.join(langDir, 'fonts')).filter(
-    (f) => f.endsWith('.ttf') || f.endsWith('.otf'),
-  );
-  if (fonts.length === 0) {
-    errors.push({ code: 'NO_FONT', message: 'fonts/ must contain at least one .ttf or .otf file' });
-  }
+  // fonts/ is optional: no custom font → app renders with the system font.
 
   const avatars = listFiles(path.join(langDir, 'images', 'avatars')).filter(
     (f) => f.startsWith('zz_avatar') && !f.startsWith('zz_avataricon'),

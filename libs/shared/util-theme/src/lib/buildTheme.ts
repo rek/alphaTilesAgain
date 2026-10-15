@@ -10,8 +10,9 @@
 import { typography } from './typography';
 import { spacing } from './spacing';
 
+// primary undefined → system font (pack ships no fonts/).
 export type FontMap = {
-  primary: string;
+  primary?: string;
   primaryBold?: string;
 };
 
