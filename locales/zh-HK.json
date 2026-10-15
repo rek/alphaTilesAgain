@@ -1,0 +1,123 @@
+{
+  "chrome": {
+    "back": "返回",
+    "home": "主頁",
+    "score": "分數",
+    "choose_player": "選擇玩家",
+    "set_player_name": "設定玩家名稱",
+    "tracker_of_total": "進度：第 {{current}} 個，共 {{total}} 個",
+    "replay": "重播",
+    "retry": "再試一次",
+    "loading_short": "載入中…",
+    "taiwan": {
+      "progress": "第 {{current}} 個字，共 {{total}} 個字",
+      "no_content": "沒有筆順資料。",
+      "clear": "清除",
+      "well_done": "✓"
+    },
+    "next": "下一個",
+    "game_door_level": "門 {{door}} · 第 {{level}} 級",
+    "game_unavailable": "此遊戲尚未推出",
+    "instructions": "說明",
+    "play_again": "再玩一次",
+    "celebrate": "做得好！你在這個遊戲中答對了 12 題！",
+    "about": "關於本應用程式",
+    "about.title": "關於",
+    "about.version": "版本 {{version}}",
+    "about.credits": "鳴謝",
+    "about.email": "電郵聯絡我們",
+    "about.privacy": "私隱政策",
+    "about.website": "計劃網站",
+    "about.reportIssue": "報告問題",
+    "share": "分享",
+    "share.title": "分享",
+    "share.instructions": "掃描此 QR 碼即可分享本應用程式",
+    "share.button": "分享至…",
+    "share.copied": "已複製連結！",
+    "share.qrAlt": "連往 Play 商店的 QR 碼",
+    "share.unavailable": "此語言包未設定分享功能",
+    "resources": "此語言的其他資源",
+    "resources.title": "資源",
+    "resources.empty": "暫無資源",
+    "resource_item": "此語言的一項資源",
+    "build_word_here": "在此拼出詞語",
+    "go_backward": "上一個",
+    "go_forward": "下一個",
+    "see_more_of_tile": "查看更多以此字塊開頭的詞語",
+    "expired_title": "已過期",
+    "expired_message": "此應用程式已過期。",
+    "loading": {
+      "title": "正在載入 AlphaTiles",
+      "progress": "載入中 {{percent}}%",
+      "tap_to_begin": "輕按開始",
+      "error": "發生錯誤，請重新啟動。"
+    },
+    "players": {
+      "heading": "{{localName}}",
+      "add": "新增",
+      "delete_confirm": "再按一次即可刪除",
+      "name_placeholder": "你的名字",
+      "name_submit": "完成",
+      "a11y": {
+        "avatar": "頭像 {{index}}",
+        "delete": "刪除玩家",
+        "keyboard_delete": "刪除最後一個字",
+        "keyboard_next": "鍵盤下一頁",
+        "keyboard_prev": "鍵盤上一頁"
+      },
+      "validation": {
+        "too_short": "請輸入名字",
+        "too_long": "最多 20 個字",
+        "duplicate": "此名字已被使用"
+      }
+    },
+    "menu": {
+      "score": "分數：{{points}}",
+      "a11y": {
+        "door": "遊戲 {{index}}，{{state}}",
+        "prev": "上一頁",
+        "next": "下一頁",
+        "back_to_players": "返回選擇玩家",
+        "about": "關於",
+        "share": "分享",
+        "resources": "資源",
+        "audio_instructions": "播放語音說明",
+        "toggle_layout": "切換版面"
+      },
+      "tabs": {
+        "about": "關於",
+        "share": "分享",
+        "resources": "資源庫",
+        "audio": "聆聽"
+      }
+    },
+    "a11y": {
+      "tile": "字塊 {{letter}}",
+      "word": "詞語 {{word}}",
+      "active_word_picture": "目前詞語的圖片",
+      "keyboard_key": "按鍵 {{key}}",
+      "backspace": "退格",
+      "alpha_tiles_logo": "AlphaTiles 標誌",
+      "tracker": "進度：第 {{current}} 個，共 {{total}} 個",
+      "points_background": "分數背景",
+      "player_avatar": "更換玩家",
+      "memory_card": "配對卡 {{number}}",
+      "word_choice": "詞語選項 {{number}}",
+      "word_image": "詞語圖片 {{number}}",
+      "choice": "選項 {{number}}",
+      "avatar_icon": "玩家 {{number}} 頭像",
+      "door": "門 {{number}}",
+      "game_tile": "字塊 {{id}}",
+      "active_word": "目前詞語",
+      "play_audio_instructions": "播放語音說明",
+      "empty_tile": "空白字塊",
+      "join_tiles": "合併字塊",
+      "previous_page": "上一頁",
+      "next_page": "下一頁",
+      "submit_guess": "提交答案",
+      "advance": "繼續",
+      "delete": "刪除",
+      "play_again": "再玩一次"
+    }
+  }
+}

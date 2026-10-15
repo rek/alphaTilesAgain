@@ -210,7 +210,7 @@ not app logic. The `data-language-assets` and `data-language-pack` libs use this
 - **Context** (boot-immutable): anything loaded once from the language pack and never mutated — tile / word / syllable lists, language metadata, settings, colors, pre-resolved audio/image handles, precompute-registry outputs.
 - **Zustand**: anything that changes at runtime — active player, per-game progress, current-game in-flight state, tracker counts.
 - **i18next**: anything that resolves to a display string.
-  - `chrome` namespace — UI chrome (buttons, labels, a11y). Resolved against device locale. Defaults in `locales/en.json`. Missing locale → English fallback.
+  - `chrome` namespace — UI chrome (buttons, labels, a11y). Resolved against device locale. Defaults in `locales/en.json`. Missing locale → English fallback. Per-pack override (`chromeLocaleForBuildLang`, e.g. `yue` → `zh-HK`) beats device locale.
   - `tile`, `word`, `syllable`, `game`, `langMeta` namespaces — content strings from the language pack. Registered at boot via `i18n.addResources(BUILD_LANG, ns, data)`. Resolved against `BUILD_LANG` (e.g. `eng`).
 - **Non-string pack data** (audio handles, image `require()`s, fonts, script direction, stages, settings) — NEVER goes through i18next. Lives in the `LangAssetsProvider`.
 

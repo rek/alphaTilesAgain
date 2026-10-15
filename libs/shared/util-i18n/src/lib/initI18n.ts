@@ -5,7 +5,7 @@
  * loading. Idempotent — subsequent calls resolve immediately (i18next guards
  * re-init internally).
  *
- * Chrome resources (locales/en.json) are bundled via ESM JSON import (works
+ * Chrome resources (locales/en.json, locales/zh-HK.json) are bundled via ESM JSON import (works
  * under Metro, Vite/Storybook, and ts-jest). Content namespaces (tile, word,
  * syllable, game, langMeta) register later via registerContentNamespaces()
  * once the lang pack is parsed.
@@ -15,7 +15,10 @@
 
 import { initReactI18next } from 'react-i18next';
 import enChrome from '../../../../../locales/en.json';
+import zhHKChrome from '../../../../../locales/zh-HK.json';
 import { i18n } from './i18nInstance';
+import { getBuildLang } from './getBuildLang';
+import { chromeLocaleForBuildLang } from './chromeLocaleForBuildLang';
 
 // React Native / Metro global — declared here so TS can see it.
 // In tests, set via `(global as unknown as Record<string, unknown>)['__DEV__']`.
@@ -50,7 +53,8 @@ export async function initI18n({
     return;
   }
 
-  const lng = primarySubtag(deviceLocale);
+  // Pack-level override (e.g. yue → zh-HK) wins over device locale.
+  const lng = chromeLocaleForBuildLang(getBuildLang()) ?? primarySubtag(deviceLocale);
 
   const missingKeyHandler = (
     lngs: readonly string[],
@@ -73,6 +77,9 @@ export async function initI18n({
     resources: {
       en: {
         chrome: enChrome.chrome,
+      },
+      'zh-HK': {
+        chrome: zhHKChrome.chrome,
       },
     },
     interpolation: {
