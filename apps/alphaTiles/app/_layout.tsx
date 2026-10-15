@@ -2,14 +2,14 @@ import React, { useMemo } from 'react';
 import Constants from 'expo-constants';
 import { getLocales } from 'expo-localization';
 import { Stack } from 'expo-router';
-import { I18nManager, Platform } from 'react-native';
+import { I18nManager } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { LangAssetsProvider, useLangAssets } from '@alphaTiles/data-language-assets';
 import { ThemeProvider, useFontsReady } from '@shared/util-theme';
 import { I18nProvider, initI18n } from '@shared/util-i18n';
 import { langManifest } from '@generated/langManifest';
-import { AudioProvider, preloadAudio, BASE_CHIMES } from '@alphaTiles/data-audio';
-import { WebAudioUnlockGate } from '@alphaTiles/feature-loading';
+import { AudioProvider, AudioGate, preloadAudio, BASE_CHIMES } from '@alphaTiles/data-audio';
+import { TapToBegin } from '@alphaTiles/feature-loading';
 import type { AudioConfig } from '@alphaTiles/data-audio';
 import type { FontSource } from 'expo-font';
 import './registerPrecomputes';
@@ -82,16 +82,11 @@ function InnerLayout(): React.JSX.Element {
           palette={assets.colors.hexByIndex}
           fontMap={FONT_NAME_MAP}
         >
-          {/* Web: browsers block audio until a user gesture (#47). The gate
-              covers reload / deep-link entry; '/' has its own tap step in
-              LoadingContainer. Platform check allowed here only (design D6). */}
-          {Platform.OS === 'web' ? (
-            <WebAudioUnlockGate>
-              <Stack screenOptions={{ headerShown: false }} />
-            </WebAudioUnlockGate>
-          ) : (
+          {/* Web: browsers block audio until a gesture (#47). AudioGate covers
+              every route (cold start, reload, deep link); native passes through. */}
+          <AudioGate renderLocked={(gate) => <TapToBegin {...gate} />}>
             <Stack screenOptions={{ headerShown: false }} />
-          )}
+          </AudioGate>
         </ThemeProvider>
       ) : null}
     </AudioProvider>

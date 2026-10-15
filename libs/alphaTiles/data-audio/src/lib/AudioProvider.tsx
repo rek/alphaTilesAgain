@@ -12,10 +12,8 @@
  *   isLoading      — true until loader resolves or rejects
  *   loadProgress   — { loaded, total } updated via the onProgress callback
  *   awaitLoaded    — stable Promise<void> that resolves when loading finishes
- *   isAudioUnlocked — web gesture-unlock flag (starts true on native)
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { Platform } from 'react-native';
 import type { AudioHandles } from './AudioHandles';
 import { AudioContext } from './AudioContext';
 
@@ -28,7 +26,6 @@ export function AudioProvider({ loader, children }: AudioProviderProps): React.J
   const [handles, setHandles] = useState<AudioHandles | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState({ loaded: 0, total: 0 });
-  const [isAudioUnlocked, setIsAudioUnlocked] = useState<boolean>(Platform.OS !== 'web');
 
   // Stable Promise + resolver created once — consumers can await regardless of render timing.
   const awaitLoadedPromiseRef = useRef<Promise<void> | null>(null);
@@ -71,8 +68,6 @@ export function AudioProvider({ loader, children }: AudioProviderProps): React.J
       loadProgress,
       // awaitLoadedPromiseRef.current is set synchronously before first render — always non-null here
       awaitLoaded: awaitLoadedPromiseRef.current ?? Promise.resolve(),
-      isAudioUnlocked,
-      setIsAudioUnlocked,
     }}>
       {children}
     </AudioContext.Provider>

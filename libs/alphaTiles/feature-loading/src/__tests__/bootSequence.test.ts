@@ -6,7 +6,6 @@ function makeOpts(overrides: Partial<Parameters<typeof bootSequence>[0]> = {}) {
 
   return {
     opts: {
-      platform: 'native' as const,
       onPhaseChange: (p: Phase) => { phases.push(p); },
       registerContent: jest.fn(),
       awaitAudio: jest.fn().mockResolvedValue(undefined),
@@ -17,8 +16,8 @@ function makeOpts(overrides: Partial<Parameters<typeof bootSequence>[0]> = {}) {
   };
 }
 
-describe('bootSequence – native path', () => {
-  it('emits phases in order without web-gate', async () => {
+describe('bootSequence', () => {
+  it('emits phases in order', async () => {
     const { opts, phases } = makeOpts();
     await bootSequence(opts);
     expect(phases).toEqual(['fonts', 'i18n', 'audio', 'precompute', 'hydration', 'done']);
@@ -43,48 +42,6 @@ describe('bootSequence – native path', () => {
     const { opts } = makeOpts();
     await bootSequence(opts);
     expect(opts.awaitHydration).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('bootSequence – web path', () => {
-  it('inserts web-gate phase after audio (so the tap can prime loaded clips)', async () => {
-    const { opts, phases } = makeOpts({
-      platform: 'web',
-      waitForWebGesture: jest.fn().mockResolvedValue(undefined),
-    });
-    await bootSequence(opts);
-    expect(phases).toEqual(['fonts', 'i18n', 'audio', 'web-gate', 'precompute', 'hydration', 'done']);
-  });
-
-  it('awaits the web gesture promise', async () => {
-    let resolved = false;
-    const { opts } = makeOpts({
-      platform: 'web',
-      waitForWebGesture: () => new Promise<void>((res) => setTimeout(() => { resolved = true; res(); }, 0)),
-    });
-    await bootSequence(opts);
-    expect(resolved).toBe(true);
-  });
-
-  it('does not show the gate until audio has loaded', async () => {
-    const order: string[] = [];
-    const { opts } = makeOpts({
-      platform: 'web',
-      awaitAudio: () => new Promise<void>((res) => setTimeout(() => { order.push('audio'); res(); }, 0)),
-      waitForWebGesture: () => { order.push('gate'); return Promise.resolve(); },
-    });
-    await bootSequence(opts);
-    expect(order).toEqual(['audio', 'gate']);
-  });
-
-  it('skips web-gate when platform is native even if waitForWebGesture provided', async () => {
-    const { opts, phases } = makeOpts({
-      platform: 'native',
-      waitForWebGesture: jest.fn().mockResolvedValue(undefined),
-    });
-    await bootSequence(opts);
-    expect(phases).not.toContain('web-gate');
-    expect(opts.waitForWebGesture).not.toHaveBeenCalled();
   });
 });
 

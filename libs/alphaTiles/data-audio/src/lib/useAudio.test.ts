@@ -9,7 +9,7 @@
  */
 
 // NOTE: These tests use a simple approach: we test the playHandle logic
-// and unlockAudio behaviour by directly calling the functions with mocked
+// behaviour by directly calling the functions with mocked
 // handle objects, bypassing the React hook layer where possible.
 // The hook's glue code (context read, warn-once sets) is covered by integration.
 
@@ -159,51 +159,5 @@ describe('duration cache', () => {
     const durations = new Map<string, number>();
     durations.set('a', 1500);
     expect(durations.get('nonexistent')).toBeUndefined();
-  });
-});
-
-// ── unlockAudio logic ─────────────────────────────────────────────────────────
-
-describe('unlockAudio logic', () => {
-  it('no-ops on native (non-web platform)', async () => {
-    const setIsAudioUnlocked = jest.fn();
-
-    async function unlockAudio(platformOS: string, isAlreadyUnlocked: boolean) {
-      if (platformOS !== 'web' || isAlreadyUnlocked) return;
-      setIsAudioUnlocked(true);
-      mockTrack({ type: 'audio_unlock_web', props: { millisecondsSinceBoot: 0 } });
-    }
-
-    await unlockAudio('ios', false);
-    expect(setIsAudioUnlocked).not.toHaveBeenCalled();
-    expect(mockTrack).not.toHaveBeenCalled();
-  });
-
-  it('sets unlocked + fires analytics on web', async () => {
-    const setIsAudioUnlocked = jest.fn();
-
-    async function unlockAudio(platformOS: string, isAlreadyUnlocked: boolean) {
-      if (platformOS !== 'web' || isAlreadyUnlocked) return;
-      setIsAudioUnlocked(true);
-      mockTrack({ type: 'audio_unlock_web', props: { millisecondsSinceBoot: 0 } });
-    }
-
-    await unlockAudio('web', false);
-    expect(setIsAudioUnlocked).toHaveBeenCalledWith(true);
-    expect(mockTrack).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'audio_unlock_web' })
-    );
-  });
-
-  it('no-ops on web when already unlocked', async () => {
-    const setIsAudioUnlocked = jest.fn();
-
-    async function unlockAudio(platformOS: string, isAlreadyUnlocked: boolean) {
-      if (platformOS !== 'web' || isAlreadyUnlocked) return;
-      setIsAudioUnlocked(true);
-    }
-
-    await unlockAudio('web', true);
-    expect(setIsAudioUnlocked).not.toHaveBeenCalled();
   });
 });

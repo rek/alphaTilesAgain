@@ -11,7 +11,6 @@ const meta: Meta<typeof LoadingScreen> = {
     labels: {
       title: 'Loading…',
       progress: 'Loading audio…',
-      tapToBegin: 'Tap to begin',
       error: 'Something went wrong',
     },
   },
@@ -25,12 +24,6 @@ export const I18n: Story = { args: { phase: 'i18n' } };
 export const AudioMid: Story = { args: { phase: 'audio', audioProgress: 0.42 } };
 export const AudioComplete: Story = { args: { phase: 'audio', audioProgress: 1 } };
 export const Precompute: Story = { args: { phase: 'precompute' } };
-export const TapToBegin: Story = {
-  args: {
-    phase: 'web-gate',
-    onTapToBegin: () => undefined,
-  },
-};
 export const ErrorState: Story = {
   args: {
     phase: 'fonts',

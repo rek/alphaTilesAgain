@@ -3,12 +3,7 @@
  * No hooks, no i18n, no router imports.
  */
 import React from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import type { Phase } from './bootSequence';
 
@@ -20,7 +15,6 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 export type LoadingScreenLabels = {
   title: string;
   progress: string;
-  tapToBegin: string;
   error: string;
 };
 
@@ -28,7 +22,6 @@ export type LoadingScreenProps = {
   phase: Phase;
   audioProgress: number; // 0..1
   error: Error | null;
-  onTapToBegin?: () => void;
   labels: LoadingScreenLabels;
 };
 
@@ -36,13 +29,11 @@ export function LoadingScreen({
   phase,
   audioProgress,
   error,
-  onTapToBegin,
   labels,
 }: LoadingScreenProps): React.JSX.Element {
   const progress = phase === 'audio' ? audioProgress : phase === 'done' ? 1 : 0;
   const strokeDashoffset = CIRCUMFERENCE * (1 - progress);
   const isIndeterminate = phase !== 'audio' && phase !== 'done';
-  const showTapButton = phase === 'web-gate' && onTapToBegin !== undefined;
 
   return (
     <View style={styles.screen}>
@@ -50,15 +41,6 @@ export function LoadingScreen({
 
       {error ? (
         <Text style={styles.error}>{labels.error}</Text>
-      ) : showTapButton ? (
-        <Pressable
-          style={styles.tapButton}
-          onPress={onTapToBegin}
-          accessibilityRole="button"
-          accessibilityLabel={labels.tapToBegin}
-        >
-          <Text style={styles.tapLabel}>{labels.tapToBegin}</Text>
-        </Pressable>
       ) : (
         <View style={styles.ring}>
           <Svg width={RING_SIZE} height={RING_SIZE}>
@@ -116,17 +98,6 @@ const styles = StyleSheet.create({
   ring: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  tapButton: {
-    backgroundColor: '#2196F3',
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 8,
-  },
-  tapLabel: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   progressLabel: {
     fontSize: 14,
