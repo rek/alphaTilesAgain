@@ -174,6 +174,19 @@ export function GameShellContainer({
     }
   }, []);
 
+  // Leaving the game must cancel pending mastery navigation: a pushed menu keeps
+  // this screen mounted, so unmount cleanup alone never clears these timers.
+  const clearMasteryTimers = useCallback(() => {
+    if (celebrationTimerRef.current) {
+      clearTimeout(celebrationTimerRef.current);
+      celebrationTimerRef.current = null;
+    }
+    if (nextGameTimerRef.current) {
+      clearTimeout(nextGameTimerRef.current);
+      nextGameTimerRef.current = null;
+    }
+  }, []);
+
   // Optional mechanic-registered callback for the advance arrow
   const onAdvanceRef = useRef<(() => void) | null>(null);
   const setOnAdvance = useCallback((fn: (() => void) | null) => {
@@ -214,6 +227,7 @@ export function GameShellContainer({
       if (confirmOnBack) {
         // Future: show confirm dialog. For v1 none needed — fall through.
       }
+      clearMasteryTimers(); // e.g. pending mode-2 menu return
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -222,7 +236,7 @@ export function GameShellContainer({
       return true;
     });
     return () => sub.remove();
-  }, [router, confirmOnBack, showCelebration]);
+  }, [router, confirmOnBack, showCelebration, clearMasteryTimers]);
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -255,7 +269,7 @@ export function GameShellContainer({
     if (masteryAction === 'return-to-menu') {
       // Mode 2: return to earth after correctSoundDuration ms (GameActivity.java:319-329)
       celebrationTimerRef.current = setTimeout(() => {
-        router.push('/menu');
+        router.dismissTo('/menu');
       }, correctSoundDuration);
       return;
     }
@@ -276,7 +290,10 @@ export function GameShellContainer({
           useProgressStore.getState().progress,
           playerId,
         );
-        router.push(buildNextGameHref(nextGame));
+        // replace (not push) so the finished game leaves the stack.
+        const href = buildNextGameHref(nextGame);
+        if (href === '/menu') router.dismissTo('/menu');
+        else router.replace(href);
       }, NEXT_GAME_DELAY_MS);
     }
   }, [
@@ -350,12 +367,13 @@ export function GameShellContainer({
 
   const handleBackPress = useCallback(() => {
     if (showCelebration) return;
+    clearMasteryTimers();
     if (router.canGoBack()) {
       router.back();
     } else {
       router.replace('/menu');
     }
-  }, [router, showCelebration]);
+  }, [router, showCelebration, clearMasteryTimers]);
 
   const handleReplayPress = useCallback(() => {
     if (onRepeatRef.current) {
@@ -378,9 +396,11 @@ export function GameShellContainer({
   }, []);
 
   const handleCelebrationBack = useCallback(() => {
+    clearMasteryTimers();
     setShowCelebration(false);
-    router.push('/menu');
-  }, [router]);
+    // dismissTo pops back to the existing menu instead of stacking another.
+    router.dismissTo('/menu');
+  }, [router, clearMasteryTimers]);
 
   // Advance arrow state: blue when changeArrowColor=false or not repeatLocked
   // (design.md §D1 row: onPostCreate → setAdvanceArrowToBlue)
