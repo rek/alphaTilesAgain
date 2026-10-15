@@ -78,7 +78,9 @@ export function checkImageReferences(
 
   // Orphan images — in inventory but not referenced (also '2' variants are OK to exist)
   for (const f of inventory.wordImages) {
-    // Strip trailing '2' distractor marker for matching
+    // A file is fine if it IS a referenced LWC (e.g. yue `zz_2`), or is the
+    // `<lwc>2` distractor variant of one. Only strip the '2' in the latter case.
+    if (referencedImages.has(f)) continue;
     const baseName = f.endsWith('2') ? f.slice(0, -1) : f;
     if (!referencedImages.has(baseName)) {
       issues.push({
