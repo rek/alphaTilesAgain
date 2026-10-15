@@ -5,6 +5,12 @@
 > teardown. Remaining boxes are deferred unit tests, manual QA and housekeeping — no
 > engine work outstanding. The composite mp3s are deliberately absent; the chain is the
 > fallback until real recordings land.
+>
+> **Reconciled 2026-10-15** with the pack-speech refactor: the chain moved out of
+> `GameShellContainer` into pack speech (`data-audio` `planSpeech`/`createPackSpeech`,
+> `speak({ word })`); the shell keeps only `speech.stop()` on `setRefWord`, background
+> and unmount. Section 2 below describes the original shell implementation (shipped,
+> then superseded — behaviour identical). Deferred tests 5.2/5.3 are now covered.
 
 
 - [x] 0.1 Re-read `proposal.md`, `design.md`, both spec files in this change directory
@@ -55,26 +61,29 @@
 ## 5. Tests
 
 - [x] 5.1 Relocated parseWordIntoSyllables + added yue cases (8/8 PASS) — done in task 1.6
-- [ ] 5.2 Unit-test the shell chain logic (deferred — see notes below)
-- [ ] 5.3 Fake-timers verification (deferred — see notes below)
+- [x] 5.2 Unit-test the chain logic — `data-audio/src/lib/createPackSpeech.test.ts` (chain order + gap + lock held/released; new speak cancels a chain; `stop()` cancels pending steps; recorded word plays without chain)
+- [x] 5.3 Fake-timers verification against the real yue pack — `tools/yue-speech.test.ts` (each composite chains every LOP syllable; 二百零三 = 4 clips + 3 gaps; a bound `audio/words/zz_*.mp3` replaces the chain) + `tools/yue-composite-numerals.test.ts` (rows, no tile rows, images, validator 0 errors / exactly 5 decomposable warnings)
 - [x] 5.4 Storybook not story-covered for shell; skipping per spec
 
-**Deferred — 5.2 and 5.3:** The chain logic is inline inside `replayWord` (a `useCallback` closure). Extracting into a testable pure helper requires either: (a) refactoring `replayWord` to delegate to a `scheduleSyllableChain` module, or (b) testing through the container (React-testing-library). Neither is blocking — the parser tests (5.1) cover the decomposition that drives the chain, and the integration is straightforward (4 lines of `setTimeout`-and-`playSyllable`). Recommendation: tackle 5.2/5.3 as a follow-up if a regression appears during manual QA, or extract during the next composite-related change.
+**(Historical) Deferred — 5.2 and 5.3:** The chain logic is inline inside `replayWord` (a `useCallback` closure). Extracting into a testable pure helper requires either: (a) refactoring `replayWord` to delegate to a `scheduleSyllableChain` module, or (b) testing through the container (React-testing-library). Neither is blocking — the parser tests (5.1) cover the decomposition that drives the chain, and the integration is straightforward (4 lines of `setTimeout`-and-`playSyllable`). Recommendation: tackle 5.2/5.3 as a follow-up if a regression appears during manual QA, or extract during the next composite-related change.
 
 ## 6. Manual QA — owner: user (Claude can't drive devices)
 
-- [ ] 6.1 Launch yue web build (`APP_LANG=yue ./nx start alphaTiles`), reach a Thailand or Georgia T-mode round
-- [ ] 6.2 Confirm composite syllable chain plays with audible 150 ms gaps when one of `二十`/`三十`/`五十`/`一百萬`/`二百零三` is the call
-- [ ] 6.3 Tap replay button mid-chain → chain restarts cleanly
-- [ ] 6.4 Hit back mid-chain → no orphan syllables play after navigation
-- [ ] 6.5 Tune `GAP_MS` if 150 ms sounds wrong (per design Open Q O1)
-- [ ] 6.6 iOS Simulator + Android emulator smoke test
-- [x] 6.7 Validator passes (0 errors, 102 warnings, 127 info) — composites no longer block the build
+- [ ] 6.1 Launch yue web build (`APP_LANG=yue ./nx start alphaTiles`), reach a Thailand or Georgia T-mode round — handed to testers via issue #28 (2026-08 "live on main" comment)
+- [ ] 6.2 Confirm composite syllable chain plays with audible 150 ms gaps — tester feedback requested on #28 (Q1)
+- [x] 6.3 Tap replay button mid-chain → chain restarts cleanly — `speak` cancels any running chain first (`createPackSpeech.test.ts` "a new speak cancels a running chain")
+- [x] 6.4 Hit back mid-chain → no orphan syllables — `usePackSpeech` unmount → `stop()`; `stop` cancels pending steps (`createPackSpeech.test.ts`)
+- [ ] 6.5 Tune `GAP_MS` if 150 ms sounds wrong — awaiting #28 tester feedback; one constant in `planSpeech.ts`
+- [ ] 6.6 iOS Simulator + Android emulator smoke test — owner: user
+- [x] 6.7 Validator passes (0 errors) — composites are the only `MISSING_WORD_AUDIO` rows, all warnings (pinned in `tools/yue-composite-numerals.test.ts`)
+
+> 6.1/6.2/6.5/6.6 are device / by-ear checks owned by the user + #28 testers; no code
+> outstanding. Archived with them open; any `GAP_MS` retune is a one-line follow-up.
 
 ## 7. Documentation + memory
 
 - [x] 7.1 Added "Syllable-chain audio fallback in shell" section to `docs/GAME_PATTERNS.md` referencing this change + yue-syllable-game timer pattern + the validator downgrade
-- [ ] 7.2 Update `MEMORY.md` index for `yue-numerals-pending` (deferred to archive step)
+- [x] 7.2 ~~Update `MEMORY.md`~~ — no `MEMORY.md` in repo; knowledge lives in `GLOSSARY.md` (Syllable chain, Decomposable word, Composite numeral) + `docs/GAME_PATTERNS.md` pack-speech section
 
 ## 8. Wrap
 
@@ -90,5 +99,5 @@
   - `libs/alphaTiles/data-language-assets/src/generated/langManifest.ts` — regen
   - `docs/GAME_PATTERNS.md` — pattern doc
 - [x] 8.2 `openspec validate yue-composite-numerals --strict` — green
-- [ ] 8.3 Commit (user decides when)
-- [ ] 8.4 Post issue #28 update after merge
+- [x] 8.3 Commit — `e08e4f1`, `300ec76`; reconciliation on `chore/yue-composite-numerals`
+- [x] 8.4 Post issue #28 update after merge — posted ("Composite numerals are live on `main`")

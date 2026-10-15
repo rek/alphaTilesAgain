@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change game-engine-base. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: Shell container hosts any mechanic via children slot
 
 A `<GameShellContainer>` SHALL provide the shared game lifecycle — score + tracker rendering, audio replay, back navigation, pause-on-background, stage resolution, celebration trigger, and player-progress persistence — for every concrete game mechanic. Concrete mechanics (e.g. China, Chile) SHALL compose their board as `children` of the shell and MUST NOT re-implement score, tracker, audio-replay, or persistence plumbing.
@@ -35,6 +37,8 @@ The shell SHALL read its per-game configuration (`country`, `challengeLevel`, `s
 
 The shell SHALL expose a prominent audio-replay button that, when pressed, speaks the current `refWord` via the shell's `speak({ word: refWord })` (pack speech, including the syllable-chain fallback for unrecorded words). While audio is playing, both the replay button and the mechanic's game buttons MUST be locked against further input; they SHALL re-enable on `onComplete`. This mirrors `GameActivity.playActiveWordClip`'s lock/unlock around `mediaPlayerIsPlaying`.
 
+In-flight speech (a syllable chain's pending steps) SHALL be cancelled via pack speech `stop()` whenever the shell's `setRefWord` starts a new round, when the app goes to background, and when the shell unmounts, so no syllable of a previous word plays afterwards.
+
 #### Scenario: Replay during silence
 
 - **WHEN** no audio is playing and the user taps the replay button
@@ -44,6 +48,24 @@ The shell SHALL expose a prominent audio-replay button that, when pressed, speak
 
 - **WHEN** audio is already playing and the user taps the replay button
 - **THEN** the tap is ignored (no overlap, no queue)
+
+#### Scenario: Unrecorded refWord replays as a syllable chain
+
+- **GIVEN** `refWord` is yue `二十` (`zz_20`), which has no word clip, and `二` and `十` have syllable clips
+- **WHEN** the user taps the replay button
+- **THEN** `二` plays, then `十` after `二`'s duration + 150 ms, and the interaction lock is held until the chain ends
+
+#### Scenario: Round transition cancels a running chain
+
+- **GIVEN** a syllable chain is mid-playback
+- **WHEN** the mechanic calls `setRefWord` for the next round
+- **THEN** the pending chain steps are cancelled and no syllable of the previous word plays
+
+#### Scenario: Unmount cancels a running chain
+
+- **GIVEN** a syllable chain is mid-playback
+- **WHEN** the game unmounts (e.g. back to the menu)
+- **THEN** the pending chain steps are cancelled and nothing plays into the torn-down screen
 
 ### Requirement: Back navigation routes to Earth
 
@@ -115,4 +137,3 @@ When `trackerCount % 12 === 0` and `trackerCount > 0` and `after12CheckedTracker
 
 - **WHEN** `<GameShellScreen>` is rendered in Storybook with hand-crafted props (no providers)
 - **THEN** it renders correctly without crashing on a missing Context
-

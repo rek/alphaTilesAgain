@@ -44,26 +44,29 @@ Each composite wordlist row SHALL have an `images/words/<lwc>.png` rendering its
 
 ### Requirement: Composites ship without per-word audio recordings
 
-The composite wordlist rows SHALL NOT have corresponding `audio/words/<lwc>.mp3` files; runtime audio for these words is the shell's syllable-chain fallback (see `game-engine` capability delta).
+The composite wordlist rows SHALL NOT have corresponding `audio/words/<lwc>.mp3` files; runtime audio for these words is pack speech's syllable-chain fallback (`speak({ word })`, see `audio` capability "Unrecorded word").
 
 #### Scenario: Validator surfaces missing word audio as warning only
 
-- **GIVEN** `aa_settings.txt` has `Has word audio: TRUE` and 5 composite rows have no `audio/words/<lwc>.mp3`
-- **WHEN** the lang-pack validator runs `checkAudioReferences` against the `yue` pack
-- **THEN** 5 `MISSING_WORD_AUDIO` issues are emitted as warnings (severity ≤ `WARNING`)
-- **AND** the validator's exit summary reports `0 error(s)`
+- **GIVEN** `aa_settings.txt` has `Has syllable audio: TRUE` and 5 composite rows have no `audio/words/<lwc>.mp3`
+- **WHEN** the lang-pack validator runs against the `yue` pack
+- **THEN** exactly those 5 rows raise `MISSING_WORD_AUDIO`, each as a warning marked decomposable
+- **AND** the report has 0 errors
+
+#### Scenario: Composites speak as a syllable chain
+
+- **WHEN** pack speech is asked to `speak({ word })` for any of the 5 composites
+- **THEN** it plays the syllable clip of every character of the composite's LOP, in order
 
 #### Scenario: Future single recordings drop in transparently
 
 - **GIVEN** a composite row `zz_20` with no `audio/words/zz_20.mp3`
-- **WHEN** Curtis ships a single recording and the file is copied to `audio/words/zz_20.mp3`
-- **AND** the manifest is regenerated and the app boots
-- **THEN** `audio.handles.words.get('zz_20')` resolves to a non-null sound handle
-- **AND** the shell's `replayWord` plays the single recording, NOT the syllable chain
+- **WHEN** a recording is copied to `languages/yue/audio/words/zz_20.mp3`, the manifest is regenerated and the app boots
+- **THEN** `speak({ word })` for `zz_20` plays that single recording, NOT the syllable chain
 
 ### Requirement: No engine code or game-class is added
 
-This change SHALL modify only pack data, the `tools/build-numeral-images.ts` script, the `feature-game-shell` audio fallback, and the location of `parseWordIntoSyllables` (move from `feature-game-georgia` to `util-phoneme`). No new `feature-game-*` lib, no new doors in `aa_games.txt`, no new `data-*` lib.
+This change SHALL modify only pack data, the `tools/build-numeral-images.ts` script, the word → syllable-chain fallback (now inside pack speech, `libs/alphaTiles/data-audio`), the validator's missing-audio severity, and the location of `parseWordIntoSyllables` (moved from `feature-game-georgia` to `util-phoneme`). No new `feature-game-*` lib, no new doors in `aa_games.txt`, no new `data-*` lib.
 
 #### Scenario: No new game-feature libraries
 
@@ -71,7 +74,7 @@ This change SHALL modify only pack data, the `tools/build-numeral-images.ts` scr
 - **THEN** no new directory is created under `libs/alphaTiles/feature-game-*`
 - **AND** `aa_games.txt` is byte-identical to its pre-change state
 
-#### Scenario: `data-audio` is unchanged
+#### Scenario: No game container knows about the fallback
 
-- **WHEN** the change's diff is inspected
-- **THEN** no file under `libs/alphaTiles/data-audio/src/` is modified
+- **WHEN** a game speaks a word through the shell's `speak({ word })`
+- **THEN** the chain fallback applies without any per-game code
