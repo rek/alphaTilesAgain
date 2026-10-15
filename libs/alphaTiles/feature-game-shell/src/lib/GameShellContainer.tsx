@@ -68,9 +68,9 @@ type GameShellContainerProps = {
   /** Audio ID for the instruction clip (passed to useAudio().playInstruction). */
   instructionAudioId?: string;
   /**
-   * Lottie animation source for the celebration screen.
-   * Must be a static require (Metro constraint) — injected from the app's route/screen.
-   * Example: require('../../assets/lottie/celebration.json')
+   * Optional Lottie override for the celebration screen. Omit to use the
+   * bundled `celebrationAnimation` from @shared/ui-celebration. Must be bundled
+   * (object or static require), never a remote URI — the app runs offline.
    */
   celebrationSource?: import('@shared/ui-celebration').CelebrationProps['animationSource'];
   /** Chrome + tracker icon images — must be static requires from the app layer. */

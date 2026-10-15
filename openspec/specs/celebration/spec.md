@@ -5,7 +5,7 @@ TBD - created by archiving change game-engine-base. Update Purpose after archive
 ## Requirements
 ### Requirement: Lottie-based mastery animation
 
-`libs/shared/ui-celebration` SHALL export a `<Celebration>` component that renders a full-screen Lottie animation. The animation source is a prop; a content-neutral confetti JSON ships at `apps/alphaTiles/assets/lottie/celebration.json` and is passed in by `<GameShellContainer>`. This ports `Celebration.java` (50 LOC) and `celebration.xml`.
+`libs/shared/ui-celebration` SHALL export a `<Celebration>` component that renders a full-screen Lottie animation. The animation source is a prop; a content-neutral in-house animation ships as `celebrationAnimation` (Lottie JSON as a TS object, `libs/shared/ui-celebration/src/lib/celebrationAnimation.ts`) and is the `GameShellScreen` default. The source MUST be bundled; remote URIs are forbidden (offline use, no third-party calls). This ports `Celebration.java` (50 LOC) and `celebration.xml`.
 
 Props contract:
 
@@ -76,7 +76,7 @@ When triggered by the shell's `after12CheckedTrackers === 3` branch, `<Celebrati
 
 ### Requirement: Bundled animation asset
 
-This change SHALL commit one Lottie JSON file at `apps/alphaTiles/assets/lottie/celebration.json`. The asset MUST be content-neutral (confetti, stars, abstract shapes) so it can be shared across all language packs. Language packs MUST NOT override it; per-pack celebration is out of scope for v1.
+One bundled Lottie animation SHALL ship as `celebrationAnimation` in `@shared/ui-celebration` (authored in-house, repo licence). The asset MUST be content-neutral (confetti, stars, abstract shapes) so it can be shared across all language packs. Language packs MUST NOT override it; per-pack celebration is out of scope for v1.
 
 #### Scenario: Single shared asset
 

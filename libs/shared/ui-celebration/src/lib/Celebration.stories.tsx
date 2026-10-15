@@ -1,14 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Celebration } from './Celebration';
-
-// Use a remote Lottie JSON in Storybook — prod uses the bundled asset.
-const LOTTIE_URI = { uri: 'https://assets10.lottiefiles.com/packages/lf20_jR229r.json' };
+import { celebrationAnimation } from './celebrationAnimation';
 
 const meta: Meta<typeof Celebration> = {
   title: 'shared/ui-celebration/Celebration',
   component: Celebration,
   args: {
-    animationSource: LOTTIE_URI,
+    animationSource: celebrationAnimation,
     backLabel: 'Back to Earth',
     onBackPress: () => undefined,
     onMount: () => undefined,
