@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import type { ImageSourcePropType } from 'react-native';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
 import { useProgressStore } from '@alphaTiles/data-progress';
@@ -13,14 +12,11 @@ import {
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { decodeThailandChallengeLevel } from './decodeThailandChallengeLevel';
 import { setupThailandRound } from './setupThailandRound';
-import type { ThailandRound, ThailandRef, ThailandChoice } from './setupThailandRound';
+import type { ThailandRound, ThailandRef } from './setupThailandRound';
 import { stripInstructionCharacters } from './stripInstructionCharacters';
 import { ThailandScreen } from './ThailandScreen';
-import type {
-  ThailandRefDisplay,
-  ThailandChoiceDisplay,
-  ThailandChoiceFeedback,
-} from './ThailandScreen';
+import type { ThailandChoiceFeedback } from './ThailandScreen';
+import { thailandRoundView } from './thailandRoundView';
 
 type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
   icons?: GameShellIcons;
@@ -30,77 +26,6 @@ const CHIME_MS = 400;
 const POST_REPLAY_GAP_MS = 200;
 const FALLBACK_REPLAY_MS = 1000;
 const MAX_INCORRECT_TRACKED = 3;
-
-function buildRefDisplay(
-  ref: ThailandRef,
-  imageSource: ImageSourcePropType | undefined,
-  refColor: string,
-): ThailandRefDisplay {
-  // Java 291-320 dictates per-display rendering. WORD_TEXT specifically
-  // renders stripInstructionCharacters(wordInLOP) on a white background with
-  // black text (Java 305-309); other text refs use refColor bg + white text.
-  switch (ref.display) {
-    case 'TILE_LOWER':
-      return {
-        type: 'text',
-        text: ref.kind === 'tile' ? ref.tileRow.base : '',
-        backgroundColor: refColor,
-        textColor: '#FFFFFF',
-      };
-    case 'TILE_UPPER':
-      return {
-        type: 'text',
-        text: ref.kind === 'tile' ? (ref.tileRow.upper || ref.tileRow.base) : '',
-        backgroundColor: refColor,
-        textColor: '#FFFFFF',
-      };
-    case 'TILE_AUDIO':
-      return { type: 'audio', refType: ref.display };
-    case 'WORD_TEXT':
-      return {
-        type: 'text',
-        text: ref.kind === 'word' ? stripInstructionCharacters(ref.wordRow.wordInLOP) : '',
-        backgroundColor: '#FFFFFF',
-        textColor: '#000000',
-      };
-    case 'WORD_IMAGE':
-      return {
-        type: 'image',
-        imageSource,
-        wordLabel: ref.kind === 'word' ? stripInstructionCharacters(ref.wordRow.wordInLOP) : '',
-      };
-    case 'WORD_AUDIO':
-      return { type: 'audio', refType: ref.display };
-    case 'SYLLABLE_TEXT':
-      return {
-        type: 'text',
-        text: ref.kind === 'syllable' ? ref.syllableRow.syllable : '',
-        backgroundColor: refColor,
-        textColor: '#FFFFFF',
-      };
-    case 'SYLLABLE_AUDIO':
-      return { type: 'audio', refType: ref.display };
-    default:
-      return { type: 'text', text: '', backgroundColor: refColor, textColor: '#FFFFFF' };
-  }
-}
-
-function buildChoiceDisplay(
-  choice: ThailandChoice,
-  imageSource: ImageSourcePropType | undefined,
-): ThailandChoiceDisplay {
-  if (choice.kind === 'tile') {
-    return { type: 'text', text: choice.displayText };
-  }
-  if (choice.kind === 'syllable') {
-    return { type: 'text', text: choice.syllableRow.syllable };
-  }
-  const wordRow = choice.wordRow;
-  if (imageSource !== undefined) {
-    return { type: 'image', imageSource, wordLabel: stripInstructionCharacters(wordRow.wordInLOP) };
-  }
-  return { type: 'text', text: stripInstructionCharacters(wordRow.wordInLOP) };
-}
 
 /** The pack item a reference speaks; pack speech resolves its clip. */
 function refSpeechItem(ref: ThailandRef) {
@@ -287,31 +212,12 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
 
   if (!round) return <></>;
 
-  const refImageSource =
-    round.ref.kind === 'word' && round.ref.display === 'WORD_IMAGE'
-      ? (assets.images.words[round.ref.wordRow.wordInLWC] as ImageSourcePropType | undefined)
-      : undefined;
-
-  const refDisplay = buildRefDisplay(round.ref, refImageSource, refColor);
-
-  const choiceDisplays = round.choices.map((choice): ThailandChoiceDisplay => {
-    if (choice.kind === 'word' && choiceType === 'WORD_IMAGE') {
-      const imgSrc = assets.images.words[choice.wordRow.wordInLWC] as ImageSourcePropType | undefined;
-      return {
-        type: 'image',
-        imageSource: imgSrc,
-        wordLabel: stripInstructionCharacters(choice.wordRow.wordInLOP),
-      };
-    }
-    return buildChoiceDisplay(choice, undefined);
-  }) as [ThailandChoiceDisplay, ThailandChoiceDisplay, ThailandChoiceDisplay, ThailandChoiceDisplay];
-
-  // a11y: localized text, never the LWC slug (which reads out the answer).
-  const choiceLabels = round.choices.map((c): string => {
-    if (c.kind === 'tile') return c.displayText;
-    if (c.kind === 'syllable') return c.syllableRow.syllable;
-    return stripInstructionCharacters(c.wordRow.wordInLOP);
-  }) as [string, string, string, string];
+  const { refDisplay, choices: choiceDisplays, choiceLabels } = thailandRoundView({
+    round,
+    choiceType,
+    wordImages: assets.images.words,
+    refColor,
+  });
 
   // Audio refs get a generic "play" label and image refs a generic picture
   // label, so the screen reader doesn't announce the answer.
