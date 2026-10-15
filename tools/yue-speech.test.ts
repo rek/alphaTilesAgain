@@ -94,6 +94,18 @@ describe('yue pack speech (real pack)', () => {
       expect(hear({ word: w })).toEqual([...w.wordInLOP].map((ch) => `syllable:${ch}`));
     });
 
+    it.each(COMPOSITE_NUMERALS)(
+      '%s plays its own recording, not the chain, once audio/words/%s.mp3 is bound',
+      (lwc) => {
+        const words = { ...assets.audio.words, [lwc]: 999 };
+        const recorded = { ...assets, audio: { ...assets.audio, words } };
+        const { speech, played } = packSpeechFor(recorded);
+        speech.speak({ word: word(lwc) });
+        jest.runAllTimers();
+        expect(played).toEqual([`word:${lwc}`]);
+      },
+    );
+
     it('二百零三 chain duration covers 4 clips + 3 gaps', () => {
       const { speech } = packSpeechFor(assets, 500);
       expect(speech.durationOf({ word: word('zz_203') })).toBe(4 * 500 + 3 * 150);
