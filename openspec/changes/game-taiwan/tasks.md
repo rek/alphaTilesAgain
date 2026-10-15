@@ -2,8 +2,9 @@
 
 > **Verified 2026-08-19.** Every remaining unticked box is manual QA, a PM confirmation
 > or the legal sign-off — **no code work is outstanding**. 18 tests pass in
-> `feature-game-taiwan` and typecheck is clean. Task 12.3 (LGPL sign-off) is the only
-> item blocking yue v1; tracked as issue #46.
+> `feature-game-taiwan` and typecheck is clean. Task 12.3 (licence) resolved 2026-10-15
+> (issue #46): data is Arphic PL, not LGPL; compliance changes shipped — see
+> `docs/licensing/stroke-data.md`. No longer blocks yue v1.
 
 
 - [x] 0.1 Read `docs/GAME_PATTERNS.md` (full)
@@ -93,9 +94,10 @@
 
 ## 10. Risk Mitigation Tasks
 
-- [x] 10.1 Add NOTICE entry naming Make Me a Hanzi + Arphic (LGPL attribution) — `apps/alphaTiles/NOTICE.md` or equivalent
+- [x] 10.1 Add NOTICE entry naming Make Me a Hanzi + Arphic — `apps/alphaTiles/NOTICE.md` (corrected 2026-10-15: Arphic PL, not LGPL; fonts KaitiM GB + UKai)
 - [x] 10.2 Pin exact `@jamsch/react-native-hanzi-writer` version in `package.json` (no caret) — small-maintainer mitigation
-- [ ] 10.3 File internal follow-up: legal sign-off on LGPL data shipping. Block yue v1 release on this.
+- [x] 10.3 Licence review of shipped stroke data (issue #46) — `docs/licensing/stroke-data.md`. Finding: Arphic Public License (MMH `graphics.txt` via hanzi-writer-data 2.0.1); LGPL applies only to unused `dictionary.txt`. Compliance implemented: verbatim APL in-app (About → Open-source licences) + `strokes/ARPHICPL.TXT`, per-file `_notice` (APL §2a), CDN pinned to 2.0.1, NOTICE fixed. Engineering analysis, not legal advice.
+- [ ] 10.5 Owner: accept 10.3 analysis (or get optional counsel review of its §6) and commit to keeping `languages/*/strokes/` publicly available (APL §2b) while builds with the data are distributed
 - [ ] 10.4 Confirm yue device-target list with PM before perf spike (9.9)
 
 ## 11. Documentation
@@ -110,5 +112,5 @@ Impl shipped with the design.md defaults; PM/legal sign-off still required.
 
 - [ ] 12.1 PM: confirm 5-char round goal vs different number — **shipped: 5**
 - [ ] 12.2 PM: confirm mistake threshold (3 fixed vs `aa_settings.txt`-driven) — **shipped: 3 fixed**
-- [ ] 12.3 PM: legal LGPL sign-off (blocks yue v1 release, not impl start) — **pending**
+- [x] 12.3 Licence sign-off — **resolved by 10.3** (Arphic PL, compliant after changes; no longer blocks yue v1; owner acceptance tracked in 10.5)
 - [ ] 12.4 Engineering: stage gating — round draws from current stage's tilelist or from the full pack? Default: stage-filtered (mirrors other games) — **shipped: NOT stage-filtered (deferred to v1.1)**

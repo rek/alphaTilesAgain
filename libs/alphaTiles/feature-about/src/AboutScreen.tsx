@@ -50,6 +50,24 @@ export interface AboutScreenProps {
   onReportIssueTap: () => void;
   /** Translated label: "Back" */
   backLabel: string;
+  /**
+   * Third-party licence block (Arphic-licensed stroke data). Omitted when the
+   * pack ships no stroke data. See docs/licensing/stroke-data.md.
+   */
+  thirdPartyLicence?: {
+    /** Translated heading: "Open-source licences" */
+    heading: string;
+    /** Attribution + modification notice (English legal text) */
+    attribution: string;
+    /** Full licence text, verbatim */
+    licenceText: string;
+    /** Whether the full licence text is shown */
+    expanded: boolean;
+    /** Translated toggle label ("Show licence text" / "Hide licence text") */
+    toggleLabel: string;
+    /** Called when the user taps the toggle */
+    onToggle: () => void;
+  };
 }
 
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
@@ -75,6 +93,7 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
     reportIssueLabel,
     onReportIssueTap,
     backLabel,
+    thirdPartyLicence,
   } = props;
 
   return (
@@ -157,6 +176,29 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
       >
         <Text style={styles.link}>{reportIssueLabel}</Text>
       </Pressable>
+
+      {thirdPartyLicence ? (
+        <>
+          <Text style={styles.creditsHeading}>{thirdPartyLicence.heading}</Text>
+          <Text style={styles.legal} accessibilityRole="text">
+            {thirdPartyLicence.attribution}
+          </Text>
+          <Pressable
+            onPress={thirdPartyLicence.onToggle}
+            accessibilityRole="button"
+            accessibilityLabel={thirdPartyLicence.toggleLabel}
+            accessibilityState={{ expanded: thirdPartyLicence.expanded }}
+            hitSlop={HIT_SLOP}
+          >
+            <Text style={styles.link}>{thirdPartyLicence.toggleLabel}</Text>
+          </Pressable>
+          {thirdPartyLicence.expanded ? (
+            <Text style={styles.legal} selectable>
+              {thirdPartyLicence.licenceText}
+            </Text>
+          ) : null}
+        </>
+      ) : null}
     </ScrollView>
     </View>
   );
@@ -197,6 +239,11 @@ const styles = StyleSheet.create({
   credits: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  legal: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: '#444',
   },
   link: {
     fontSize: 16,

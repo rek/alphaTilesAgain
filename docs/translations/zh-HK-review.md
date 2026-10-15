@@ -53,6 +53,9 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/about.privacy` | Privacy Policy | 私隱政策 | HK uses 私隱 (not Mainland/TW 隱私). |
 | `chrome/about.website` | Project website | 計劃網站 | ⚠ "Project" rendered 計劃 (HK usage). Alternatives: 項目網站, 官方網站. |
 | `chrome/about.reportIssue` | Report an issue | 報告問題 | Alternative: 回報問題. |
+| `chrome/about.thirdParty` | Open-source licences | 開放源碼授權 | HK term 開放源碼 (not 開源/開放原始碼). Heading for stroke-data licence (APL). |
+| `chrome/about.showLicence` | Show licence text | 顯示授權條款 |  |
+| `chrome/about.hideLicence` | Hide licence text | 隱藏授權條款 |  |
 | `chrome/share` | Share | 分享 |  |
 | `chrome/share.title` | Share | 分享 |  |
 | `chrome/share.instructions` | Scan this QR code to share this app | 掃描此 QR 碼即可分享本應用程式 | ⚠ "QR code" rendered QR 碼 (common in HK). Alternative: 二維碼 (more Mainland-flavoured). |

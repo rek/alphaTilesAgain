@@ -5,23 +5,47 @@ beyond what `package.json` already lists.
 
 ## Stroke-order data — Make Me a Hanzi (game-taiwan)
 
-The `feature-game-taiwan` mechanic relies on per-character stroke data sourced
-from the [Make Me a Hanzi](https://github.com/skishore/makemeahanzi) project,
-distributed via the `hanzi-writer-data` npm package.
+Full analysis, citations and compliance checklist:
+[`docs/licensing/stroke-data.md`](../../docs/licensing/stroke-data.md).
 
-- **Upstream:** Make Me a Hanzi (Shaunak Kishore et al.) — graphics derived from
-  Arphic Technology's PL UMing and PL KaitiM fonts.
-- **Distribution channel:** `hanzi-writer-data` (jsDelivr CDN) is fetched at
-  prebuild time by `tools/build-stroke-data.ts`. Per-character JSON files are
-  cached locally under `tools/data/stroke-cache/` and emitted into
-  `languages/<APP_LANG>/strokes/` for inclusion in the language pack.
-- **License:** Arphic Public License (LGPL-style) for the underlying glyph
-  shapes; ARPHIC PUBLIC LICENSE — see <https://github.com/skishore/makemeahanzi/blob/master/ARPHICPL.TXT>.
-- **Usage type:** runtime data files. The shapes are not statically linked into
-  the binary; they are loaded as JSON at runtime, which is the standard MMH
-  consumption pattern.
+The `feature-game-taiwan` mechanic uses per-character stroke data from the
+[Make Me a Hanzi](https://github.com/skishore/makemeahanzi) project's
+`graphics.txt`, obtained via
+[`hanzi-writer-data`](https://github.com/chanind/hanzi-writer-data) 2.0.1.
 
-Legal sign-off on shipping this data is required before the yue release.
+- **Upstream:** Make Me a Hanzi (Shaunak Kishore). Its `graphics.txt` is derived
+  from the fonts **AR PL KaitiM GB** and **AR PL UKai**, Copyright (C) 1999
+  Arphic Technology Co., Ltd. (Make Me a Hanzi `COPYING`).
+- **License:** **Arphic Public License** (1999), the licence of `graphics.txt`
+  and of `hanzi-writer-data`. It is *not* the LGPL: that covers only MMH
+  `dictionary.txt`, which we do not use. Verbatim text:
+  [`libs/alphaTiles/data-stroke-data/ARPHICPL.TXT`](../../libs/alphaTiles/data-stroke-data/ARPHICPL.TXT)
+  (upstream copy: <https://github.com/skishore/makemeahanzi/blob/master/APL/english/ARPHICPL.TXT>).
+- **How it is built:** `tools/build-stroke-data.ts` fetches per-character JSON
+  from `cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1` and caches it in
+  `tools/data/stroke-cache/`. It then writes **modified** copies to
+  `languages/<APP_LANG>/strokes/`: only the pack's characters, a `character`
+  field added, only `strokes` and `medians` kept, plus an `_notice` field
+  stating how and when the file was changed (APL §2a). `ARPHICPL.TXT` is
+  copied alongside them (APL §1).
+- **How it ships:** `tools/generate-lang-manifest.ts` inlines the JSON into
+  the app's JS bundle (native and web). The About screen shows the attribution
+  and the full licence text when a pack contains stroke data.
+- **Where to get the modified data (APL §2b):** the `strokes/` folder of each
+  language pack in <https://github.com/rek/alphaTilesAgain/tree/main/languages>,
+  under the Arphic Public License.
+- **No warranty:** the data is provided without warranty; see APL §7 and §8.
+
+## Hanzi Writer (code)
+
+`@jamsch/react-native-hanzi-writer` (below) is based on
+[hanzi-writer](https://github.com/chanind/hanzi-writer):
+
+> The MIT License (MIT) — Copyright (c) 2014 David Chanin. Permission is hereby
+> granted, free of charge, to any person obtaining a copy of this software …
+> The above copyright notice and this permission notice shall be included in
+> all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED
+> "AS IS", WITHOUT WARRANTY OF ANY KIND …
 
 ## Devanagari stroke data — Wikimedia Commons
 
@@ -65,4 +89,4 @@ The stroke-tracing mechanic is implemented on top of
 `hanzi-writer.js`.
 
 - **Upstream:** <https://github.com/jamsch/react-native-hanzi-writer>
-- **License:** MIT.
+- **License:** MIT — Copyright (c) 2022 jamsch (full text in the package's `LICENSE`).

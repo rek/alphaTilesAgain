@@ -12,6 +12,13 @@
  * Gates on aa_langinfo.txt 'Script type' === 'Chinese'. Non-Chinese packs:
  * exit 0 silently and emit no strokes/ directory.
  *
+ * Licence: Arphic Public License (data derived from Arphic fonts via Make Me
+ * a Hanzi graphics.txt). Our output is a *modified* copy, so per APL section
+ * 2(a) every emitted file carries a `_notice` field saying how and when it was
+ * changed, and per section 1 the unaltered ARPHICPL.TXT is copied next to the
+ * files. Read docs/licensing/stroke-data.md before changing the transform,
+ * and bump the date in STROKE_NOTICE (+ STROKE_DATA_ATTRIBUTION) when you do.
+ *
  * Run: APP_LANG=yue npx tsx tools/build-stroke-data.ts
  */
 
@@ -28,7 +35,22 @@ const LANGINFO_PATH = path.join(LANG_DIR, 'aa_langinfo.txt');
 const GAMETILES_PATH = path.join(LANG_DIR, 'aa_gametiles.txt');
 const STROKES_OUT_DIR = path.join(LANG_DIR, 'strokes');
 const CACHE_DIR = path.join(REPO_ROOT, 'tools', 'data', 'stroke-cache');
-const CDN_BASE = 'https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0';
+// Pinned exactly: the licence notice names this version (provenance).
+const HWD_VERSION = '2.0.1';
+const CDN_BASE = `https://cdn.jsdelivr.net/npm/hanzi-writer-data@${HWD_VERSION}`;
+const LICENSE_SRC = path.join(REPO_ROOT, 'libs', 'alphaTiles', 'data-stroke-data', 'ARPHICPL.TXT');
+const LICENSE_OUT = path.join(STROKES_OUT_DIR, 'ARPHICPL.TXT');
+/**
+ * APL 2(a): "a prominent notice in each modified file stating how and when
+ * you changed that file". Date = when the transform last changed, not build
+ * time, so output stays deterministic. Mirrors STROKE_DATA_ATTRIBUTION in
+ * libs/alphaTiles/data-stroke-data.
+ */
+const STROKE_NOTICE =
+  `Arphic Public License (see ARPHICPL.TXT). From hanzi-writer-data ${HWD_VERSION} ` +
+  '(Make Me a Hanzi graphics.txt; fonts AR PL KaitiM GB / AR PL UKai, (C) 1999 Arphic Technology). ' +
+  'Modified by AlphaTiles tools/build-stroke-data.ts on 2026-10-15: added "character", ' +
+  'kept only strokes+medians, re-serialised. NO WARRANTY.';
 
 main().catch((e) => {
   console.error('[build-stroke-data] fatal:', e);
@@ -60,6 +82,8 @@ async function main(): Promise<void> {
 
   ensureDir(CACHE_DIR);
   ensureDir(STROKES_OUT_DIR);
+  // APL section 1: retain the licence file unaltered in all copies.
+  fs.copyFileSync(LICENSE_SRC, LICENSE_OUT);
 
   const covered: string[] = [];
   const missing: string[] = [];
@@ -149,7 +173,13 @@ function wrapWithCharacter(ch: string, mmhJson: string): string | null {
   }
   if (!Array.isArray(parsed.strokes) || !Array.isArray(parsed.medians)) return null;
   if (parsed.strokes.length !== parsed.medians.length) return null;
-  const out = { character: ch, strokes: parsed.strokes, medians: parsed.medians };
+  // Any other upstream keys (e.g. radStrokes) are dropped — noted in STROKE_NOTICE.
+  const out = {
+    _notice: STROKE_NOTICE,
+    character: ch,
+    strokes: parsed.strokes,
+    medians: parsed.medians,
+  };
   return JSON.stringify(out);
 }
 

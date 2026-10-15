@@ -15,6 +15,10 @@ import * as WebBrowser from 'expo-web-browser';
 import { Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
+import {
+  ARPHIC_PUBLIC_LICENSE_TEXT,
+  STROKE_DATA_ATTRIBUTION,
+} from '@alphaTiles/data-stroke-data';
 import { contactEmailOf } from '@alphaTiles/util-contact';
 import { useTranslation } from '@shared/util-i18n';
 import { useTrackScreenMount } from '@shared/util-analytics';
@@ -48,7 +52,25 @@ export function AboutContainer(): React.JSX.Element {
   const assets = useLangAssets();
   const { t } = useTranslation();
   const router = useRouter();
+  const [licenceExpanded, setLicenceExpanded] = React.useState(false);
   useTrackScreenMount('/about');
+
+  // Arphic PL stroke data ships only in packs with strokes (Chinese script).
+  // APL §1/§2 + docs/licensing/stroke-data.md: show attribution, modification
+  // notice and the verbatim licence in-app whenever that data is bundled.
+  const shipsStrokeData = Object.keys(assets.strokes).length > 0;
+  const thirdPartyLicence = shipsStrokeData
+    ? {
+        heading: t('chrome:about.thirdParty'),
+        attribution: STROKE_DATA_ATTRIBUTION,
+        licenceText: ARPHIC_PUBLIC_LICENSE_TEXT,
+        expanded: licenceExpanded,
+        toggleLabel: licenceExpanded
+          ? t('chrome:about.hideLicence')
+          : t('chrome:about.showLicence'),
+        onToggle: (): void => { setLicenceExpanded((v) => !v); },
+      }
+    : undefined;
 
   const langInfo = assets.langInfo;
 
@@ -113,6 +135,7 @@ export function AboutContainer(): React.JSX.Element {
       reportIssueLabel={t('chrome:about.reportIssue')}
       onReportIssueTap={onReportIssueTap}
       backLabel={t('chrome:back')}
+      thirdPartyLicence={thirdPartyLicence}
     />
   );
 }
