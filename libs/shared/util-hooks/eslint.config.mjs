@@ -12,6 +12,7 @@ export default [
             '{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}',
             '{projectRoot}/jest.config.{js,ts,cjs,mjs}',
             '{projectRoot}/src/**/*.test.ts',
+            '{projectRoot}/src/**/*.test.tsx',
             '{projectRoot}/src/**/*.spec.ts',
           ],
         },
