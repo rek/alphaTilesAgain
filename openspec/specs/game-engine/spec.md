@@ -25,13 +25,23 @@ The shell SHALL read its per-game configuration (`country`, `challengeLevel`, `s
 
 #### Scenario: Mounted from game menu with route params
 
-- **WHEN** the user taps game door 88 (China) from Earth, producing a route `/game?gameNumber=88&challengeLevel=1&stage=1&syllableGame=&country=China`
-- **THEN** the shell resolves the routed Door via `useDoor` (route params from `useLocalSearchParams`) and passes them into `useProgressStore`, `useAudio`, and the mechanic's `useGameShell()` context
+- **WHEN** the user taps door 88 (China) on the menu, producing the route `/games/china?doorIndex=88`
+- **THEN** the shell resolves the routed Door via `useDoor` (route params from `useLocalSearchParams`) and passes it into door progress, pack speech, and the mechanic's `useGameShell()` context
+
+#### Scenario: doorIndex wins over the legacy alias
+
+- **WHEN** the route carries both `doorIndex=12` and the legacy `gameNumber=3`
+- **THEN** `useDoor` resolves door 12; `gameNumber` is read only when `doorIndex` is absent
 
 #### Scenario: Missing route params
 
-- **WHEN** the shell mounts without `gameNumber` in the route
-- **THEN** it renders an error state with a link back to the game menu, not a blank screen
+- **WHEN** the shell mounts with neither `doorIndex` nor `gameNumber`
+- **THEN** `useDoor` resolves door 1 (legacy default)
+
+#### Scenario: Unknown or hidden door
+
+- **WHEN** `doorIndex` names no `aa_games.txt` row, or a door with `enabled: false` (e.g. Taiwan with "Enable stroke order game" FALSE)
+- **THEN** `useDoor` returns undefined and the shell redirects to `/menu` — a deep link cannot open a hidden game
 
 ### Requirement: Audio-replay button plays the active reference word
 

@@ -68,7 +68,7 @@ type GameShellContainerProps = {
 /**
  * Resolves the routed Door (route param `doorIndex`, per the game-menu
  * "Door-press navigation contract") and renders the shell for it. An index
- * that names no door goes back to the menu.
+ * that names no door, or a hidden one (`enabled: false`), goes back to the menu.
  */
 export function GameShellContainer(props: GameShellContainerProps): React.JSX.Element {
   const door = useDoor(useLocalSearchParams<{ gameNumber?: string; doorIndex?: string }>());
