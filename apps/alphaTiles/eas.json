@@ -19,14 +19,14 @@
     },
     "eng": {
       "extends": "production",
-      "channel": "eng",
+      "channel": "eng-production",
       "env": {
         "APP_LANG": "eng"
       }
     },
     "yue": {
       "extends": "production",
-      "channel": "yue",
+      "channel": "yue-production",
       "env": {
         "APP_LANG": "yue"
       }

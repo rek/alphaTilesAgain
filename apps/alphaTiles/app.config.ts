@@ -13,7 +13,8 @@
  *     on launch (native), downloads in the background, and expo-updates applies
  *     the update on the next cold start. No mid-session reload.
  *   - extra.eas.projectId must be set (run `eas init` once — see docs/GETTING_STARTED.md).
- *   - Build fails if EAS_PROJECT_ID / extra.eas.projectId is missing in production.
+ *   - One channel per language build: `<APP_LANG>-production` (eas.json build profiles
+ *     set it on the binary; `eas update --channel <APP_LANG>-production` publishes to it).
  *
  * See design.md §D3, D10 and openspec/changes/port-foundations/specs/build-pipeline/spec.md.
  * See openspec/changes/ota-updates/design.md D3, D10.
@@ -65,15 +66,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     );
   }
 
-  // EAS projectId — set by `eas init` (one-time developer action).
-  // See docs/GETTING_STARTED.md § EAS Updates.
+  // EAS projectId: EAS_PROJECT_ID env (CI / EAS secrets) wins, else the committed
+  // project below. Owner-only: `eas init` / project creation (see docs/GETTING_STARTED.md
+  // § EAS Updates). Without a projectId, updates.url is omitted and OTA stays inert.
   const easProjectId = process.env.EAS_PROJECT_ID ?? 'a396d678-4f3e-4588-bd7f-5f79daa04c57';
-  // Fail production-like builds if projectId is missing.
-  if (!easProjectId && process.env.NODE_ENV !== 'test') {
-    // Allow dev Metro sessions to proceed without a projectId.
-    // EAS cloud builds always have EAS_PROJECT_ID injected; local
-    // `expo start` dev runs do not need it (expo-updates is disabled in dev).
-  }
+  // One update channel per language build; must match "channel" in eas.json build profiles.
+  const updateChannel = `${lang}-production`;
 
   const repoRoot = path.resolve(__dirname, '..', '..');
   const langInfoPath = path.join(repoRoot, 'languages', lang, 'aa_langinfo.txt');
@@ -216,6 +214,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       appLang: lang,
       scriptDirection: langInfo.scriptDirection,
       scriptType: langInfo.scriptType,
+      updateChannel,
       eas: {
         // Populated by `eas init` — see docs/GETTING_STARTED.md § EAS Updates.
         projectId: easProjectId || undefined,
