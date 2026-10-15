@@ -4,7 +4,7 @@ import type { ProgressEntry } from '@alphaTiles/data-progress';
 
 // Progress-key format is the Door catalogue's concern (tested in data-doors);
 // a stub key proves the search reads Door.progressKey, not its own copy.
-function door(index: number, country: string, classKey: string): Door {
+function door(index: number, country: string, classKey: string, enabled = true): Door {
   return {
     index,
     classKey,
@@ -14,9 +14,10 @@ function door(index: number, country: string, classKey: string): Door {
     variant: 'T',
     stage: 1,
     colorHex: '#000000',
+    name: undefined,
     instructionAudio: undefined,
     tracksProgress: true,
-    enabled: true,
+    enabled,
     progressKey: (playerId) => `${classKey}:${playerId}`,
   };
 }
@@ -54,5 +55,21 @@ describe('findNextUncompletedGame', () => {
   it('returns null when every door is mastered', () => {
     const all = Object.fromEntries(DOORS.map((d) => [d.progressKey('p1'), mastered()]));
     expect(findNextUncompletedGame(DOORS, 2, all, 'p1')).toBeNull();
+  });
+
+  it('never enters a hidden door (Taiwan disabled)', () => {
+    const doors = [
+      door(1, 'Thailand', 'thailand'),
+      door(2, 'Taiwan', 'taiwan', false),
+      door(3, 'Taiwan', 'taiwan', false),
+      door(4, 'Georgia', 'georgia'),
+    ];
+    expect(findNextUncompletedGame(doors, 1, {}, 'p1')?.index).toBe(4);
+    expect(findNextUncompletedGame(doors, 4, { 'thailand:p1': mastered() }, 'p1')?.index).toBe(4);
+  });
+
+  it('returns null when only hidden doors are left', () => {
+    const doors = [door(1, 'Thailand', 'thailand'), door(2, 'Taiwan', 'taiwan', false)];
+    expect(findNextUncompletedGame(doors, 2, { 'thailand:p1': mastered() }, 'p1')).toBeNull();
   });
 });

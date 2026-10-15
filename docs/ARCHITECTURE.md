@@ -219,6 +219,7 @@ not app logic. The `data-language-assets` and `data-language-pack` libs use this
 - **Do not use `useEffect` directly.** Use derived state, event handlers, `useMountEffect`, or the `key` prop. See `docs/CODE_STYLE.md`.
 - **Zustand store per domain**, not one god-store. Each store owns its slice, has its own persist config, and exposes typed selectors.
 - **Context providers for immutable data only.** If something changes, it belongs in Zustand.
+- **Effective settings** — cross-cutting settings (`showGameNames`, `changeArrowColors`, audio flags, avatars, mastery mode …) are read through `useEffectiveSettings()` (`@alphaTiles/data-settings`): pack `aa_settings.txt` typed + defaulted once, with the active player's preferences (`usePlayerPreferencesStore`, `data-players`) layered on top. Game-specific settings stay with their game. Settings screen (`feature-settings`, `/settings`) writes via `useSetPreference()`.
 
 ## 8. Audio
 
@@ -353,7 +354,7 @@ A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pa
 - `doorsOf(pack) → Door[]` — pure; all rows, file order, `doors[i].index === i + 1`. Tested against the real `yue` + `eng` packs.
 - `useDoors()` / `useDoor(routeParams)` — the same, memoized from `useLangAssets()`.
 
-`Door = { index, classKey, country, challengeLevel, displayLevel, variant, stage, colorHex, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }`. The menu (enabled doors + trackers), `GameShellContainer` (routed door, progress key, next-door search) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
+`Door = { index, classKey, country, challengeLevel, displayLevel, variant, stage, colorHex, name?, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }` (`name` = optional `GameName` column 9 of `aa_games.txt`, the menu door label). The menu (enabled doors + trackers), `GameShellContainer` (routed door, progress key, next-door search) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
 
 ### V1 port scope
 

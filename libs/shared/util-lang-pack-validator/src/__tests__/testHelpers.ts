@@ -112,6 +112,7 @@ export function mkGameRow(override: Partial<{
   syllOrTile: string;
   instructionAudio: string;
   audioDuration: string;
+  gameName: string;
 }> = {}) {
   return {
     door: override.door ?? 1,
@@ -120,6 +121,7 @@ export function mkGameRow(override: Partial<{
     syllOrTile: override.syllOrTile ?? 'T',
     instructionAudio: override.instructionAudio ?? 'naWhileMPOnly',
     audioDuration: override.audioDuration ?? '0',
+    gameName: override.gameName ?? '',
   };
 }
 

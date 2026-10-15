@@ -12,6 +12,7 @@ function door(index: number, overrides: Partial<Door> = {}): Door {
     variant: 'T',
     stage: 1,
     colorHex: '#FF0000',
+    name: undefined,
     instructionAudio: undefined,
     tracksProgress: true,
     enabled: true,

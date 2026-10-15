@@ -11,6 +11,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Player } from './Player';
 import { rnStorage } from './rnStorage';
+import { usePlayerPreferencesStore } from './usePlayerPreferencesStore';
 
 const randomUUID = (): string =>
   'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -60,6 +61,7 @@ export const usePlayersStore = create<PlayersState & PlayersActions>()(
       },
 
       deletePlayer(id) {
+        usePlayerPreferencesStore.getState().clearPlayer(id);
         set((state) => ({
           players: state.players.filter((p) => p.id !== id),
           activePlayerId:

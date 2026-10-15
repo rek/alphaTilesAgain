@@ -36,7 +36,7 @@ function loadPack(code: string): DoorPack {
 
 /** Same pack with one aa_games.txt row appended. */
 function withRow(pack: DoorPack, row: string): DoorPack {
-  const header = 'Door\tCountry\tChallengeLevel\tColor\tInstructionAudio\tAudioDuration\tSyllOrTile\tStagesIncluded';
+  const header = 'Door\tCountry\tChallengeLevel\tColor\tInstructionAudio\tAudioDuration\tSyllOrTile\tStagesIncluded\tGameName';
   const extra = parseGames(`${header}\n${row}`).rows;
   return { ...pack, games: { rows: [...pack.games.rows, ...extra] } };
 }
@@ -79,6 +79,10 @@ describe('doorsOf — yue', () => {
     expect(byClass('sudan')?.tracksProgress).toBe(false);
     expect(byClass('iraq')?.tracksProgress).toBe(false);
     expect(byClass('thailand')?.tracksProgress).toBe(true);
+  });
+
+  it('yue names are awaiting the customer: every door is unlabelled', () => {
+    expect(doors.every((d) => d.name === undefined)).toBe(true);
   });
 
   it('Taiwan doors are enabled: yue ships stroke data', () => {
@@ -132,6 +136,14 @@ describe('doorsOf — eng', () => {
     const door = extended[extended.length - 1];
     expect(door.stage).toBe(2);
     expect(door.progressKey('player01')).toBe('China3player012');
+  });
+
+  it('GameName becomes Door.name (trimmed); empty → undefined', () => {
+    const named = doorsOf(withRow(pack, '999\tChina\t1\t0\tzzz_china\t0\tT\t-\t Build words '));
+    expect(named[named.length - 1].name).toBe('Build words');
+    const unnamed = doorsOf(withRow(pack, '999\tChina\t1\t0\tzzz_china\t0\tT\t-'));
+    expect(unnamed[unnamed.length - 1].name).toBeUndefined();
+    expect(doors.every((d) => d.name === undefined)).toBe(true);
   });
 
   it('unknown colour number falls back to the first colour', () => {

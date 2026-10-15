@@ -3,6 +3,7 @@ import { Redirect, useRouter } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useActivePlayer, usePlayersStore } from '@alphaTiles/data-players';
+import { useEffectiveSettings } from '@alphaTiles/data-settings';
 import { useTotalPoints } from '@alphaTiles/data-progress';
 import { usePackSpeech } from '@alphaTiles/data-audio';
 import { track } from '@shared/util-analytics';
@@ -17,7 +18,10 @@ export function GameMenuContainer(): React.JSX.Element {
   const assets = useLangAssets();
   const { speak } = usePackSpeech({ words: assets.words.rows, syllables: assets.syllables.rows });
 
-  const allDoors = useMenuDoors(player?.id ?? null);
+  const menuDoors = useMenuDoors(player?.id ?? null);
+  const { showGameNames } = useEffectiveSettings();
+  // Names off (settings toggle) → every door unlabelled, as before #37.
+  const allDoors = showGameNames ? menuDoors : menuDoors.map((door) => ({ ...door, name: undefined }));
   const score = useTotalPoints(player?.id ?? '');
 
   if (player === null) {
@@ -64,6 +68,10 @@ export function GameMenuContainer(): React.JSX.Element {
     router.push('/resources');
   }
 
+  function onSettings(): void {
+    router.push('/settings');
+  }
+
   function onAudioInstructions(): void {
     speak({ instruction: 'zzz_earth' });
   }
@@ -88,12 +96,14 @@ export function GameMenuContainer(): React.JSX.Element {
     onShare,
     onResources,
     onAudioInstructions,
+    onSettings,
     a11y: {
       back: t('menu.a11y.back_to_players'),
       about: t('menu.a11y.about'),
       share: t('menu.a11y.share'),
       resources: t('menu.a11y.resources'),
       audioInstructions: t('menu.a11y.audio_instructions'),
+      settings: t('menu.a11y.settings'),
       score: t('menu.score', { points: score }),
     },
     tabLabels: {
@@ -101,9 +111,12 @@ export function GameMenuContainer(): React.JSX.Element {
       share: t('menu.tabs.share'),
       resources: t('menu.tabs.resources'),
       audioInstructions: t('menu.tabs.audio'),
+      settings: t('menu.tabs.settings'),
     },
-    doorLabel: (door: { index: number; visual: keyof typeof doorStates }) =>
-      t('menu.a11y.door', { index: door.index, state: doorStates[door.visual] }),
+    doorLabel: (door: { index: number; name?: string; visual: keyof typeof doorStates }) =>
+      door.name
+        ? t('menu.a11y.door_named', { index: door.index, name: door.name, state: doorStates[door.visual] })
+        : t('menu.a11y.door', { index: door.index, state: doorStates[door.visual] }),
   };
 
   return <GameMenuScreenModern {...commonProps} allDoors={allDoors} />;

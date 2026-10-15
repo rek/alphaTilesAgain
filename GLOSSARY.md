@@ -8,6 +8,14 @@ Literacy-game generator: a language community's asset pack becomes a set of tile
 One playable game instance on the menu: an `aa_games.txt` row (game class + challenge level + tile/syllable mode + stage) resolved against the pack, identified by its 1-based row position (`index`, the route `doorIndex`). Resolved only by `@alphaTiles/data-doors` (`doorsOf`).
 _Avoid_: game row, game number, level (for the whole door)
 
+**Door name**: optional menu label for a Door, from the `GameName` column (9th) of `aa_games.txt`; `Door.name`. Pack content in the language of play, not chrome. Absent → unlabelled door.
+
+## Settings
+
+**Player preferences**: sparse per-player overrides (`usePlayerPreferencesStore` in `@alphaTiles/data-players`); unset = pack default. Written only via `useSetPreference`.
+
+**Effective settings**: the one lookup for cross-cutting settings — pack `aa_settings.txt` (labels + defaults defined once) with player preferences on top: `effectiveSettingsOf` / `useEffectiveSettings` (`@alphaTiles/data-settings`). _Avoid_: `settings.find*('<label>')` at call sites for these.
+
 ## Audio
 
 **Pack speech**: the module games use to make pack content audible — `speak(item)`, `durationOf(item)`, `stop()` (`libs/alphaTiles/data-audio/src/lib/createPackSpeech.ts`; in games via `useGameShell().speak`). The only place that knows audio keys and fallbacks. _Avoid_: "play the word audio", audio key.

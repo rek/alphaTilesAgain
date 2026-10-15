@@ -36,6 +36,7 @@ const meta: Meta<typeof GameMenuScreenModern> = {
     onShare: () => undefined,
     onResources: () => undefined,
     onAudioInstructions: () => undefined,
+    onSettings: () => undefined,
     onToggleLayout: () => undefined,
     a11y: {
       back: 'Back',
@@ -43,6 +44,7 @@ const meta: Meta<typeof GameMenuScreenModern> = {
       share: 'Share',
       resources: 'Resources',
       audioInstructions: 'Audio instructions',
+      settings: 'Settings',
       score: 'Score',
       toggleLayout: 'Toggle layout',
     },
@@ -51,6 +53,7 @@ const meta: Meta<typeof GameMenuScreenModern> = {
       share: 'Share',
       resources: 'Library',
       audioInstructions: 'Listen',
+      settings: 'Settings',
     },
   },
 };
@@ -72,5 +75,15 @@ export const Mixed: Story = {
       i % 3 === 0 ? 'mastery' : i % 3 === 1 ? 'in-process' : 'not-started',
     ),
     score: 180,
+  },
+};
+
+/** Doors labelled from the pack's GameName column (#37); door 3 has no name. */
+export const Named: Story = {
+  args: {
+    allDoors: makeDoors(9).map((d, i) => ({
+      ...d,
+      name: i === 2 ? undefined : ['聽字揀圖', '寫字', '揀第一個字', '記憶配對', '搵字', '砌字', '賓果', '詞語'][i % 8],
+    })),
   },
 };
