@@ -18,15 +18,20 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { readableTextColor } from '@shared/util-theme';
 
 const GRAYED_BG = '#A9A9A9';
 const GRAYED_TEXT = '#000000';
+/** Solved choice: green + check, so the right answer never reads as "wrong" (U16). */
+const CORRECT_BG = '#2E7D32';
 
 export type GeorgiaChoice = {
   text: string;
   grayed: boolean;
   bgColor: string;
+  /** True on the picked correct answer once the round is solved. */
+  correct?: boolean;
 };
 
 export type GeorgiaGridShape = 6 | 12 | 18;
@@ -114,8 +119,8 @@ export function GeorgiaScreen({
           <View key={row[0]} style={styles.gridRow}>
             {row.map((i) => {
               const choice = choices[i];
-              const bg = choice.grayed ? GRAYED_BG : choice.bgColor;
-              const fg = choice.grayed ? GRAYED_TEXT : readableTextColor(choice.bgColor);
+              const bg = choice.correct ? CORRECT_BG : choice.grayed ? GRAYED_BG : choice.bgColor;
+              const fg = choice.grayed ? GRAYED_TEXT : readableTextColor(bg);
               return (
                 <Pressable
                   key={i}
@@ -136,8 +141,19 @@ export function GeorgiaScreen({
                   accessibilityRole="button"
                   accessibilityState={{
                     disabled: choice.grayed || interactionLocked,
+                    selected: !!choice.correct,
                   }}
                 >
+                  {choice.correct ? (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={22}
+                      color={fg}
+                      style={styles.correctMark}
+                      accessibilityElementsHidden
+                      importantForAccessibility="no"
+                    />
+                  ) : null}
                   <Text
                     style={[styles.buttonText, { color: fg }]}
                     numberOfLines={1}
@@ -156,6 +172,11 @@ export function GeorgiaScreen({
 }
 
 const styles = StyleSheet.create({
+  correctMark: {
+    position: 'absolute',
+    top: 6,
+    end: 6,
+  },
   root: {
     flex: 1,
     alignItems: 'center',
