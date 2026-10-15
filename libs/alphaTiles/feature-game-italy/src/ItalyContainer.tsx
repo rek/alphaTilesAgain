@@ -59,14 +59,14 @@ function getCallText(item: SourceItem): string {
   return item.kind === 'word' ? item.word.wordInLOP : item.syllable.syllable;
 }
 
-function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Element {
+function ItalyGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
   const assets = useLangAssets();
   const router = useRouter();
   const { t } = useTranslation('chrome');
 
-  const isSyllable = syllableGame === 'S';
+  const isSyllable = variant === 'S';
 
   // Italy.java:111-119 — read deckSize, clamp >= CARDS_ON_BOARD.
   const deckSize = useMemo(() => {
@@ -276,26 +276,9 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
 }
 
 export function ItalyContainer(props: RouteParams): React.JSX.Element {
-  const assets = useLangAssets();
-  const rowIndex = parseInt(
-    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
-    10,
-  );
-  const game = assets.games.rows[rowIndex - 1];
-  const syllableGame =
-    (props.syllableGame as string) ?? (game?.syllOrTile === 'S' ? 'S' : '');
-  const instructionAudioId = game?.instructionAudio;
-  const hasInstruction =
-    !!instructionAudioId && instructionAudioId in assets.audio.instructions;
-
   return (
-    <GameShellContainer
-      showInstructionsButton={hasInstruction}
-      instructionAudioId={hasInstruction ? instructionAudioId : undefined}
-      confirmOnBack={false}
-      icons={props.icons}
-    >
-      <ItalyGame syllableGame={syllableGame} />
+    <GameShellContainer confirmOnBack={false} icons={props.icons}>
+      {(door) => <ItalyGame variant={door.variant} />}
     </GameShellContainer>
   );
 }

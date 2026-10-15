@@ -346,6 +346,15 @@ No Detox / Playwright e2e in v1.
 
 The 17 Java game classes (`Brazil`, `China`, `Chile`, `Colombia`, `Ecuador`, `Georgia`, `Iraq`, `Italy`, `Japan`, `Malaysia`, `Mexico`, `Myanmar`, `Peru`, `Romania`, `Sudan`, `Thailand`, `UnitedStates`) are **mechanics**, not lang-specific variants. `aa_games.txt` defines game instances, each of which is a `{class, challengeLevel}` pair. `challengeLevel` is class-specific — Thailand, for instance, decodes it as a 3-digit code for `{difficulty, refType, choiceType}`.
 
+### Door catalogue
+
+A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pack. `@alphaTiles/data-doors` (`type:data-access`) is the only module that reads `games.rows`:
+
+- `doorsOf(pack) → Door[]` — pure; all rows, file order, `doors[i].index === i + 1`. Tested against the real `yue` + `eng` packs.
+- `useDoors()` / `useDoor(routeParams)` — the same, memoized from `useLangAssets()`.
+
+`Door = { index, classKey, country, challengeLevel, displayLevel, variant, stage, colorHex, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }`. The menu (enabled doors + trackers), `GameShellContainer` (routed door, progress key, next-door search) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
+
 ### V1 port scope
 
 Of the 17 classes, V1 implements exactly one:

@@ -6,7 +6,7 @@ import { useActivePlayer, usePlayersStore } from '@alphaTiles/data-players';
 import { useTotalPoints } from '@alphaTiles/data-progress';
 import { usePackSpeech } from '@alphaTiles/data-audio';
 import { track } from '@shared/util-analytics';
-import { useDoors } from './useDoors';
+import { useMenuDoors } from './useMenuDoors';
 // import { GameMenuScreen } from './GameMenuScreen'; // classic layout — disabled
 import { GameMenuScreenModern } from './GameMenuScreenModern';
 
@@ -17,7 +17,7 @@ export function GameMenuContainer(): React.JSX.Element {
   const assets = useLangAssets();
   const { speak } = usePackSpeech({ words: assets.words.rows, syllables: assets.syllables.rows });
 
-  const { allDoors } = useDoors(player?.id ?? null, 0);
+  const allDoors = useMenuDoors(player?.id ?? null);
   const score = useTotalPoints(player?.id ?? '');
 
   if (player === null) {
@@ -68,6 +68,12 @@ export function GameMenuContainer(): React.JSX.Element {
     speak({ instruction: 'zzz_earth' });
   }
 
+  const doorStates = {
+    'not-started': t('menu.a11y.door_state.not_started'),
+    'in-process': t('menu.a11y.door_state.in_process'),
+    mastery: t('menu.a11y.door_state.mastery'),
+  };
+
   const commonProps = {
     playerName: player.name,
     playerAvatarSrc,
@@ -96,8 +102,8 @@ export function GameMenuContainer(): React.JSX.Element {
       resources: t('menu.tabs.resources'),
       audioInstructions: t('menu.tabs.audio'),
     },
-    doorLabel: (door: { index: number; visual: 'not-started' | 'in-process' | 'mastery' }) =>
-      t('menu.a11y.door', { index: door.index, state: door.visual }),
+    doorLabel: (door: { index: number; visual: keyof typeof doorStates }) =>
+      t('menu.a11y.door', { index: door.index, state: doorStates[door.visual] }),
   };
 
   return <GameMenuScreenModern {...commonProps} allDoors={allDoors} />;

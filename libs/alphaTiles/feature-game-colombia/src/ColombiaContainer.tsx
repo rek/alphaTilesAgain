@@ -16,6 +16,7 @@ import type { ImageSourcePropType } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
+import { useDoor } from '@alphaTiles/data-doors';
 import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
@@ -410,22 +411,12 @@ function ColombiaGame({
 
 export function ColombiaContainer(props: RouteParams): React.JSX.Element {
   const router = useRouter();
-  const assets = useLangAssets();
-
-  const rowIndex = parseInt(
-    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
-    10,
-  );
-  const rawLevel = parseInt((props.challengeLevel as string) ?? '1', 10);
-  const challengeLevel = (rawLevel >= 1 && rawLevel <= 4 ? rawLevel : 1) as ChallengeLevel;
-  const gameRow = assets.games.rows[rowIndex - 1];
-  const resolvedVariant =
-    (props.syllableGame as string) ?? (gameRow?.syllOrTile === 'S' ? 'S' : '');
-  const variant = (resolvedVariant === 'S' ? 'S' : 'T') as ColombiaVariant;
+  const routed = useDoor(props);
+  const unsupported = routed?.variant === 'S' && routed.challengeLevel === 4;
 
   // S-CL4 is unsupported per Java line 78. Bounce immediately.
   useEffect(() => {
-    if (variant === 'S' && challengeLevel === 4) {
+    if (unsupported) {
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -435,22 +426,18 @@ export function ColombiaContainer(props: RouteParams): React.JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (variant === 'S' && challengeLevel === 4) {
+  if (unsupported) {
     return <></>;
   }
 
-  const instructionAudioId = gameRow?.instructionAudio;
-  const hasInstruction =
-    !!instructionAudioId && instructionAudioId in assets.audio.instructions;
-
   return (
-    <GameShellContainer
-      showInstructionsButton={hasInstruction}
-      instructionAudioId={hasInstruction ? instructionAudioId : undefined}
-      confirmOnBack={false}
-      icons={props.icons}
-    >
-      <ColombiaGame challengeLevel={challengeLevel} variant={variant} />
+    <GameShellContainer confirmOnBack={false} icons={props.icons}>
+      {(door) => (
+        <ColombiaGame
+          challengeLevel={(door.challengeLevel >= 1 && door.challengeLevel <= 4 ? door.challengeLevel : 1) as ChallengeLevel}
+          variant={door.variant}
+        />
+      )}
     </GameShellContainer>
   );
 }

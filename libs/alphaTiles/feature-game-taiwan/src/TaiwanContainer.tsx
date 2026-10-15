@@ -17,7 +17,6 @@ type TaiwanInnerModule = typeof import('./TaiwanInner');
 
 export type TaiwanContainerProps = {
   icons: GameShellIcons;
-  challengeLevel?: string | string[];
 };
 
 export function TaiwanContainer(props: TaiwanContainerProps): React.JSX.Element {

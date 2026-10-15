@@ -1,4 +1,4 @@
-import type { NextGameResult } from './findNextUncompletedGame';
+import type { Door } from '@alphaTiles/data-doors';
 
 /**
  * Discriminated return of the post-mastery navigation target. Pure shape
@@ -21,13 +21,13 @@ export type NextGameHref =
     }
   | '/menu';
 
-export function buildNextGameHref(next: NextGameResult | null): NextGameHref {
+export function buildNextGameHref(next: Door | null): NextGameHref {
   if (next === null) return '/menu';
   return {
     pathname: '/games/[classKey]',
     params: {
       classKey: next.classKey,
-      doorIndex: String(next.gameNumber),
+      doorIndex: String(next.index),
       challengeLevel: String(next.challengeLevel),
     },
   };
