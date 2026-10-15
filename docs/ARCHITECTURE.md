@@ -341,6 +341,10 @@ Fixtures for unit tests live under `languages/eng/` and `languages/template/`. T
 
 No Detox / Playwright e2e in v1.
 
+**Packs in the nx graph**: `languages/` is the `languages` nx project (`languages/project.json`, no targets). Every project whose tests or builds read the real packs (`tools`, `data-doors`, `data-door-progress`, `data-settings`, `feature-game-menu`, `feature-self-test`, `alphaTiles`) lists it in `implicitDependencies` — a new one must too. So a pack-only change marks them affected and busts their test cache (`^default`).
+
+**CI** (`.github/workflows/ci.yaml`): `nx affected -t lint typecheck test` (incl. `alphaTiles:typecheck` and `tools:test`, the pack contract tests), `validate-lang-pack` for every pack, and a yue web export when the app is affected; Storybook build in parallel.
+
 ## 16. RTL and script direction
 
 - Every style uses logical props (`marginStart` / `marginEnd`, `flexDirection: 'row'`) — never `marginLeft` / `marginRight`.

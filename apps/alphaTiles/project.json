@@ -4,6 +4,7 @@
   "sourceRoot": "apps/alphaTiles/src",
   "projectType": "application",
   "tags": ["scope:alphaTiles", "type:app"],
+  "implicitDependencies": ["languages"],
   "targets": {
     "start": {
       "executor": "@nx/expo:start",

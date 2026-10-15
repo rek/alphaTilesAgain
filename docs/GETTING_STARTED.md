@@ -49,7 +49,7 @@ APP_LANG=yue node_modules/.bin/tsx tools/validate-lang-pack.ts
 ```
 
 The validator checks audio/image references, tile structure, word cross-refs, and more.
-It must pass before `generate-lang-manifest.ts` is run — CI enforces this order.
+It must pass before `generate-lang-manifest.ts` is run (`prebuild-lang` enforces this order). CI validates every pack on every PR and, via the `languages` nx project, runs the pack contract tests when a pack changes.
 Use `nx validate-lang-pack alphaTiles` only when `PUBLIC_LANG_ASSETS` is set (it also triggers rsync from the source repo).
 
 ### Type Checking

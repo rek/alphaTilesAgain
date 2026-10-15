@@ -4,6 +4,7 @@
   "sourceRoot": "libs/alphaTiles/data-doors/src",
   "projectType": "library",
   "tags": ["type:data-access", "scope:alphaTiles"],
+  "implicitDependencies": ["languages"],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
