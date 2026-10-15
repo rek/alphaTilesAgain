@@ -218,7 +218,7 @@ not app logic. The `data-language-assets` and `data-language-pack` libs use this
 `expo-audio`, wrapped by `libs/alphaTiles/data-audio`.
 
 - **Preload at loading screen** — all `tiles/*.mp3`, `words/*.mp3`, `syllables/*.mp3` loaded into a keyed map. Same flow as Android `SoundPool`.
-- **Web caveat** — Web Audio API requires a user gesture before first play. Loading screen surfaces a tap-to-start element on web; native platforms skip it. Overlapping playback on web is best-effort (one `<audio>` per key).
+- **Web caveat** — browsers block audio until a user gesture. Loading screen shows tap-to-begin on web *after* audio preload; the tap primes every clip in chunks (Safari needs per-element priming; priming all at once killed Chromium tabs). Reloads / deep links to other routes hit a root-layout `WebAudioUnlockGate` instead. Native skips both. Overlapping playback on web is best-effort (one `<audio>` per key). See `openspec/changes/web-platform-parity/design.md` I1–I6.
 - **Base sounds** (`correct.mp3`, `incorrect.mp3`, `correctFinal.mp3`) ship in the app bundle, not the pack.
 
 ## 9. Per-class precompute registry

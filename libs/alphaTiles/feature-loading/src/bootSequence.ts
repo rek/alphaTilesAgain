@@ -1,8 +1,8 @@
 export type Phase =
   | 'fonts'
   | 'i18n'
-  | 'web-gate'
   | 'audio'
+  | 'web-gate'
   | 'precompute'
   | 'hydration'
   | 'done';
@@ -30,15 +30,16 @@ export async function bootSequence(opts: BootSequenceOpts): Promise<void> {
   onPhaseChange('i18n');
   registerContent();
 
-  // Phase 3: web audio gesture gate
+  // Phase 3: await audio (AudioProvider loads in parallel; may already be resolved)
+  onPhaseChange('audio');
+  await awaitAudio();
+
+  // Phase 4: web audio gesture gate — AFTER audio so the tap can prime every
+  // loaded clip (Safari needs a per-element gesture play; #47).
   if (platform === 'web' && waitForWebGesture) {
     onPhaseChange('web-gate');
     await waitForWebGesture();
   }
-
-  // Phase 4: await audio (AudioProvider loads in parallel; may already be resolved)
-  onPhaseChange('audio');
-  await awaitAudio();
 
   // Phase 5: precomputes (already run in loadLangPack — emit phase for UI completeness)
   onPhaseChange('precompute');

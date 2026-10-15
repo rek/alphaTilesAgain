@@ -1,0 +1,8 @@
+{
+  "name": "ui-web-audio-unlock-gate",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/ui-web-audio-unlock-gate/src",
+  "projectType": "library",
+  "tags": ["type:ui", "scope:shared"],
+  "targets": {}
+}
