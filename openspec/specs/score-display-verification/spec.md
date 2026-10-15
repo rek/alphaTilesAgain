@@ -23,7 +23,7 @@ The game shell header (`ScoreBar`) SHALL display `t('chrome:chrome.score')` as a
 
 ### Requirement: Menu score shows interpolated live points
 
-The game menu screen (`GameMenuScreen`) SHALL display `t('menu:menu.score', { points })` where `points` is the live score from the game shell context. The string SHALL render as `"Score: <N>"` with the actual numeric value substituted.
+The game menu screen (`GameMenuScreenModern`) SHALL display `t('menu:menu.score', { points })` where `points` is the live score from the game shell context. The string SHALL render as `"Score: <N>"` with the actual numeric value substituted.
 
 #### Scenario: Menu shows current points
 

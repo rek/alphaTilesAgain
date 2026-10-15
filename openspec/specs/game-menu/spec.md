@@ -195,7 +195,7 @@ All interactive affordances SHALL carry `accessibilityLabel` + `accessibilityRol
 
 #### Scenario: Presenter has no `useTranslation`
 
-- **WHEN** `GameMenuScreen` (presenter) is inspected
+- **WHEN** `GameMenuScreenModern` (presenter) is inspected
 - **THEN** it does not import `react-i18next` or any translation hook
 
 ### Requirement: Library boundaries
