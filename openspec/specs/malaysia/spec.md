@@ -78,7 +78,7 @@ Tapping a row's text or its image SHALL play that word's audio via `gameSounds.p
 
 - **GIVEN** the user taps row index 3 on the active page
 - **WHEN** the handler fires
-- **THEN** `playWord(wordPagesLists[currentPageNumber][3])` is invoked
+- **THEN** `shell.speak({ word })` for `wordPagesLists[currentPageNumber][3]` is invoked
 
 #### Scenario: Image tap plays the same word audio
 

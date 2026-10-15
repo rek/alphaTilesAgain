@@ -77,7 +77,7 @@ The `yue` pack SHALL define one game door that launches the Georgia class in syl
 - **WHEN** the game menu is built by `useDoors`
 - **THEN** a door appears with `classKey='georgia'` and `challengeLevel=1`
 - **AND** selecting it routes to `apps/alphaTiles/app/games/georgia.tsx` with `doorIndex` set to the row's 1-based index
-- **AND** `GeorgiaContainer` resolves `syllableGame='S'` by reading `assets.games.rows[doorIndex - 1].syllOrTile`
+- **AND** `GeorgiaContainer` resolves `syllableGame='S'` from the routed Door (`useDoor`, `door.variant`)
 
 #### Scenario: Syllable door is a six-choice round
 

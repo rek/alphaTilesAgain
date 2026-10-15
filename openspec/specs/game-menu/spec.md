@@ -7,7 +7,7 @@ TBD - imported from archived change. Update Purpose after archive.
 
 ### Requirement: Door grid derived from `aa_games.txt`
 
-`/menu` SHALL render one door per row of `aa_games.txt` (as parsed into `langAssets.gameList`), in file order. Each door SHALL display the door's 1-based index number.
+`/menu` SHALL render one door per row of `aa_games.txt` (resolved as Doors by `@alphaTiles/data-doors`, `useDoors()`), in file order. Each door SHALL display the door's 1-based index number.
 
 #### Scenario: Small gameList
 
@@ -21,7 +21,7 @@ TBD - imported from archived change. Update Purpose after archive.
 
 ### Requirement: Per-door tint from `aa_colors.txt`
 
-Each door's tint color SHALL be resolved by `colorList[parseInt(game.color)]` (0-based index into the parsed `aa_colors.txt`). The resolved hex string SHALL be passed to the presenter as `colorHex`. The presenter SHALL NOT resolve the color itself.
+Each door's tint color SHALL be resolved once by the Door catalogue as `colorList[parseInt(game.color)]` (0-based index into the parsed `aa_colors.txt`). The resolved hex string SHALL be passed to the presenter as `colorHex`. The presenter SHALL NOT resolve the color itself.
 
 #### Scenario: Color index 2
 
@@ -177,7 +177,7 @@ The back-arrow affordance on `/menu` SHALL call `clearActivePlayer()` (setting `
 
 ### Requirement: Door-press navigation contract
 
-Pressing a door SHALL route via `router.push('/games/[classKey]', { classKey, doorIndex, challengeLevel })` using `expo-router`'s typed navigation. The menu SHALL pass only these three params; the target screen resolves all other per-door state from `useLangAssets()`.
+Pressing a door SHALL route via `router.push('/games/[classKey]', { classKey, doorIndex, challengeLevel })` using `expo-router`'s typed navigation. The menu SHALL pass only these three params; the target screen resolves all other per-door state from the Door catalogue (`useDoor`).
 
 #### Scenario: Press door 3 (china, level 1)
 

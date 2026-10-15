@@ -89,7 +89,7 @@ After every selection, the constructed string SHALL be compared to `wordInLOPWit
 - **WHEN** the player taps the correct tile in the remaining pair
 - **THEN** `shell.incrementPointsAndTracker(true)` (mapped from Java `updatePointsAndTrackers(2)`) is invoked
 - **AND** the constructed-word display turns dark green and bold
-- **AND** `audio.playCorrect()` plays followed by `audio.playWord(refWord.wordInLWC)`
+- **AND** `audio.playCorrect()` plays followed by `shell.speak({ word: refWord })`
 - **AND** all tile buttons become unclickable until the next round
 
 #### Scenario: Wrong word does not win
