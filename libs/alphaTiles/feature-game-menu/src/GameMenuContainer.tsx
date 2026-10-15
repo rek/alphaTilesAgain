@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Redirect, useRouter } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
@@ -7,6 +7,7 @@ import { useEffectiveSettings } from '@alphaTiles/data-settings';
 import { useTotalPoints } from '@alphaTiles/data-progress';
 import { usePackSpeech } from '@alphaTiles/data-audio';
 import { track } from '@shared/util-analytics';
+import { doorHref } from './doorHref';
 import { useMenuDoors } from './useMenuDoors';
 // import { GameMenuScreen } from './GameMenuScreen'; // classic layout — disabled
 import { GameMenuScreenModern } from './GameMenuScreenModern';
@@ -18,10 +19,16 @@ export function GameMenuContainer(): React.JSX.Element {
   const assets = useLangAssets();
   const { speak } = usePackSpeech({ words: assets.words.rows, syllables: assets.syllables.rows });
 
+  const [guidanceOpen, setGuidanceOpen] = useState(false);
   const menuDoors = useMenuDoors(player?.id ?? null);
   const { showGameNames } = useEffectiveSettings();
-  // Names off (settings toggle) → every door unlabelled, as before #37.
-  const allDoors = showGameNames ? menuDoors : menuDoors.map((door) => ({ ...door, name: undefined }));
+  // Ladder order (tier, then file order); "Level N" badge per door. Names off
+  // (settings toggle) → every door unlabelled, as before #37.
+  const allDoors = menuDoors.map((door) => ({
+    ...door,
+    name: showGameNames ? door.name : undefined,
+    levelLabel: t('menu.level', { n: door.tier }),
+  }));
   const score = useTotalPoints(player?.id ?? '');
 
   if (player === null) {
@@ -41,14 +48,7 @@ export function GameMenuContainer(): React.JSX.Element {
     const door = allDoors.find((d) => d.index === doorIndex);
     if (!door) return;
     track('screen_viewed', { screenName: `game/${door.classKey}` });
-    router.push({
-      pathname: '/games/[classKey]',
-      params: {
-        classKey: door.classKey,
-        doorIndex: String(door.index),
-        challengeLevel: String(door.challengeLevel),
-      },
-    });
+    router.push(doorHref(door));
   }
 
   function onBack(): void {
@@ -97,6 +97,22 @@ export function GameMenuContainer(): React.JSX.Element {
     onResources,
     onAudioInstructions,
     onSettings,
+    guidance: {
+      visible: guidanceOpen,
+      onOpen: () => setGuidanceOpen(true),
+      onClose: () => setGuidanceOpen(false),
+      strings: {
+        title: t('placementGuidance.title'),
+        intro: t('placementGuidance.intro'),
+        bands: [
+          { title: t('placementGuidance.band_0_1_title'), body: t('placementGuidance.band_0_1') },
+          { title: t('placementGuidance.band_2_3_title'), body: t('placementGuidance.band_2_3') },
+          { title: t('placementGuidance.band_4_6_title'), body: t('placementGuidance.band_4_6') },
+        ],
+        tip: t('placementGuidance.tip'),
+        close: t('placementGuidance.close'),
+      },
+    },
     a11y: {
       back: t('menu.a11y.back_to_players'),
       about: t('menu.a11y.about'),
@@ -105,6 +121,7 @@ export function GameMenuContainer(): React.JSX.Element {
       audioInstructions: t('menu.a11y.audio_instructions'),
       settings: t('menu.a11y.settings'),
       score: t('menu.score', { points: score }),
+      howLevelsWork: t('menu.a11y.how_levels_work'),
     },
     tabLabels: {
       about: t('menu.tabs.about'),
@@ -113,10 +130,12 @@ export function GameMenuContainer(): React.JSX.Element {
       audioInstructions: t('menu.tabs.audio'),
       settings: t('menu.tabs.settings'),
     },
-    doorLabel: (door: { index: number; name?: string; visual: keyof typeof doorStates }) =>
-      door.name
+    doorLabel: (door: { index: number; name?: string; visual: keyof typeof doorStates; levelLabel?: string }) => {
+      const label = door.name
         ? t('menu.a11y.door_named', { index: door.index, name: door.name, state: doorStates[door.visual] })
-        : t('menu.a11y.door', { index: door.index, state: doorStates[door.visual] }),
+        : t('menu.a11y.door', { index: door.index, state: doorStates[door.visual] });
+      return door.levelLabel ? t('menu.a11y.door_with_level', { door: label, level: door.levelLabel }) : label;
+    },
   };
 
   return <GameMenuScreenModern {...commonProps} allDoors={allDoors} />;

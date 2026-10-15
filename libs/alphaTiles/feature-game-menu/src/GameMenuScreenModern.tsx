@@ -14,10 +14,17 @@ import {
 import type { ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { MenuDoor } from './buildMenuDoors';
+import { PlacementGuidanceSheet } from './PlacementGuidanceSheet';
+import type { PlacementGuidanceStrings } from './PlacementGuidanceSheet';
 
-/** `name` is the pack's door label; absent → unlabelled door (number only). */
+/**
+ * `name` is the pack's door label; absent → unlabelled door (number only).
+ * `levelLabel` is the translated tier badge ("Level 2"); doors arrive in
+ * ladder order, the number shown is still the raw `index`.
+ */
 type DoorData = Pick<MenuDoor, 'index' | 'colorHex' | 'visual' | 'textColorHex'> & {
   name?: string;
+  levelLabel?: string;
 };
 
 export type GameMenuScreenModernProps = {
@@ -36,6 +43,13 @@ export type GameMenuScreenModernProps = {
   onResources: () => void;
   onAudioInstructions: () => void;
   onSettings: () => void;
+  /** "Where to start" explainer: open state + pre-translated copy. */
+  guidance: {
+    visible: boolean;
+    onOpen: () => void;
+    onClose: () => void;
+    strings: PlacementGuidanceStrings;
+  };
   a11y: {
     back: string;
     about: string;
@@ -44,6 +58,7 @@ export type GameMenuScreenModernProps = {
     audioInstructions: string;
     settings: string;
     score: string;
+    howLevelsWork: string;
   };
   doorLabel: (door: DoorData) => string;
   tabLabels: {
@@ -130,6 +145,16 @@ function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.El
           {door.name}
         </Text>
       ) : null}
+      {door.levelLabel ? (
+        <Text
+          style={[styles.levelBadge, { color: numberColor }]}
+          numberOfLines={1}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+        >
+          {door.levelLabel}
+        </Text>
+      ) : null}
       {door.visual === 'mastery' && (
         <Ionicons
           name="checkmark"
@@ -160,6 +185,7 @@ export function GameMenuScreenModern({
   onResources,
   onAudioInstructions,
   onSettings,
+  guidance,
   a11y,
   tabLabels,
   doorLabel,
@@ -188,7 +214,22 @@ export function GameMenuScreenModern({
         )}
         <Text style={styles.playerName}>{playerName}</Text>
         <Text accessibilityLabel={a11y.score} style={styles.score}>{score}</Text>
+        <Pressable
+          onPress={guidance.onOpen}
+          accessibilityRole="button"
+          accessibilityLabel={a11y.howLevelsWork}
+          hitSlop={8}
+          style={({ pressed }) => [styles.helpButton, pressed && styles.pressed]}
+        >
+          <Ionicons name="help-circle-outline" size={28} color="#1F2937" />
+        </Pressable>
       </View>
+
+      <PlacementGuidanceSheet
+        visible={guidance.visible}
+        strings={guidance.strings}
+        onClose={guidance.onClose}
+      />
 
       <FlatList
         key={numColumns}
@@ -296,6 +337,9 @@ const styles = StyleSheet.create({
     marginStart: 8,
     fontVariant: ['tabular-nums'],
   },
+  helpButton: {
+    marginStart: 12,
+  },
   grid: {
     flexGrow: 1,
   },
@@ -318,6 +362,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 6,
     marginTop: 2,
+  },
+  levelBadge: {
+    position: 'absolute',
+    top: 6,
+    start: 8,
+    fontSize: 11,
+    fontWeight: '700',
   },
   masteryBadge: {
     position: 'absolute',
