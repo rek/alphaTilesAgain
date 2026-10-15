@@ -21,6 +21,7 @@ import {
   usePrecompute,
 } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
+import { useTranslation } from '@shared/util-i18n';
 import {
   GameShellContainer,
   useGameShell,
@@ -91,6 +92,7 @@ function GeorgiaGame({
 }): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
+  const { t } = useTranslation();
   const assets = useLangAssets();
   const data = usePrecompute<GeorgiaData>('georgia');
 
@@ -394,7 +396,7 @@ function GeorgiaGame({
   return (
     <GeorgiaScreen
       wordImage={wordImage}
-      wordLabel={round.word.wordInLWC}
+      wordLabel={t('chrome:a11y.active_word_picture')}
       revealedText={round.revealedText}
       choices={round.choices}
       gridShape={round.visibleGameButtons}
