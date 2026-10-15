@@ -7,6 +7,7 @@ import {
   useGameShell,
   useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { decodeThailandChallengeLevel } from './decodeThailandChallengeLevel';
 import { setupThailandRound } from './setupThailandRound';
 import type { ThailandRound, ThailandRef, ThailandChoice } from './setupThailandRound';
@@ -18,7 +19,9 @@ import type {
   ThailandChoiceFeedback,
 } from './ThailandScreen';
 
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 const CHIME_MS = 400;
 const POST_REPLAY_GAP_MS = 200;
@@ -345,6 +348,7 @@ export function ThailandContainer(props: RouteParams): React.JSX.Element {
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <ThailandGame challengeLevel={challengeLevel} />
     </GameShellContainer>

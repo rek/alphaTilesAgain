@@ -24,6 +24,7 @@ import {
   GameShellContainer,
   useGameShell,
 } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { MexicoScreen } from './MexicoScreen';
 import { setupMexicoBoard } from './setupMexicoBoard';
 import type { CardState } from './setupMexicoBoard';
@@ -41,7 +42,9 @@ const PAIRS_BY_CHALLENGE: Record<number, number> = {
 /** Time to show the second card before checking for a match (Mexico.java line 261: 800ms). */
 const REVEAL_DELAY_MS = 800;
 
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
@@ -254,6 +257,7 @@ export function MexicoContainer(props: RouteParams): React.JSX.Element {
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <MexicoGame challengeLevel={challengeLevel} />
     </GameShellContainer>

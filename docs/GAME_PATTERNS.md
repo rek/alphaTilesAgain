@@ -787,25 +787,13 @@ Track started-state in a ref (not state) so the effect doesn't re-render on the 
 
 ## New game routes must inject chrome assets (found 2026-08-19)
 
-`type:ui` libs can't resolve app assets, so `ScoreBar`'s tracker icons are passed in
-per-route via Metro static `require`:
+`type:ui` libs can't resolve app assets, so `ScoreBar`'s tracker icons come from one
+app-level module, `apps/alphaTiles/src/gameIcons.ts` (Metro static `require`s).
 
-```tsx
-// apps/alphaTiles/app/games/<game>.tsx
-const icons = {
-  trackerComplete: require('../../assets/zz_complete.png'),
-  trackerIncomplete: require('../../assets/zz_incomplete.png'),
-};
-```
-
-**This is silently optional.** `GameShellScreen` falls back to `trackerIcons = undefined`
-when either is absent — no error, no type failure, no test catches it. A verification
-sweep found only 9 of 19 routes passing them, `thailand.tsx` among the missing despite
-being 5 of yue's 11 live doors.
-
-When adding a game route, copy the `icons` block. When touching this area, prefer
-hoisting the map into one app-level module so the omission becomes impossible. See
-issue #51.
+Every route passes it: `<XContainer {...params} icons={gameIcons} />`, and the container
+forwards `icons` to `GameShellContainer`. Jest guard `gameRoutesUseGameIcons.test.ts`
+fails if a route under `app/games/` omits it. Missing icons used to fall back silently
+(issue #51: 10 of 19 routes, incl. thailand).
 
 **Generalises:** any prop a presenter treats as optional-with-fallback is a place where
 per-route wiring drifts. Grep every route before assuming a chrome feature is live.
