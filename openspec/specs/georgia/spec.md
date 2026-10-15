@@ -194,6 +194,22 @@ In **syllable mode (S) only**, after the word clip the game SHALL additionally p
 - **WHEN** the next round starts or the game unmounts
 - **THEN** the scheduled `audio.playSyllable` timer is cleared and does not fire
 
+### Requirement: Syllable Mode Shows Blanked-Word Prompt
+
+In **syllable mode (S) only**, from round start until the correct tap, the full-word text view SHALL show the word's syllables with the first one replaced by `__` (e.g. 醫生 → `__生`; a one-syllable word shows `__`). On the correct tap it SHALL be replaced by the full stripped word as before. Tile mode (T) shows nothing until the correct tap, exactly as before. Not in Java; added for issue #30 (testers could not tell the task was "first syllable").
+
+#### Scenario: S-mode prompt before correct tap
+
+- **GIVEN** syllable mode and the round word 醫生
+- **WHEN** the round starts
+- **THEN** the text view shows `__生`
+
+#### Scenario: T-mode unchanged
+
+- **GIVEN** tile mode
+- **WHEN** the round starts
+- **THEN** the text view is hidden until the correct tap
+
 ### Requirement: Correct Answer Handling
 
 When the player taps the correct choice, the game SHALL:

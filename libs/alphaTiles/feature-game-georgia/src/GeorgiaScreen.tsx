@@ -35,7 +35,8 @@ export type GeorgiaScreenProps = {
   wordImage: ImageSourcePropType | undefined;
   /** Fallback label when the image asset is missing. */
   wordLabel: string;
-  /** Stripped wordInLOP shown only after a correct pick. Empty string hides it. */
+  /** Text under the image: S-mode prompt (first syllable blanked) before the
+   *  correct pick, then the stripped wordInLOP. Empty string hides it. */
   revealedText: string;
   choices: GeorgiaChoice[];
   gridShape: GeorgiaGridShape;

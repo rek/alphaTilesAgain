@@ -6,6 +6,14 @@ Latest entry: **game-taiwan stroke-UX fix** (2026-06-04, issue #31) — never le
 
 ---
 
+## yue product decisions (fix/yue-product, 2026-10)
+
+Owner-delegated calls for the Cantonese pack; one line each.
+
+- **#30 Georgia S prompt** — S-mode shows the word with its first syllable blanked (`__生`) under the picture until solved (`buildSyllableHint`). Gated on S; T-mode/Java parity untouched. Only yue uses Georgia S today.
+
+---
+
 ## Syllable-chain audio fallback in shell (from yue-composite-numerals)
 
 When a word entry has no `audio/words/<lwc>.mp3` but its `wordInLOP` fully decomposes into known syllables, the shell plays each constituent syllable's clip in sequence with a `GAP_MS` natural pause (`150 ms` initial value). Pattern lives in `GameShellContainer.playWordAudio` (exposed on `useGameShell()`; `replayWord` delegates to it) — branches on `audio.getWordDuration(lwc)`:
