@@ -9,20 +9,11 @@ export const TRACKERS_PER_DOOR = 12;
  * what "mastered" means. Menu (door visual), game shell (tracker bar, score,
  * mastery action) and the next-door search all read it.
  *
- * Mastered = the door tracks progress AND its tracker count is ≥ 12.
- *
- * Before this module there were three rules:
- * 1. Menu (`deriveVisual`): `trackerCount >= 12` → mastery visual.
- * 2. Shell tracker bar + next-game search: the persisted `checked12Trackers`
- *    flag (bar showed `trackerCount % 12`, refilling from empty after 12).
- * 3. util-scoring `isGameMastered` (no callers): flag, or ≥ 12 only when
- *    "After 12 checked trackers" is 2 or 3 — mode-dependent.
- * Java AlphaTiles: `GameActivity.updatePointsAndTrackers` sets
- * `hasChecked12Trackers` the moment `trackerCount >= 12`, in every mode, and
- * `Earth.updateDoors` draws mastery at `trackerCount >= 12`; the tracker bar
- * checks icon `t` while `t < trackerCount` (stays full past 12). So the flag
- * is just "count reached 12" and rule 1 is the Java rule; rule 3 was never
- * Java's. The flag is no longer written or read.
+ * Mastered = the door tracks progress AND its tracker count is ≥ 12, in every
+ * "After 12 checked trackers" mode (Java `GameActivity.updatePointsAndTrackers`
+ * sets `hasChecked12Trackers` at `trackerCount >= 12`; `Earth.updateDoors`
+ * draws mastery at the same count). The tracker bar checks icon `t` while
+ * `t < trackerCount`, so it stays full past 12.
  *
  * No-right/wrong doors (`tracksProgress: false`) are never mastered and
  * always show "in process" (Java Earth forces their count to 12 for colour,

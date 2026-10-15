@@ -10,7 +10,7 @@ import { useTheme, ThemeProvider, useFontsReady, style, buildTheme } from '@shar
 
 - `useTheme(): Theme` — reads the current theme from context. Throws if called outside `<ThemeProvider>`.
 - `ThemeProvider` — mount once at app root with `palette` (hexByIndex from parseColors) and `fontMap` (font name strings).
-- `useFontsReady(fontMap)` — wraps `expo-font`'s `useFonts`, returns a `boolean`. Only `util-theme` imports `expo-font`.
+- `useFontsReady(fontMap)` — wraps `expo-font`'s `useFonts`, returns `{ ready, failed }` (error counts as ready; `failed` → caller drops pack font names). Only `util-theme` imports `expo-font`.
 - `buildTheme(palette, fontMap)` — pure function; useful for tests.
 - `style.marginStart(n)`, `style.marginEnd(n)`, `style.paddingStart(n)`, `style.paddingEnd(n)` — logical-prop helpers (SpacingKey: 0|1|2|3|4|5|6|8|10|12|16).
 

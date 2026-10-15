@@ -28,7 +28,7 @@ Module: `libs/alphaTiles/data-audio/src/lib/createPackSpeech.ts` (+ `planSpeech.
 
 - **Keys** — tile → `tile.base`, word → `wordInLWC`, syllable → syllable text, instruction → InstructionAudio id (what `resolveAudio` binds; never the AudioName column).
 - **Word → syllable chain** — unrecorded word whose LOP decomposes into syllables that all have clips (yue composite numerals `zz_20` 二十 … `zz_203` 二百零三, `zz_1000000` 一百萬) plays each syllable with a `GAP_MS` (150 ms) pause, `FALLBACK_MS` (700) for an unmeasured clip. The decomposable rule is one function, `syllableChainFor` (`@shared/util-phoneme`), shared by the binder (`resolveAudio`), the validator (`checkAudioReferences` downgrades `MISSING_WORD_AUDIO` to a warning) and speech.
-- **Syllable → containing word** — unrecorded syllable plays the first word whose LOP contains it (Taiwan single hanzi, yue-writing-audio D5). Syllable clip always wins (女 → 女, not daughter).
+- **Syllable → containing word** — opt-in (`speak({ syllable, orContainingWord: true })`): unrecorded syllable plays the first word whose LOP contains it (Taiwan single hanzi, yue-writing-audio D5). Without the flag it is silent — an isolated syllable (Georgia S, Italy S) must never say a different word. Syllable clip always wins (女 → 女, not daughter).
 - **Durations** — `speak` returns expected ms (chain = clips + gaps); `durationOf(item)` gives the same without playing. Use them for follow-up timers.
 - **Lock** — a chain holds the shell's interaction lock and restores the lock it found when done (a chain replayed after a correct answer must not unlock a solved round — Georgia point-farming bug); if the mechanic wrote the lock meanwhile, the mechanic wins. Single clips don't lock.
 - **Cancellation** — every `speak` cancels speech in flight; the shell also stops it on `setRefWord`, AppState `background|inactive`, and unmount.
@@ -140,7 +140,7 @@ Do not add new params to the menu push or the shell's `useLocalSearchParams` —
 
 ### Difficulty ladder: a new game class needs a tier (#52)
 
-Every class has a curriculum tier 0–6 in `libs/alphaTiles/util-curriculum-tiers/src/lib/tierForGame.ts` (`TIER_BY_CLASS_KEY`). **Adding a game class = registry entry (above) + one tier entry** (+ a case in `tierForGame.test.ts`). Pick by skill, issue #13's ladder: 0 hear/browse · 1 symbol scan · 2 cross-modal match · 3 whole-word recognition · 4 construction (spell, fill, write) · 5 decoding/analysis · 6 spatial puzzle. A missing entry falls back to 3 — no crash, but the door lands mid-ladder, so don't rely on it. The menu grid and the next-door search both sort by `(tier, index)` (`ladderOrder`); `index`/`doorIndex` never changes. Tier is per class, not per door or pack: two doors of one class always share a level.
+Every class has a curriculum tier 0–6 in `libs/alphaTiles/util-curriculum-tiers/src/lib/TIER_BY_CLASS_KEY.ts`. **Adding a game class = registry entry (above) + one tier entry**; `tools/curriculumTiers.test.ts` fails when a registered class has no tier. Pick by skill, issue #13's ladder: 0 hear/browse · 1 symbol scan · 2 cross-modal match · 3 whole-word recognition · 4 construction (spell, fill, write) · 5 decoding/analysis · 6 spatial puzzle. A missing entry falls back to 3 — no crash, but the door lands mid-ladder, so don't rely on it. The menu grid and the next-door search both sort by `(tier, index)` (`ladderOrder`); `index`/`doorIndex` never changes. Tier is per class, not per door or pack: two doors of one class always share a level.
 
 ---
 
@@ -169,9 +169,9 @@ export function <Name>Screen(props: <Name>ScreenProps) {
 | `onCreate(Bundle)` | `useMountEffect(() => startRound())` |
 | `playAgain()` / `repeatGame()` | `startRound()` |
 | `onBtnClick(View)` | `onTilePress(index)` / `onChoicePress(index)` |
-| `updatePointsAndTrackers(N)` | `shell.incrementPointsAndTracker(N)` |
-| `playCorrectFinalSound()` | `shell.playCorrectFinal()` |
-| `playIncorrectSound()` | `shell.playIncorrect()` |
+| `updatePointsAndTrackers(N)` | `shell.incrementPointsAndTracker(true, points?)` (`(isCorrect, points = 1)`) |
+| `playCorrectFinalSound()` | `useAudio().playCorrectFinal()` (chime) |
+| `playIncorrectSound()` | `useAudio().playIncorrect()` (chime) |
 | `getAudioInstructionsResID()` | `door.instructionAudio` (shell reads it from the Door) |
 | `hideInstructionAudioImage()` | `showInstructionsButton={false}` (default: shown iff the Door has a bundled clip) |
 | `ArrayList<Word>` field | `useState<Word[]>([])` in container |
@@ -251,7 +251,7 @@ Java typically logs and silently does nothing; the port should be explicit:
 type Result = { words: Word[] } | { error: 'insufficient-content' };
 
 // container detects and renders friendly error:
-if ('error' in result) return <InsufficientContentScreen onBack={shell.navigateBack} />;
+if ('error' in result) return <InsufficientContentScreen onBack={onBack} />; // container's own router.back()
 ```
 
 Retry loops: if setup can fail non-deterministically (e.g. random selection hits edge cases), bound retries at 5 in the container — not recursive in the pure helper.
@@ -366,6 +366,8 @@ audio.playCorrect().then(() => {
 ```
 
 Use `isMountedRef` to guard against unmount during the awaited `playCorrect`. Don't `await` in the handler — fire-and-forget the chain so React doesn't block.
+
+`setInteractionLocked` is the **board** lock only (the mechanic's buttons; Java `setAllGameButtonsUnclickable`). The shell's chrome row (back / instructions / replay / advance) has its own lock (Java `setOptionsRowUnclickable`), held only while a syllable chain plays or a mastery action is pending. So a solved round may keep its board locked until `useShellAdvance` starts the next one — the advance arrow stays usable (U1: Georgia / Ecuador / Colombia were stuck when chrome obeyed the board lock).
 
 ---
 

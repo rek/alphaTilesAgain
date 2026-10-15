@@ -5,39 +5,31 @@ TBD - created by archiving change game-engine-base. Update Purpose after archive
 ## Requirements
 ### Requirement: Pure scoring primitives
 
-`libs/alphaTiles/util-scoring` SHALL export pure functions for point accumulation and tracker-count derivation. These functions MUST be free of React, Zustand, persistence, and UI imports.
+`libs/alphaTiles/util-scoring` SHALL export only pure, React/Zustand/persistence-free helpers. Today that is `displayChallengeLevel(country, challengeLevel)` (Java `GameActivity.java:261–274`). Point and tracker accumulation is not a util-scoring concern: door progress (`recordCorrectAnswer`, `@alphaTiles/data-door-progress`) adds points and checks trackers in the progress store.
 
-#### Scenario: `computeTrackerCount` for correct answer
+#### Scenario: Displayed challenge level
 
-- **WHEN** `computeTrackerCount(4, true, 'China')` is called
-- **THEN** it returns `5`
+- **WHEN** `displayChallengeLevel('Thailand', 213)` is called
+- **THEN** it returns `2`
 
-#### Scenario: `computeTrackerCount` for incorrect answer
+#### Scenario: Correct answer adds a point and a tracker
 
-- **WHEN** `computeTrackerCount(4, false, 'China')` is called
-- **THEN** it returns `4` (unchanged)
+- **WHEN** `recordCorrectAnswer({ door, playerId, afterTwelveCheckedTrackers })` runs for a `China` door with `trackerCount = 4`
+- **THEN** points increase by 1 and `trackerCount` becomes `5`; a wrong answer records nothing
 
-### Requirement: No-tracker-country guard
+### Requirement: No-tracker classes
 
-The four countries Romania, Sudan, Malaysia, and Iraq are "no right/wrong" games; their mechanics never increment the tracker count. `util-scoring` SHALL export a `NO_TRACKER_COUNTRIES` tuple and a `shouldIncrementTracker(country)` predicate. `computeTrackerCount` SHALL consult this predicate before incrementing.
+The four classes Romania, Sudan, Malaysia and Iraq are "no right/wrong" games and never check a tracker. The guard SHALL live in one place: the Door catalogue (`doorsOf`, `@alphaTiles/data-doors`) sets `Door.tracksProgress = false` for them, and `recordCorrectAnswer` skips the tracker (points only) when `tracksProgress` is false. `util-scoring` exports no country list or predicate.
 
-#### Scenario: Tracker skip for Romania
+#### Scenario: Tracker skip for no-tracker classes
 
-- **WHEN** `computeTrackerCount(3, true, 'Romania')` is called
-- **THEN** it returns `3` (no increment)
-
-#### Scenario: Tracker skip for Sudan, Malaysia, Iraq
-
-- **WHEN** `computeTrackerCount(3, true, country)` is called for each of `'Sudan'`, `'Malaysia'`, `'Iraq'`
-- **THEN** each returns `3`
+- **WHEN** `recordCorrectAnswer` runs for a door whose class is `Romania`, `Sudan`, `Malaysia` or `Iraq` with `trackerCount = 3`
+- **THEN** `trackerCount` stays `3` and no mastery action is returned
 
 #### Scenario: Single source of truth for the guard
 
-- **WHEN** `shouldIncrementTracker('Romania')` is called
-- **THEN** it returns `false`
-
-- **WHEN** `shouldIncrementTracker('China')` is called
-- **THEN** it returns `true`
+- **WHEN** `doorsOf(pack)` resolves a `Romania` row and a `China` row
+- **THEN** the Romania door has `tracksProgress: false` and the China door `tracksProgress: true`
 
 ### Requirement: Mastery detection
 

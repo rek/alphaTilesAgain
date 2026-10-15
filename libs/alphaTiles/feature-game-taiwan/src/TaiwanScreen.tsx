@@ -23,6 +23,8 @@ export type TaiwanScreenProps = {
    * rejected strokes (issue #31).
    */
   inkKey: number;
+  /** Learner put a finger / pointer down (a stroke may be starting). */
+  onStrokeStart: () => void;
   /** Resets the current character's strokes (the "Clear" button). */
   onClear: () => void;
   /** Pre-translated label for the "Clear" button. */
@@ -43,6 +45,7 @@ export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
     success,
     successLabel,
     inkKey,
+    onStrokeStart,
     onClear,
     clearLabel,
     progressLabel,
@@ -51,7 +54,9 @@ export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
   } = props;
   const characterColor = success ? '#2e7d32' : '#1565c0';
   return (
-    <View style={styles.root}>
+    // Raw touch / pointer events bubble here alongside the writer's pan
+    // gesture, so a new stroke can cancel a pending ink reset (C5).
+    <View style={styles.root} onTouchStart={onStrokeStart} onPointerDown={onStrokeStart}>
       <Text style={[styles.progress, success && styles.progressSuccess]}>
         {success ? successLabel : progressLabel}
       </Text>

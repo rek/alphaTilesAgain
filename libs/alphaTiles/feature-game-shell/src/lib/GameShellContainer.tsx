@@ -68,7 +68,7 @@ type GameShellContainerProps = {
 /**
  * Resolves the routed Door (route param `doorIndex`, per the game-menu
  * "Door-press navigation contract") and renders the shell for it. An index
- * that names no door goes back to the menu.
+ * that names no door, or a hidden one (`enabled: false`), goes back to the menu.
  */
 export function GameShellContainer(props: GameShellContainerProps): React.JSX.Element {
   const door = useDoor(useLocalSearchParams<{ gameNumber?: string; doorIndex?: string }>());
@@ -126,11 +126,25 @@ function GameShell({
   // Pack speech holds this while a syllable chain plays, then restores the
   // lock it found (a chain replayed after a correct answer must not unlock a
   // solved round — Georgia point-farming bug).
+  // Chrome row (back / instructions / replay / advance) has its own lock,
+  // like Java setOptionsRowUnclickable: held while a chain plays or a
+  // mastery action is pending — never by a mechanic's board lock, so a
+  // solved round (board locked until advance) can always be advanced (U1).
+  const speechHoldsRef = useRef(0);
+  const [speechHeld, setSpeechHeld] = useState(false);
+  const [masteryPending, setMasteryPending] = useState(false);
   const holdLockForSpeech = useCallback(() => {
     const before = interactionLockedRef.current;
     setInteractionLocked(true);
     const writes = lockWritesRef.current;
+    speechHoldsRef.current++;
+    setSpeechHeld(true);
+    let released = false;
     return () => {
+      if (released) return;
+      released = true;
+      speechHoldsRef.current--;
+      if (speechHoldsRef.current === 0) setSpeechHeld(false);
       if (lockWritesRef.current === writes) setInteractionLocked(before);
     };
   }, [setInteractionLocked]);
@@ -149,6 +163,7 @@ function GameShell({
   // Leaving the game must cancel pending mastery navigation: a pushed menu keeps
   // this screen mounted, so unmount cleanup alone never clears these timers.
   const clearMasteryTimers = useCallback(() => {
+    setMasteryPending(false);
     if (celebrationTimerRef.current) {
       clearTimeout(celebrationTimerRef.current);
       celebrationTimerRef.current = null;
@@ -230,6 +245,9 @@ function GameShell({
       // Mode 1: keep playing, nothing happens.
       return;
     }
+
+    // Java: options row stays unclickable until the menu / celebration.
+    setMasteryPending(true);
 
     if (masteryAction === 'return-to-menu') {
       // Mode 2: return to earth after correctSoundDuration ms (GameActivity.java:319-329)
@@ -338,6 +356,7 @@ function GameShell({
     trackerCount,
     trackerStates,
     interactionLocked,
+    chromeLocked: speechHeld || masteryPending,
     showInstructionsButton: instructionAudioId !== undefined,
     advanceArrow,
     showCelebration,

@@ -1,4 +1,5 @@
 import { tierForGame } from './tierForGame';
+import { TIER_BY_CLASS_KEY } from './TIER_BY_CLASS_KEY';
 
 describe('tierForGame', () => {
   it('mapped mechanic → its #13 tier', () => {
@@ -19,10 +20,10 @@ describe('tierForGame', () => {
     expect(tierForGame('unknown-future-mechanic')).toBe(3);
   });
 
-  it('every tier is within 0..6', () => {
-    for (const key of ['sudan', 'iraq', 'malaysia', 'romania', 'georgia', 'peru', 'ecuador', 'brazil', 'colombia', 'italy', 'japan', 'myanmar']) {
-      expect(tierForGame(key)).toBeGreaterThanOrEqual(0);
-      expect(tierForGame(key)).toBeLessThanOrEqual(6);
+  it('every mapped tier is within 0..6', () => {
+    for (const tier of Object.values(TIER_BY_CLASS_KEY)) {
+      expect(tier).toBeGreaterThanOrEqual(0);
+      expect(tier).toBeLessThanOrEqual(6);
     }
   });
 });

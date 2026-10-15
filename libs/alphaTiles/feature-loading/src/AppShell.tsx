@@ -3,7 +3,9 @@ import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { ThemeProvider, useFontsReady } from '@shared/util-theme';
 import { AudioProvider, AudioGate, preloadAudio, BASE_CHIMES } from '@alphaTiles/data-audio';
 import type { AudioConfig } from '@alphaTiles/data-audio';
+import { effectiveSettingsOf } from '@alphaTiles/data-settings';
 import { TapToBegin } from './TapToBegin';
+import { fontNameMapOf } from './fontNameMapOf';
 import { BootGate } from './BootGate';
 
 /**
@@ -24,21 +26,17 @@ export function AppShell({ children }: { children: React.ReactNode }): React.JSX
       ) as unknown as Parameters<typeof useFontsReady>[0],
     [assets],
   );
+  const { ready: fontsReady, failed: fontsFailed } = useFontsReady(fontAssetMap);
   const fontNameMap = useMemo(
-    () => ({
-      primary: assets.fonts.primary != null ? 'primary' : undefined,
-      primaryBold: assets.fonts.primaryBold != null ? 'primaryBold' : undefined,
-    }),
-    [assets],
+    () => fontNameMapOf({ fonts: assets.fonts, failed: fontsFailed }),
+    [assets, fontsFailed],
   );
-  const fontsReady = useFontsReady(fontAssetMap);
 
   // Stable loader — assets from LangAssetsProvider are fixed for the app lifetime.
   const audioLoader = useMemo(() => {
-    const audioConfig: AudioConfig = {
-      hasTileAudio: assets.settings.findBoolean('Has tile audio', false),
-      hasSyllableAudio: assets.settings.findBoolean('Has syllable audio', false),
-    };
+    // Pack values only: preload is per build, not per player.
+    const { hasTileAudio, hasSyllableAudio } = effectiveSettingsOf({ settings: assets.settings });
+    const audioConfig: AudioConfig = { hasTileAudio, hasSyllableAudio };
     const manifest = {
       tiles: assets.audio.tiles,
       words: assets.audio.words,

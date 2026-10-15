@@ -11,6 +11,7 @@
     "react": "*",
     "react-native": "*",
     "@shared/util-analytics": "*",
-    "@shared/util-phoneme": "*"
+    "@shared/util-phoneme": "*",
+    "@shared/util-hooks": "*"
   }
 }
