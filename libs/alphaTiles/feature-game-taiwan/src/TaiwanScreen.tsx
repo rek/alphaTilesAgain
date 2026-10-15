@@ -118,6 +118,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   clearBtn: {
+    // ≥ 44×44 touch target (U11).
+    minHeight: 44,
+    minWidth: 88,
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 6,
