@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
-import { useProgressStore } from '@alphaTiles/data-progress';
+import { useProgressHydrated, useProgressStore } from '@alphaTiles/data-progress';
+import { useActivePlayer } from '@alphaTiles/data-players';
 import { useTranslation } from '@shared/util-i18n';
 import {
   GameShellContainer,
@@ -17,6 +18,7 @@ import { stripInstructionCharacters } from './stripInstructionCharacters';
 import { ThailandScreen } from './ThailandScreen';
 import type { ThailandChoiceFeedback } from './ThailandScreen';
 import { thailandRoundView } from './thailandRoundView';
+import { createRoundCursor } from './createRoundCursor';
 
 type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
   icons?: GameShellIcons;
@@ -34,7 +36,15 @@ function refSpeechItem(ref: ThailandRef) {
   return { syllable: ref.syllableRow };
 }
 
-function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
+function ThailandGame({
+  challengeLevel,
+  initialCursor,
+  persistCursor,
+}: {
+  challengeLevel: number;
+  initialCursor: number;
+  persistCursor: (cursor: number) => void;
+}): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
   const assets = useLangAssets();
@@ -46,13 +56,13 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
   const [error, setError] = useState<'insufficient-content' | null>(null);
   const [refColor, setRefColor] = useState<string>('#1565C0');
-  // Round counter drives fixed question order per door (issue #17). Persisted
-  // per player+door (M10) so each visit resumes where the last one stopped and
-  // the whole vocabulary gets practised; wraps via modulo in setupThailandRound.
-  const { gameUniqueId } = shell;
-  const roundIndexRef = useRef<number>(
-    useProgressStore.getState().progress[gameUniqueId]?.roundCursor ?? 0,
-  );
+  // Round cursor drives fixed question order per door (issue #17). Persisted
+  // per player+door (M10) so each visit resumes on the question it left
+  // (advanced only on a correct answer) and the whole vocabulary gets
+  // practised; wraps via modulo in setupThailandRound.
+  const cursorRef = useRef<ReturnType<typeof createRoundCursor> | null>(null);
+  if (!cursorRef.current) cursorRef.current = createRoundCursor(initialCursor, persistCursor);
+  const cursor = cursorRef.current;
   // Java 618-630 parity: per-round set of distinct wrong-answer texts (cap 3).
   // Resets each round. We also keep a running level counter for diagnostics.
   const incorrectAnswersSelected = useRef<string[]>([]);
@@ -90,24 +100,19 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     }
 
     const result = setupThailandRound({
+      roundIndex: cursor.show(),
       refType,
       choiceType,
       distractorStrategy,
       tiles: assets.tiles.rows,
       words: assets.words.rows,
       syllables: assets.syllables.rows,
-      roundIndex: roundIndexRef.current,
     });
 
     if ('error' in result) {
       setError('insufficient-content');
       return;
     }
-
-    roundIndexRef.current += 1;
-    useProgressStore
-      .getState()
-      .setRoundCursor(gameUniqueId, roundIndexRef.current);
 
     // Java 140: refColor = colorList[rand.nextInt(4)] — random of first 4 entries.
     const palette = assets.colors?.hexByIndex ?? [];
@@ -122,7 +127,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     incorrectAnswersSelected.current = [];
 
     playRefAudio(result.ref);
-  }, [refType, choiceType, distractorStrategy, assets, playRefAudio, gameUniqueId]);
+  }, [refType, choiceType, distractorStrategy, assets, playRefAudio, cursor]);
 
   useEffect(() => {
     startRound();
@@ -145,6 +150,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
         setCorrectIndex(index);
         shell.setInteractionLocked(true);
         shell.incrementPointsAndTracker(true);
+        cursor.answered();
         audio.playCorrect().then(() => {
           if (!isMountedRef.current) return;
           playRefAudio(round.ref);
@@ -178,7 +184,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
         incorrectAnswersSelected.current = [...list, chosenText];
       }
     },
-    [round, shell, audio, playRefAudio, getRefDurationMs, startRound, correctIndex],
+    [round, shell, audio, playRefAudio, getRefDurationMs, startRound, correctIndex, cursor],
   );
 
   const onRefPress = useCallback(() => {
@@ -262,10 +268,39 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   );
 }
 
+/**
+ * Mounts the game once persisted progress has hydrated, so the resume cursor
+ * is read from storage (not an empty store) and never clobbered by the
+ * hydration merge. No active player → nothing persisted.
+ */
+function ThailandResume({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
+  const { gameUniqueId } = useGameShell();
+  const hasPlayer = useActivePlayer() != null;
+  const hydrated = useProgressHydrated();
+  const persistCursor = useCallback(
+    (cursor: number) => {
+      if (hasPlayer) useProgressStore.getState().setRoundCursor(gameUniqueId, cursor);
+    },
+    [hasPlayer, gameUniqueId],
+  );
+  if (!hydrated) return <></>;
+  const initialCursor = hasPlayer
+    ? useProgressStore.getState().progress[gameUniqueId]?.roundCursor ?? 0
+    : 0;
+  return (
+    <ThailandGame
+      key={gameUniqueId}
+      challengeLevel={challengeLevel}
+      initialCursor={initialCursor}
+      persistCursor={persistCursor}
+    />
+  );
+}
+
 export function ThailandContainer(props: RouteParams): React.JSX.Element {
   return (
     <GameShellContainer confirmOnBack={false} icons={props.icons}>
-      {(door) => <ThailandGame challengeLevel={door.challengeLevel} />}
+      {(door) => <ThailandResume challengeLevel={door.challengeLevel} />}
     </GameShellContainer>
   );
 }
