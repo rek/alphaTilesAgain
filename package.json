@@ -14,6 +14,7 @@
     "ios": "nx run-ios alphaTiles",
     "web": "nx serve alphaTiles",
     "typecheck": "nx run alphaTiles:typecheck",
+    "prebuild-lang": "tsx tools/validate-lang-pack.ts && tsx tools/generate-lang-manifest.ts",
     "postinstall": "patch-package"
   },
   "devDependencies": {

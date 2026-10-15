@@ -36,10 +36,10 @@ Invocation sheet for this repo. Cross-linked from `AGENTS.md`.
 # Language pack tools (run manually when updating a language pack)
 ./nx rsync-lang-pack alphaTiles          # rsync from $PUBLIC_LANG_ASSETS → languages/<APP_LANG>/
 ./nx validate-lang-pack alphaTiles       # validate the rsynced pack
-./nx generate-lang-manifest alphaTiles   # write src/generated/langManifest.ts
+./nx generate-lang-manifest alphaTiles   # write libs/alphaTiles/data-language-assets/src/generated/langManifest.ts
 # Then commit languages/ and langManifest.ts
 
-./nx prebuild-lang alphaTiles            # no-op target (build hook only; does not chain the above)
+./nx prebuild-lang alphaTiles            # validate + generate manifest for $APP_LANG (no rsync); run by start/run-*/web-export and the EAS hook
 
 # Testing + linting
 ./nx test <lib>                          # unit tests for one lib
@@ -87,7 +87,7 @@ eas update --branch eng --message "content refresh"   # OTA update to eng channe
 eas submit --platform ios --profile eng
 ```
 
-Build profiles live in `eas.json` at repo root. Each profile sets `APP_LANG` in env.
+Build profiles live in `apps/alphaTiles/eas.json` (run `eas` from `apps/alphaTiles`). Each profile sets `APP_LANG` in env. The `eas-build-post-install` hook regenerates the lang manifest on the builder.
 
 ## Jest
 
