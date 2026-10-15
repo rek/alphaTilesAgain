@@ -210,3 +210,13 @@ Users get the rolled-back version on their next cold start. Rolling back a bad `
 ## Troubleshooting
 
 See **[Troubleshooting](./TROUBLESHOOTING.md)** for common issues.
+
+## Store submission (GitHub Action)
+
+`.github/workflows/eas-build.yml` → Run workflow → profile `yue`, tick **submit**. EAS builds the AAB and, when it finishes, submits it to Google Play's **internal** track as a **draft** (`submit.yue` in `apps/alphaTiles/eas.json`). Promote to production in Play Console.
+
+One-time owner setup:
+- [ ] Android keystore for `com.makektm.alphatiles` exists in EAS (new package ID — first build must create it: run `eas credentials` or one interactive `eas build -p android --profile yue` locally; `--non-interactive` CI builds can't generate a keystore).
+- [ ] Play Console app created for `com.makektm.alphatiles`, and the **first** AAB uploaded by hand (Google requires a manual first upload before API submissions work).
+- [ ] Google Play service account JSON key with release permissions, uploaded to EAS (`eas credentials` → Android → Google Service Account).
+- [ ] Store listing, content rating, data safety form, target audience (children → Families policy), privacy policy URL (#54).

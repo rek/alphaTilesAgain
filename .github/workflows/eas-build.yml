@@ -12,6 +12,11 @@ on:
           - eng
           - yue
           - development
+      submit:
+        description: Submit to Google Play (internal track, draft) when the build finishes
+        required: true
+        default: false
+        type: boolean
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -43,4 +48,9 @@ jobs:
         working-directory: apps/alphaTiles
         env:
           APP_LANG: ${{ github.event.inputs.profile }}
-        run: eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --no-wait
+        run: |
+          SUBMIT=""
+          if [ "${{ github.event.inputs.submit }}" = "true" ] && [ "${{ github.event.inputs.profile }}" != "development" ]; then
+            SUBMIT="--auto-submit-with-profile=${{ github.event.inputs.profile }}"
+          fi
+          eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --no-wait $SUBMIT
