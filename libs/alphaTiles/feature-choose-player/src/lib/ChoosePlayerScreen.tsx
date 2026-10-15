@@ -99,7 +99,11 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start',
+    // Centred: a left-aligned 3-up grid left a wide gap on the right (U15).
+    justifyContent: 'center',
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 480,
   },
   addSlot: {
     width: '25%',
@@ -107,18 +111,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#999',
+    borderColor: '#6B7280',
     borderStyle: 'dashed',
     borderRadius: 8,
     padding: 8,
   },
   addIcon: {
     fontSize: 28,
-    color: '#666',
+    color: '#374151',
   },
   addLabel: {
-    fontSize: 11,
-    color: '#666',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
     textAlign: 'center',
   },
   emptySlot: {
