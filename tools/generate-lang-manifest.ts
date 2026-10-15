@@ -20,6 +20,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parseGametiles, parseSyllables, parseWordlist } from '../libs/shared/util-lang-pack-parser/src';
 import { assertGameClassesForGames } from './assertGameClassesForGames';
+import { webAppManifest } from './webAppManifest';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -401,6 +402,16 @@ function main(): void {
   );
 
   generateManifest(lang, langDir, outPath);
+
+  // Per-pack PWA manifest; app/+html.tsx reads it for <title> / <html lang>.
+  const webManifestPath = path.join(repoRoot, 'apps', 'alphaTiles', 'public', 'manifest.json');
+  const webManifest = webAppManifest({
+    lang,
+    langInfoSrc: fs.readFileSync(path.join(langDir, 'aa_langinfo.txt'), 'utf8'),
+  });
+  fs.writeFileSync(webManifestPath, JSON.stringify(webManifest, null, 2) + '\n', 'utf8');
+  console.log(`[generate-lang-manifest] wrote ${path.relative(repoRoot, webManifestPath)} (name: ${webManifest.name})`);
+
   try {
     assertGameClassesForGames(langDir);
   } catch (e) {
