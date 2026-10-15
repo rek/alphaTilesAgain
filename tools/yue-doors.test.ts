@@ -323,6 +323,17 @@ describe('yue pack — every door builds rounds against real data', () => {
     expect(resolveMasteryAction({ settings: assets.settings })).toBe('keep-playing');
   });
 
+  it('keeps every tile in stage 1: doors are stage "-" with no progression (L2)', () => {
+    expect(assets.games.rows.every((r) => r.stagesIncluded === '-')).toBe(true);
+    const staged = assets.tiles.rows.filter(
+      (t) =>
+        t.stageOfFirstAppearance !== 1 ||
+        t.stageOfFirstAppearanceType2 !== 1 ||
+        t.stageOfFirstAppearanceType3 !== 1,
+    );
+    expect(staged.map((t) => t.base)).toEqual([]);
+  });
+
   it('has a builder for every door', () => {
     const missing = assets.games.rows.map((r) => r.classKey).filter((k) => !BUILDERS[k]);
     expect(missing).toEqual([]);
