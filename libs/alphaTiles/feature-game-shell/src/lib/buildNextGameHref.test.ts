@@ -1,13 +1,19 @@
 import { buildNextGameHref } from './buildNextGameHref';
-import type { NextGameResult } from './findNextUncompletedGame';
+import type { Door } from '@alphaTiles/data-doors';
 
-const result: NextGameResult = {
-  gameNumber: 3,
+const result: Door = {
+  index: 3,
   country: 'UnitedStates',
   classKey: 'united-states',
   challengeLevel: 1,
-  syllableGame: '',
+  displayLevel: 1,
+  variant: 'T',
   stage: 1,
+  colorHex: '#000000',
+  instructionAudio: undefined,
+  tracksProgress: true,
+  enabled: true,
+  progressKey: (playerId) => `UnitedStates1${playerId}1`,
 };
 
 describe('buildNextGameHref', () => {
@@ -40,7 +46,7 @@ describe('buildNextGameHref', () => {
   // Regression for the multi-word country drift: country.toLowerCase()
   // produced 'unitedstates'; the parser now derives 'united-states' and
   // buildNextGameHref must pass it through verbatim.
-  it('passes the row-derived kebab classKey through verbatim', () => {
+  it('passes the Door kebab classKey through verbatim', () => {
     const href = buildNextGameHref(result);
     if (typeof href === 'object') {
       expect(href.params.classKey).toBe('united-states');

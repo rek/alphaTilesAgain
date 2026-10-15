@@ -75,6 +75,11 @@
       "score": "分數：{{points}}",
       "a11y": {
         "door": "遊戲 {{index}}，{{state}}",
+        "door_state": {
+          "not_started": "未開始",
+          "in_process": "進行中",
+          "mastery": "已掌握"
+        },
         "prev": "上一頁",
         "next": "下一頁",
         "back_to_players": "返回選擇玩家",

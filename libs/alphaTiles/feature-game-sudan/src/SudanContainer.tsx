@@ -8,7 +8,7 @@
  *   - page: number (0-indexed)
  *   - disabled: boolean (true while audio plays — gates grid + options row)
  *
- * Variant from the door's games row `SyllOrTile` (or `syllableGame` URL override):
+ * Variant from the routed Door (`aa_games.txt` `SyllOrTile`):
  *   - 'T' (or anything not 'S'): tile variant — 63/page, type-coloured
  *   - 'S': syllable variant — 35/page, syllable.color-coloured
  *
@@ -36,7 +36,7 @@ type RouteParams = Record<string, string | string[] | GameShellIcons | undefined
 
 const FALLBACK_COLOR = '#9E9E9E';
 
-function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Element {
+function SudanGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
   const assets = useLangAssets();
@@ -48,7 +48,7 @@ function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
     nextPage: t('chrome:a11y.next_page'),
   }), [t]);
 
-  const isSyllable = syllableGame === 'S';
+  const isSyllable = variant === 'S';
   const hasSyllableAudio = useMemo(
     () => assets.settings.findBoolean('Has syllable audio', false),
     [assets.settings],
@@ -155,28 +155,9 @@ function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
 }
 
 export function SudanContainer(props: RouteParams): React.JSX.Element {
-  const assets = useLangAssets();
-  const gameNumber = parseInt(
-    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
-    10,
-  );
-  const game = assets.games.rows[gameNumber - 1];
-  // Variant comes from the games row (menu pushes only doorIndex) — see
-  // GAME_PATTERNS "doorIndex is the only authoritative pointer".
-  const syllableGame =
-    (props.syllableGame as string) ?? (game?.syllOrTile === 'S' ? 'S' : '');
-  const instructionAudioId = game?.instructionAudio;
-  const hasInstruction =
-    !!instructionAudioId && instructionAudioId in assets.audio.instructions;
-
   return (
-    <GameShellContainer
-      showInstructionsButton={hasInstruction}
-      instructionAudioId={hasInstruction ? instructionAudioId : undefined}
-      confirmOnBack={false}
-      icons={props.icons}
-    >
-      <SudanGame syllableGame={syllableGame} />
+    <GameShellContainer confirmOnBack={false} icons={props.icons}>
+      {(door) => <SudanGame variant={door.variant} />}
     </GameShellContainer>
   );
 }

@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { GameMenuScreenModern } from './GameMenuScreenModern';
-import type { DoorData } from './useDoors';
+import type { GameMenuScreenModernProps } from './GameMenuScreenModern';
+
+type DoorData = GameMenuScreenModernProps['allDoors'][number];
 
 const COLORS = ['#9C27B0', '#2196F3', '#F44336', '#4CAF50', '#E91E63', '#FFEB3B', '#FF9800', '#3F51B5'];
-const CLASS_KEYS = ['china', 'mexico', 'peru', 'brazil', 'italy', 'japan', 'thailand', 'romania'];
 
 function makeDoors(
   n: number,
@@ -11,11 +12,7 @@ function makeDoors(
 ): DoorData[] {
   return Array.from({ length: n }, (_, i) => ({
     index: i,
-    classKey: CLASS_KEYS[i % CLASS_KEYS.length],
-    challengeLevel: (i % 3) + 1,
     colorHex: COLORS[i % COLORS.length],
-    noRightWrong: false,
-    trackerCount: i % 13,
     visual: visualForIdx(i),
     textColorHex: undefined,
   }));

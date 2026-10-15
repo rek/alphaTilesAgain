@@ -445,25 +445,9 @@ function noop() {
 // ─────────────────────────────────────────────────────────────
 
 export function JapanContainer(props: RouteParams): React.JSX.Element {
-  const assets = useLangAssets();
-  const gameNumber = parseInt(
-    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
-    10,
-  );
-  const challengeLevel = parseInt((props.challengeLevel as string) ?? '1', 10);
-  const game = assets.games.rows[gameNumber - 1];
-  const instructionAudioId = game?.instructionAudio;
-  const hasInstruction =
-    !!instructionAudioId && instructionAudioId in assets.audio.instructions;
-
   return (
-    <GameShellContainer
-      showInstructionsButton={hasInstruction}
-      instructionAudioId={hasInstruction ? instructionAudioId : undefined}
-      confirmOnBack={false}
-      icons={props.icons}
-    >
-      <JapanGame challengeLevel={challengeLevel} />
+    <GameShellContainer confirmOnBack={false} icons={props.icons}>
+      {(door) => <JapanGame challengeLevel={door.challengeLevel} />}
     </GameShellContainer>
   );
 }

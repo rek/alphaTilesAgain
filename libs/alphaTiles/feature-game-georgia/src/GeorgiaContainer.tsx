@@ -88,10 +88,10 @@ type Round = {
 
 function GeorgiaGame({
   challengeLevel,
-  syllableGame,
+  variant,
 }: {
   challengeLevel: number;
-  syllableGame: string;
+  variant: 'T' | 'S';
 }): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
@@ -110,7 +110,7 @@ function GeorgiaGame({
       ? assets.colors.hexByIndex
       : PALETTE_FALLBACK;
 
-  const isSyllable = syllableGame === 'S';
+  const isSyllable = variant === 'S';
   const visibleGameButtons = countForLevel(challengeLevel) as GeorgiaGridShape;
 
   // syllableListCopy — Java ~129 (clone + shuffle once at mount); ~153
@@ -423,30 +423,9 @@ function GeorgiaGame({
 }
 
 export function GeorgiaContainer(props: RouteParams): React.JSX.Element {
-  const assets = useLangAssets();
-  const rowIndex = parseInt(
-    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
-    10,
-  );
-  const challengeLevel = parseInt((props.challengeLevel as string) ?? '1', 10);
-  const game = assets.games.rows[rowIndex - 1];
-  const syllableGame =
-    (props.syllableGame as string) ?? (game?.syllOrTile === 'S' ? 'S' : '');
-  const instructionAudioId = game?.instructionAudio;
-  const hasInstruction =
-    !!instructionAudioId && instructionAudioId in assets.audio.instructions;
-
   return (
-    <GameShellContainer
-      showInstructionsButton={hasInstruction}
-      instructionAudioId={hasInstruction ? instructionAudioId : undefined}
-      confirmOnBack={false}
-      icons={props.icons}
-    >
-      <GeorgiaGame
-        challengeLevel={challengeLevel}
-        syllableGame={syllableGame}
-      />
+    <GameShellContainer confirmOnBack={false} icons={props.icons}>
+      {(door) => <GeorgiaGame challengeLevel={door.challengeLevel} variant={door.variant} />}
     </GameShellContainer>
   );
 }

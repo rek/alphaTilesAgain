@@ -1,43 +1,12 @@
 import { addPoint } from './addPoint';
-import { computeTrackerCount } from './computeTrackerCount';
 import { displayChallengeLevel } from './displayChallengeLevel';
 import { isGameMastered } from './isGameMastered';
-import { NO_TRACKER_COUNTRIES, shouldIncrementTracker } from './noTrackerCountries';
 import { pointsForStage } from './pointsForStage';
-
-describe('shouldIncrementTracker', () => {
-  it('returns false for each no-tracker country', () => {
-    for (const country of NO_TRACKER_COUNTRIES) {
-      expect(shouldIncrementTracker(country)).toBe(false);
-    }
-  });
-
-  it('returns true for tracker-capable country', () => {
-    expect(shouldIncrementTracker('China')).toBe(true);
-  });
-});
 
 describe('addPoint', () => {
   it('accumulates', () => expect(addPoint(5, 3)).toBe(8));
   it('clamps at zero', () => expect(addPoint(2, -5)).toBe(0));
   it('allows negative delta that stays positive', () => expect(addPoint(10, -3)).toBe(7));
-});
-
-describe('computeTrackerCount', () => {
-  it('increments on correct answer for tracker country', () => {
-    expect(computeTrackerCount(4, true, 'China')).toBe(5);
-  });
-
-  it('unchanged on incorrect answer', () => {
-    expect(computeTrackerCount(4, false, 'China')).toBe(4);
-  });
-
-  it.each(['Romania', 'Sudan', 'Malaysia', 'Iraq'])(
-    'skips increment for %s',
-    (country) => {
-      expect(computeTrackerCount(3, true, country)).toBe(3);
-    },
-  );
 });
 
 describe('isGameMastered', () => {

@@ -7,7 +7,7 @@
  * Port of Brazil.java (~640 LOC) — see design.md for the full mapping table.
  *
  * Per-CL routing:
- *   - syllableGame === 'S' → syllable mechanic (SL1 / SL2)
+ *   - variant === 'S' → syllable mechanic (SL1 / SL2)
  *   - else CL1–3 → vowel-blank, CL4–6 → consonant-blank, CL7 → tone-blank
  *
  * Wrong tap ends the round (Brazil.java setAllGameButtonsUnclickable in
@@ -88,10 +88,10 @@ type Round =
 
 function BrazilGame({
   challengeLevel,
-  syllableGame,
+  variant,
 }: {
   challengeLevel: number;
-  syllableGame: string;
+  variant: 'T' | 'S';
 }): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
@@ -109,7 +109,7 @@ function BrazilGame({
   const colorList = assets.colors.hexByIndex.length > 0 ? assets.colors.hexByIndex : COLOR_FALLBACK;
 
   const requiredType = challengeLevelToRequiredType(challengeLevel);
-  const isSyllableMode = syllableGame === 'S';
+  const isSyllableMode = variant === 'S';
 
   const wordPoolRef = useRef<WordRow[]>([]);
   const isMountedRef = useRef(true);
@@ -404,27 +404,9 @@ function parseWordIntoSyllables(word: WordRow, syllables: SyllableRow[]): Syllab
 }
 
 export function BrazilContainer(props: RouteParams): React.JSX.Element {
-  const assets = useLangAssets();
-  const rowIndex = parseInt(
-    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
-    10,
-  );
-  const challengeLevel = parseInt((props.challengeLevel as string) ?? '1', 10);
-  const game = assets.games.rows[rowIndex - 1];
-  const syllableGame =
-    (props.syllableGame as string) ?? (game?.syllOrTile === 'S' ? 'S' : '');
-  const instructionAudioId = game?.instructionAudio;
-  const hasInstruction =
-    !!instructionAudioId && instructionAudioId in assets.audio.instructions;
-
   return (
-    <GameShellContainer
-      showInstructionsButton={hasInstruction}
-      instructionAudioId={hasInstruction ? instructionAudioId : undefined}
-      confirmOnBack={false}
-      icons={props.icons}
-    >
-      <BrazilGame challengeLevel={challengeLevel} syllableGame={syllableGame} />
+    <GameShellContainer confirmOnBack={false} icons={props.icons}>
+      {(door) => <BrazilGame challengeLevel={door.challengeLevel} variant={door.variant} />}
     </GameShellContainer>
   );
 }
