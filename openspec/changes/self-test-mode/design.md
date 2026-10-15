@@ -35,7 +35,7 @@ libs/alphaTiles/feature-self-test/src/
 
 `SelfTestQuestion = { doorIndex, choiceType, round: ThailandRound }`.
 
-Thailand lib: extract `buildRefDisplay` / choice-display mapping from `ThailandContainer` into `thailandRoundView({ round, choiceType, wordImages, refColor })` → `{ refDisplay, choices, choiceLabels }`; container uses it unchanged in behaviour. Export it plus `setupThailandRound`, `decodeThailandChallengeLevel`, `ThailandScreen` from the lib root. `feature → feature` import is allowed by the boundary rules (games already import `feature-game-shell`).
+Thailand lib: extract `buildRefDisplay` / choice-display mapping from `ThailandContainer` into `thailandRoundView({ round, choiceType, wordImages, refColor })` → `{ refDisplay, choices, choiceLabels }`; container uses it unchanged in behaviour. Add `thailandQuestion({ challengeLevel, tiles, words, syllables, roundIndex, rng })` → `{ choiceType, round }` (decode + `setupThailandRound` in one call). Export it, `thailandRoundView` and `ThailandScreen` from the lib root. Node tests map the lib to `thailandQuestion.ts` (the root pulls the RN container). `feature → feature` import is allowed by the boundary rules (games already import `feature-game-shell`).
 
 ## i18n
 

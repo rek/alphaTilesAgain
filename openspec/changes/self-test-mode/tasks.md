@@ -3,7 +3,7 @@
 ## 1. Thailand lib: expose question builder + presenter
 
 - [ ] Extract `thailandRoundView.ts` from `ThailandContainer` (no behaviour change).
-- [ ] Export `setupThailandRound`, `decodeThailandChallengeLevel`, `ThailandScreen`, `thailandRoundView` from `index.ts`.
+- [ ] Add `thailandQuestion`; export it, `ThailandScreen`, `thailandRoundView` from `index.ts`.
 
 ## 2. feature-self-test lib
 

@@ -6,7 +6,7 @@ Issue #42. Games score points but a learner has no way to check themselves: no r
 
 - New lib `libs/alphaTiles/feature-self-test` (`type:feature`): `buildSelfTest` (pure run builder), `selfTestScore` (pure), `SelfTestContainer` + `SelfTestScreen`.
 - Questions come from an existing mechanic's question builder — Thailand's `setupThailandRound` (4-choice match) — using the challenge levels of the pack's own Thailand doors. No new mechanic.
-- `feature-game-thailand` exports `setupThailandRound`, `decodeThailandChallengeLevel`, `ThailandScreen` and a new extracted `thailandRoundView` (display mapping, shared with `ThailandContainer`; behaviour unchanged).
+- `feature-game-thailand` exports `thailandQuestion` (decode CL + `setupThailandRound`), `ThailandScreen` and a new extracted `thailandRoundView` (display mapping, shared with `ThailandContainer`; behaviour unchanged).
 - New route `apps/alphaTiles/app/self-test.tsx`.
 - Menu: "Check yourself" button below the door grid (only when the pack can build a self-test).
 - i18n: `chrome.selfTest.*`, `chrome.menu.self_test` in `en.json` + `zh-HK.json`; zh-HK rows in `docs/translations/zh-HK-review.md`.

@@ -2,7 +2,7 @@
 
 ### Requirement: Self-test run is built from the pack's Thailand doors
 
-The system SHALL build a self-test run of up to 10 single-answer questions using `setupThailandRound` with the challenge levels of the pack's enabled Thailand Doors, cycling through them in ladder order. Rounds that cannot be built SHALL be dropped. No prompt item SHALL repeat within a run when the pack has enough content.
+The system SHALL build a self-test run of up to 10 single-answer questions using Thailand's question builder (`thailandQuestion` → `setupThailandRound`) with the challenge levels of the pack's enabled Thailand Doors, cycling through them in ladder order. Rounds that cannot be built SHALL be dropped. No prompt item SHALL repeat within a run when the pack has enough content.
 
 #### Scenario: yue run
 - **GIVEN** the real yue pack
