@@ -3,7 +3,7 @@ Item	Answer
 2. Lang Name (In English)	Cantonese
 3. Lang Name (In Reg/Ntnl Lang)	Cantonese
 4. Ethnologue code	yue
-5. Country	PRC
+5. Country	Hong Kong
 6. Variant info	HK variety
 7. Game Name (In Local Lang)	學廣話
 8. Script direction (LTR or RTL)	LTR

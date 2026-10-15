@@ -57,6 +57,8 @@ export interface AboutScreenProps {
   thirdPartyLicence?: {
     /** Translated heading: "Open-source licences" */
     heading: string;
+    /** Translated plain-language lead-in: what the licence covers, legal text is English. */
+    summary: string;
     /** Attribution + modification notice (English legal text) */
     attribution: string;
     /** Full licence text, verbatim */
@@ -143,6 +145,7 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
           accessibilityRole="link"
           accessibilityLabel={emailLabel}
           hitSlop={HIT_SLOP}
+          style={styles.linkTarget}
         >
           <Text style={styles.link}>{emailLabel}</Text>
         </Pressable>
@@ -154,6 +157,7 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
           accessibilityRole="link"
           accessibilityLabel={privacyLabel}
           hitSlop={HIT_SLOP}
+          style={styles.linkTarget}
         >
           <Text style={styles.link}>{privacyLabel}</Text>
         </Pressable>
@@ -164,6 +168,7 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
         accessibilityRole="link"
         accessibilityLabel={websiteLabel}
         hitSlop={HIT_SLOP}
+        style={styles.linkTarget}
       >
         <Text style={styles.link}>{websiteLabel}</Text>
       </Pressable>
@@ -173,6 +178,7 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
         accessibilityRole="link"
         accessibilityLabel={reportIssueLabel}
         hitSlop={HIT_SLOP}
+        style={styles.linkTarget}
       >
         <Text style={styles.link}>{reportIssueLabel}</Text>
       </Pressable>
@@ -180,6 +186,7 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
       {thirdPartyLicence ? (
         <>
           <Text style={styles.creditsHeading}>{thirdPartyLicence.heading}</Text>
+          <Text style={styles.credits}>{thirdPartyLicence.summary}</Text>
           <Text style={styles.legal} accessibilityRole="text">
             {thirdPartyLicence.attribution}
           </Text>
@@ -189,6 +196,7 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
             accessibilityLabel={thirdPartyLicence.toggleLabel}
             accessibilityState={{ expanded: thirdPartyLicence.expanded }}
             hitSlop={HIT_SLOP}
+            style={styles.linkTarget}
           >
             <Text style={styles.link}>{thirdPartyLicence.toggleLabel}</Text>
           </Pressable>
@@ -209,6 +217,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   backButton: {
+    minHeight: 44,
+    minWidth: 56,
+    justifyContent: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
@@ -244,6 +255,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     color: '#444',
+  },
+  linkTarget: {
+    // ≥ 44px touch target (U12); hitSlop alone overlapped neighbouring links.
+    minHeight: 44,
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
   },
   link: {
     fontSize: 16,
