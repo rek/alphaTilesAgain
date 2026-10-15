@@ -159,57 +159,53 @@ Runs `eas build --local` with the `<APP_LANG>-apk` profile in `apps/alphaTiles/e
 
 ## EAS Updates (OTA)
 
-AlphaTiles uses **EAS Update** to ship JS bundle + asset changes to installed apps without a store review cycle. Each language-pack build has its own update channel (e.g. `eng`, `tpx`, `yue`). See `docs/decisions/ADR-009-ota-via-eas-update.md` and `openspec/changes/ota-updates/design.md`.
+AlphaTiles uses **EAS Update** to ship JS bundle + asset changes to installed apps without a store review cycle. Each language build has its own channel, `<lang>-production` (`yue-production`, `eng-production`), set per build profile in `apps/alphaTiles/eas.json`. A binary only receives updates from its own channel, so the channel in `eas.json` and the one you publish to must match. See `docs/decisions/ADR-009-ota-via-eas-update.md` and `openspec/changes/ota-updates/design.md`.
 
-### One-time setup: `eas init`
+### Owner-only one-time checklist (do NOT automate)
 
-Before the first EAS Build or EAS Update, a developer must run:
+- [ ] `eas login` with the `alpha-tiles` Expo org account.
+- [ ] Confirm the EAS project exists (`eas project:info` in `apps/alphaTiles`). `app.config.ts` reads `EAS_PROJECT_ID` from env, falling back to the committed ID; run `eas init` only if no project exists, and never twice (duplicate projects).
+- [ ] Set `EAS_PROJECT_ID` as an EAS/CI secret if you override the committed ID.
+- [ ] Android credentials (release keystore) via `eas credentials` / first `eas build`; iOS Apple credentials likewise when iOS ships.
+- [ ] First store build per language with the matching profile (`eas build --profile yue`). OTA only reaches binaries built after this.
 
-```sh
-eas init
-```
-
-This creates an EAS project, writes `extra.eas.projectId` into `app.config.ts` via `EAS_PROJECT_ID`, and links the repo to your Expo org. Run it once — never twice (creates duplicate projects).
-
-After running, commit the `EAS_PROJECT_ID` value or add it to your CI secrets as `EAS_PROJECT_ID=<uuid>`.
-
-### Publishing OTA updates
-
-Publish a content-only update to a language channel:
+### Publishing a content update
 
 ```sh
-eas update --channel eng --message "fix: corrected audio for tile 'a'"
-eas update --channel tpx --message "fix: updated wordlist"
+npm run update:yue                                  # or: APP_LANG=yue nx publish-update alphaTiles
+UPDATE_MESSAGE="fix tile audio" npm run update:yue  # custom message
+npm run update:eng                                  # same scheme for other languages
 ```
 
-The loading screen checks for updates on every native launch via `runOtaCheck()` and downloads in the background; users get the update on their next cold launch (so: two launches after publish).
+This validates the lang pack and regenerates the manifest (`prebuild-lang`) with that `APP_LANG`, then runs `eas update --channel yue-production` from `apps/alphaTiles`. Installed apps check on launch, download in the background, and apply on the next cold start (two launches after publish).
 
-### Rollback
-
-If a bad update reaches users, republish the previous version:
-
-```sh
-eas update:republish --channel eng
-```
-
-Users get the rolled-back version on next cold launch.
-
-### Version-skew policy
-
-- **Content-only changes** (JS bundle, images, audio reachable from JS): ship via `eas update`. Do NOT bump `APP_VERSION` in `app.config.ts`.
-- **Native-surface changes** (new native module, Expo SDK bump, new `app.config.ts` plugin, changes to `android`/`ios` native blocks): bump `APP_VERSION`, create a new EAS Build, submit to the store. OTA updates do NOT reach users on an older binary (the `appVersion` runtime-version policy enforces this).
-
-### What ships via OTA vs. rebuild
+### OTA vs. store release
 
 | Change type | Ship via |
 |-------------|----------|
-| JS logic / UI | OTA (`eas update`) |
-| Bundled images / audio | OTA (`eas update`) |
-| Language-pack content fix | OTA (`eas update`) |
-| New native module | Full rebuild + store |
-| Expo SDK version bump | Full rebuild + store |
-| New `app.config.ts` plugin | Full rebuild + store |
-| `ios.bundleIdentifier` / `android.package` change | Full rebuild + store |
+| JS logic / UI | OTA |
+| Bundled images / audio, language-pack content fixes | OTA |
+| New native module, Expo SDK bump, new `app.config.ts` plugin | Store release |
+| `android.package` / `ios.bundleIdentifier`, permissions, icon/splash native config | Store release |
+| Any change that needs a new `APP_VERSION` | Store release |
+
+`runtimeVersion` uses the `appVersion` policy: an update only reaches binaries whose version equals `APP_VERSION` at publish time. Content-only changes do not touch it.
+
+### Bumping APP_VERSION
+
+For a native/store release, edit `APP_VERSION` in `apps/alphaTiles/app.config.ts` (e.g. `1.0.0` to `1.1.0`), then `eas build --profile yue` and submit. Android `versionCode` auto-increments remotely. After the bump, OTA updates published from that code only reach the new binary; users on the old binary stay on the old version's updates until they upgrade. Never bump it for an OTA-only change, or no installed app will receive it.
+
+### Rollback
+
+From `apps/alphaTiles`, either republish a known-good earlier update to the channel or roll back to the embedded bundle:
+
+```sh
+eas update:list --branch yue-production              # find the good update group ID
+eas update:republish --destination-channel yue-production --group <group-id>
+eas update:rollback                                  # revert to the binary's embedded bundle
+```
+
+Users get the rolled-back version on their next cold start. Rolling back a bad `APP_VERSION` store release means shipping a new store build.
 
 ## Troubleshooting
 
