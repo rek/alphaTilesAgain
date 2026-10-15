@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType, LayoutChangeEvent } from 'react-native';
+import { readableTextColor } from '@shared/util-theme';
 import type { ThailandType } from './decodeThailandChallengeLevel';
 
 // Java 588-595 correct-feedback parity: when the player taps the correct
@@ -25,7 +26,8 @@ const CHOICE_TEXT_COLOR = '#000000';
 const WHITE = '#FFFFFF';
 
 export type ThailandRefDisplay =
-  | { type: 'text'; text: string; backgroundColor: string; textColor: string }
+  // textColor: legacy, ignored — derived from backgroundColor via readableTextColor.
+  | { type: 'text'; text: string; backgroundColor: string; textColor?: string }
   | { type: 'image'; imageSource: ImageSourcePropType | undefined; wordLabel: string }
   | { type: 'audio'; refType: ThailandType };
 
@@ -41,6 +43,7 @@ export type ThailandChoiceDisplay =
  */
 export type ThailandChoiceFeedback = {
   backgroundColor?: string;
+  /** Legacy, ignored — the text colour is derived from backgroundColor (WCAG AA). */
   textColor?: string;
 } | null;
 
@@ -118,7 +121,7 @@ function RefDisplay({
       accessibilityRole="button"
     >
       <Text
-        style={[styles.refText, { color: refDisplay.textColor }]}
+        style={[styles.refText, { color: readableTextColor(refDisplay.backgroundColor) }]}
         numberOfLines={2}
         adjustsFontSizeToFit
       >
@@ -144,7 +147,9 @@ function ChoiceCell({
   accessibilityLabel: string;
 }): React.JSX.Element {
   const bg = feedback?.backgroundColor ?? DEFAULT_CHOICE_BG;
-  const fg = feedback?.textColor ?? CHOICE_TEXT_COLOR;
+  // Feedback colours are pack colours (refColor): derive a readable text
+  // colour from the background instead of trusting a fixed white (U3).
+  const fg = feedback?.backgroundColor ? readableTextColor(bg) : CHOICE_TEXT_COLOR;
 
   return (
     <Pressable
@@ -261,6 +266,10 @@ export function ThailandScreen({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    // Fill the shell slot's width: the shell centres its children, so without
+    // this the root shrinks to its content and onLayout reports a ~0 width,
+    // pinning cells to the 60px floor on phones (U7).
+    alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
