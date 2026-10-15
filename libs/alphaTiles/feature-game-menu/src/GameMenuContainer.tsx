@@ -68,6 +68,12 @@ export function GameMenuContainer(): React.JSX.Element {
     playInstruction('zzz_earth');
   }
 
+  const doorStates = {
+    'not-started': t('menu.a11y.door_state.not_started'),
+    'in-process': t('menu.a11y.door_state.in_process'),
+    mastery: t('menu.a11y.door_state.mastery'),
+  };
+
   const commonProps = {
     playerName: player.name,
     playerAvatarSrc,
@@ -96,8 +102,8 @@ export function GameMenuContainer(): React.JSX.Element {
       resources: t('menu.tabs.resources'),
       audioInstructions: t('menu.tabs.audio'),
     },
-    doorLabel: (door: { index: number; visual: 'not-started' | 'in-process' | 'mastery' }) =>
-      t('menu.a11y.door', { index: door.index, state: door.visual }),
+    doorLabel: (door: { index: number; visual: keyof typeof doorStates }) =>
+      t('menu.a11y.door', { index: door.index, state: doorStates[door.visual] }),
   };
 
   return <GameMenuScreenModern {...commonProps} allDoors={allDoors} />;

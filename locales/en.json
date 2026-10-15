@@ -75,6 +75,11 @@
       "score": "Score: {{points}}",
       "a11y": {
         "door": "Game {{index}}, {{state}}",
+        "door_state": {
+          "not_started": "not started",
+          "in_process": "in progress",
+          "mastery": "mastered"
+        },
         "prev": "Previous page",
         "next": "Next page",
         "back_to_players": "Back to player selection",
