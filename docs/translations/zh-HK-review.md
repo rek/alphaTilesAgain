@@ -149,3 +149,5 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/a11y/advance` | Advance | 繼續 | Moves to next item; 繼續 = continue. |
 | `chrome/a11y/delete` | Delete | 刪除 |  |
 | `chrome/a11y/play_again` | Play again | 再玩一次 |  |
+
+> **Note (difficulty ladder, #52):** the menu tier uses 階 / English "Step" (`chrome.menu.level`, `chrome.placementGuidance.*`); each game's own challenge level keeps 級 / English "Level" (`chrome.game_door_level`). Please confirm 階 reads naturally for learners.
