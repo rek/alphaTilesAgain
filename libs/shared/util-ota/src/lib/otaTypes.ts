@@ -11,7 +11,9 @@ export type OtaCheckResult =
   | { kind: 'error'; error: string }
   | { kind: 'applied'; updateId: string }
   /** Update downloaded; expo-updates launches it on the next cold start. */
-  | { kind: 'downloaded'; updateId: string };
+  | { kind: 'downloaded'; updateId: string }
+  /** Roll-back-to-embedded directive persisted; embedded bundle runs next cold start. */
+  | { kind: 'rolled-back' };
 
 /**
  * Minimal track function type accepted by util-ota functions.

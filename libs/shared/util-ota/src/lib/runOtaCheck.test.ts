@@ -148,6 +148,30 @@ describe('when update available and reload is false', () => {
 });
 
 // ---------------------------------------------------------------------------
+// roll back to embedded (`eas update:rollback`) — must fetch to persist it
+// ---------------------------------------------------------------------------
+
+describe('when the server sends a roll-back-to-embedded directive', () => {
+  it('fetches it and returns kind rolled-back without reloading', async () => {
+    mockCheckForUpdateAsync.mockResolvedValue({
+      isAvailable: false,
+      isRollBackToEmbedded: true,
+      manifest: undefined,
+      reason: undefined,
+    });
+    mockFetchUpdateAsync.mockResolvedValue({ isNew: false, isRollBackToEmbedded: true });
+    const track = makeTrackSpy();
+
+    const result = await runOtaCheck({ track, reload: false });
+
+    expect(mockFetchUpdateAsync).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ kind: 'rolled-back' });
+    expect(mockReloadAsync).not.toHaveBeenCalled();
+    expect(track).toHaveBeenCalledWith('app_update_available', { updateId: 'embedded', channel: 'eng' });
+  });
+});
+
+// ---------------------------------------------------------------------------
 // 5.6.5 — update available + fetch + reload → app_update_available fired, reloadAsync called
 // ---------------------------------------------------------------------------
 

@@ -43,7 +43,7 @@ function resolveChannel(): string {
  *
  * - Short-circuits if `Updates.isEnabled === false` (dev builds).
  * - Races `checkForUpdateAsync` against `checkTimeoutMs`.
- * - On update available: races `fetchUpdateAsync` against `fetchTimeoutMs`,
+ * - On update available (or a roll-back-to-embedded directive): races `fetchUpdateAsync` against `fetchTimeoutMs`,
  *   then calls `reloadAsync` — unless `reload: false`, in which case it
  *   returns `downloaded` and expo-updates runs the new bundle on the next
  *   cold start (release policy: check on launch, apply next launch).
@@ -84,12 +84,16 @@ export async function runOtaCheck(opts?: {
     return { kind: 'error', error: msg };
   }
 
-  if (!checkResult.isAvailable) {
+  // A roll-back-to-embedded directive (`eas update:rollback`) arrives as
+  // isAvailable:false + isRollBackToEmbedded:true; only fetchUpdateAsync
+  // persists it, so it must be fetched like an update.
+  const isRollBack = checkResult.isRollBackToEmbedded;
+  if (!checkResult.isAvailable && !isRollBack) {
     return { kind: 'no-update' };
   }
 
-  // update available — fire event then fetch
-  const updateId: string = checkResult.manifest?.id ?? 'unknown';
+  // update (or rollback) available — fire event then fetch
+  const updateId: string = checkResult.manifest?.id ?? (isRollBack ? 'embedded' : 'unknown');
   trackFn?.('app_update_available', { updateId, channel });
 
   // --- fetch phase ---
@@ -106,13 +110,14 @@ export async function runOtaCheck(opts?: {
     return { kind: 'error', error: msg };
   }
 
-  if (!fetchResult.isNew) {
+  if (!fetchResult.isNew && !fetchResult.isRollBackToEmbedded) {
     // Nothing new to apply — continue with bundled
     return { kind: 'no-update' };
   }
 
   if (opts?.reload === false) {
-    return { kind: 'downloaded', updateId };
+    // expo-updates launches the fetched update / embedded bundle next cold start.
+    return fetchResult.isRollBackToEmbedded ? { kind: 'rolled-back' } : { kind: 'downloaded', updateId };
   }
 
   // --- reload phase ---
