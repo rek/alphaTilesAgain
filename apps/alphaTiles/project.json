@@ -85,7 +85,7 @@
       "dependsOn": ["prebuild-lang"],
       "outputs": ["{workspaceRoot}/dist/web/alpha-tiles"],
       "options": {
-        "command": "npx expo export --platform web --output-dir dist/web && mkdir -p ../../dist/web/alpha-tiles && cp -r dist/web/. ../../dist/web/alpha-tiles/",
+        "command": "npx expo export --platform web --output-dir dist/web && npx tsx ../../tools/write-web-manifest.ts dist/web/manifest.json && mkdir -p ../../dist/web/alpha-tiles && cp -r dist/web/. ../../dist/web/alpha-tiles/",
         "cwd": "apps/alphaTiles"
       }
     },
