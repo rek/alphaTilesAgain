@@ -2,10 +2,41 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
+import { useDoor } from '@alphaTiles/data-doors';
+import { gameClasses } from '../../src/gameClasses';
+import { gameClassKeys, type GameClassKey } from '../../src/gameClassKeys';
+import { gameIcons } from '../../src/gameIcons';
 
-export default function GamePlaceholderRoute() {
-  const { classKey, doorIndex, challengeLevel } = useLocalSearchParams<{
-    classKey: string;
+/** Web static export: one prerendered page per class (`/games/<classKey>.html`). */
+export function generateStaticParams(): { classKey: GameClassKey }[] {
+  return gameClassKeys.map((classKey) => ({ classKey }));
+}
+
+function first(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+/**
+ * The one game route: `/games/<classKey>?doorIndex=…`. The routed Door (by
+ * `doorIndex`) names the class; the game-class registry supplies its container,
+ * and app chrome icons are injected here once for every game.
+ */
+export default function GameRoute(): React.JSX.Element {
+  const params = useLocalSearchParams<Record<string, string | string[]>>();
+  const door = useDoor(params);
+  // Door is authoritative; an unknown doorIndex still mounts the URL's class so
+  // the shell can bounce to /menu.
+  const classKey = door?.classKey ?? first(params.classKey);
+  const gameClass = gameClassKeys.find((k) => k === classKey);
+
+  if (gameClass === undefined) return <GameUnavailable classKey={classKey ?? ''} />;
+
+  const { Container } = gameClasses[gameClass];
+  return <Container key={`${gameClass}-${door?.index}`} {...params} icons={gameIcons} />;
+}
+
+function GameUnavailable({ classKey }: { classKey: string }): React.JSX.Element {
+  const { doorIndex, challengeLevel } = useLocalSearchParams<{
     doorIndex: string;
     challengeLevel: string;
   }>();

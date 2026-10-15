@@ -1,30 +1,10 @@
-// Registers all precompute functions before LangAssetsProvider mounts.
-// Imported at the top of _layout.tsx so runPrecomputes finds a fully-populated registry.
-//
-// Only build/preprocess functions are imported here — not Containers or Screens —
-// so this module doesn't pull game UI into the main bundle.
-//
-// When adding a new game that uses registerPrecompute, add an entry here.
+// Registers every game class's precompute (from the game-class registry) before
+// LangAssetsProvider mounts. Imported at the top of _layout.tsx so runPrecomputes
+// finds a fully-populated registry. Add a precompute on the class's entry in
+// src/gameClasses.ts — not here.
 import { registerPrecompute } from '@shared/util-precompute';
-import type { LangAssets } from '@alphaTiles/data-language-pack';
-import { buildRomaniaData } from '@alphaTiles/feature-game-romania';
-import { buildChinaData } from '@alphaTiles/feature-game-china';
-import { chilePreProcess } from '@alphaTiles/feature-game-chile';
-import { buildUnitedStatesData } from '@alphaTiles/feature-game-united-states';
-import { brazilPreProcess } from '@alphaTiles/feature-game-brazil';
-import { buildMexicoData } from '@alphaTiles/feature-game-mexico';
-import { georgiaPreProcess } from '@alphaTiles/feature-game-georgia';
-import { malaysiaPreProcess } from '@alphaTiles/feature-game-malaysia';
-import { buildSudanData } from '@alphaTiles/feature-game-sudan';
-import { buildTaiwanData } from '@alphaTiles/feature-game-taiwan';
+import { gameClasses } from '../src/gameClasses';
 
-registerPrecompute('romania', buildRomaniaData);
-registerPrecompute('china', buildChinaData);
-registerPrecompute('chile', chilePreProcess);
-registerPrecompute('united-states', buildUnitedStatesData);
-registerPrecompute('brazil', brazilPreProcess);
-registerPrecompute('mexico', buildMexicoData);
-registerPrecompute('georgia', georgiaPreProcess);
-registerPrecompute('malaysia', malaysiaPreProcess);
-registerPrecompute('sudan', (assets: LangAssets) => buildSudanData(assets, 7));
-registerPrecompute('taiwan', buildTaiwanData);
+for (const [classKey, gameClass] of Object.entries(gameClasses)) {
+  if (gameClass.precompute) registerPrecompute(classKey, gameClass.precompute);
+}

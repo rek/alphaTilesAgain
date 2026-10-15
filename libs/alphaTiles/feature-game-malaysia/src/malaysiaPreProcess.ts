@@ -10,7 +10,7 @@
  * - "Stage correspondence ratio" → float (default 0.7)
  * - "Malaysia colorless" → boolean (default false)
  *
- * Done at boot via registerPrecompute (registered in app/registerPrecomputes.ts) so paginating a stage at runtime is O(N).
+ * Done at boot via registerPrecompute (precompute on the class entry in apps/alphaTiles/src/gameClasses.ts) so paginating a stage at runtime is O(N).
  */
 import {
   parseWordIntoTiles,
