@@ -8,6 +8,7 @@
 
 import React, { createContext, useContext } from 'react';
 import type { ProgressEntry } from '@alphaTiles/data-progress';
+import type { SpeechItem } from '@alphaTiles/data-audio';
 
 export type GameShellContextValue = {
   /**
@@ -16,16 +17,18 @@ export type GameShellContextValue = {
    * (e.g. Italy lotería awards 4). Tracker still increments by 1 per call.
    */
   incrementPointsAndTracker: (isCorrect: boolean, points?: number) => void;
-  /** Replay the current reference word audio. */
+  /** Speak the current reference word (shell repeat button default). */
   replayWord: () => void;
   /**
-   * Play any word's audio with the syllable-chain fallback for words that
-   * have no recording (yue composite numerals). Use instead of
-   * `audio.playWord`. Returns expected playback ms, or undefined if unknown.
+   * Speak a pack item — `{ tile }`, `{ word }`, `{ syllable }` or
+   * `{ instruction }` (pass the row, never an audio key). Pack speech picks
+   * the clip and fallbacks (unrecorded word → syllable chain, which holds the
+   * interaction lock while it plays). Cancels speech still in flight.
+   * Returns expected playback ms, or undefined if unknown / silent.
    */
-  playWordAudio: (word: { wordInLOP: string; wordInLWC: string }) => number | undefined;
-  /** Expected ms `playWordAudio(word)` would play (word clip or syllable chain). */
-  getWordAudioDuration: (word: { wordInLOP: string; wordInLWC: string }) => number | undefined;
+  speak: (item: SpeechItem) => number | undefined;
+  /** Expected ms `speak(item)` would play, without playing. */
+  durationOf: (item: SpeechItem) => number | undefined;
   /** True while audio is playing or another lock is held. */
   interactionLocked: boolean;
   /** Mechanics set this to block interaction during animation etc. */

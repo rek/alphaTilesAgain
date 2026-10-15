@@ -53,7 +53,7 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
   const shell = useGameShell();
   const {
     setRefWord, setInteractionLocked, incrementPointsAndTracker,
-    interactionLocked,
+    interactionLocked, speak,
   } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
@@ -125,7 +125,7 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
             void (async () => {
               await audio.playCorrect();
               if (!isMountedRef.current) return;
-              await audio.playWord(roundData.word.wordInLWC);
+              speak({ word: roundData.word });
             })();
             nextRoundTimer.current = setTimeout(() => {
               if (isMountedRef.current) {
@@ -138,13 +138,13 @@ function UnitedStatesGame({ challengeLevel }: { challengeLevel: number }): React
         return next;
       });
     },
-    [interactionLocked, setInteractionLocked, incrementPointsAndTracker, roundData, audio, startRound],
+    [interactionLocked, setInteractionLocked, incrementPointsAndTracker, roundData, audio, speak, startRound],
   );
 
   const onImagePress = useCallback(() => {
     if (!roundData) return;
-    audio.playWord(roundData.word.wordInLWC);
-  }, [roundData, audio]);
+    speak({ word: roundData.word });
+  }, [roundData, speak]);
 
   // Derived: constructed word string; "__" (double underscore) per unselected pair
   // per Java line 229-231 — initial display = N copies of "__"

@@ -1,8 +1,8 @@
 /**
  * Settings-gate flags from aa_settings.txt.
  * When hasTileAudio is false, preloadAudio skips tile loading
- * and playTile becomes a no-op warning.
- * Same rule for hasSyllableAudio / playSyllable.
+ * and tile speech is silent (warn-once).
+ * Same rule for hasSyllableAudio / syllable speech.
  */
 export type AudioConfig = {
   hasTileAudio: boolean;

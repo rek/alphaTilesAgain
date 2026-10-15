@@ -6,19 +6,18 @@
  *
  * State:
  *   - page: number (0-indexed)
- *   - disabled: boolean (true while audio plays — gates grid + options row)
+ *   - disabled: always false (speak starts synchronously; kept for the presenter)
  *
  * Variant from the door's games row `SyllOrTile` (or `syllableGame` URL override):
  *   - 'T' (or anything not 'S'): tile variant — 63/page, type-coloured
  *   - 'S': syllable variant — 35/page, syllable.color-coloured
  *
- * Tap → playTile / playSyllable. Disabled clears when the awaited play resolves.
+ * Tap → shell.speak({ tile }) / speak({ syllable }).
  * Pagination prev/next bounded; visibility derived in screen from page/pageCount.
  */
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
-import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
@@ -38,7 +37,6 @@ const FALLBACK_COLOR = '#9E9E9E';
 
 function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Element {
   const shell = useGameShell();
-  const audio = useAudio();
   const assets = useLangAssets();
   const data = usePrecompute<SudanData>('sudan');
   const { t } = useTranslation();
@@ -59,7 +57,7 @@ function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
   const pageCount = pages.length;
 
   const [page, setPage] = useState(0);
-  const [disabled, setDisabled] = useState(false);
+  const disabled = false;
 
   // Build cell view-models for the current page.
   const cells: SudanCell[] = useMemo(() => {
@@ -78,41 +76,23 @@ function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
     });
   }, [pages, page, isSyllable, colorList, hasSyllableAudio]);
 
+  // speak() starts playback synchronously, so there is no in-flight window
+  // to gate; `disabled` stays false (kept for the presenter contract).
   const onTilePress = useCallback(
-    async (index: number) => {
-      if (disabled) return;
+    (index: number) => {
       const tile = data.tilePages[page]?.[index];
-      if (!tile) return;
-      setDisabled(true);
-      shell.setInteractionLocked(true);
-      try {
-        // Tile audio map is keyed by tile.base (resolveAudio), not audioName.
-        await audio.playTile(tile.base);
-      } finally {
-        setDisabled(false);
-        shell.setInteractionLocked(false);
-      }
+      if (tile) shell.speak({ tile });
     },
-    [disabled, data.tilePages, page, audio, shell],
+    [data.tilePages, page, shell],
   );
 
   const onSyllablePress = useCallback(
-    async (index: number) => {
-      if (disabled) return;
+    (index: number) => {
       if (!hasSyllableAudio) return; // Java: setClickable(false) for whole page.
       const syl = data.syllablePages[page]?.[index];
-      if (!syl) return;
-      setDisabled(true);
-      shell.setInteractionLocked(true);
-      try {
-        // Syllable audio map is keyed by syllable text (resolveAudio).
-        await audio.playSyllable(syl.syllable);
-      } finally {
-        setDisabled(false);
-        shell.setInteractionLocked(false);
-      }
+      if (syl) shell.speak({ syllable: syl });
     },
-    [disabled, hasSyllableAudio, data.syllablePages, page, audio, shell],
+    [hasSyllableAudio, data.syllablePages, page, shell],
   );
 
   const onPrev = useCallback(() => {

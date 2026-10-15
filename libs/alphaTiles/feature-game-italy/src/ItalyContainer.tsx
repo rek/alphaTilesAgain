@@ -49,6 +49,12 @@ type RouteParams = Record<string, string | string[] | GameShellIcons | undefined
   icons?: GameShellIcons;
 };
 
+/** Pack speech picks the clip: unrecorded words (yue composite numerals
+ *  zz_20 二十 …) play as a syllable chain instead of going silent. */
+function toSpeech(item: SourceItem) {
+  return item.kind === 'word' ? { word: item.word } : { syllable: item.syllable };
+}
+
 function getCallText(item: SourceItem): string {
   return item.kind === 'word' ? item.word.wordInLOP : item.syllable.syllable;
 }
@@ -92,21 +98,14 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
 
   const playCallAudio = useCallback(
     (item: SourceItem) => {
-      if (item.kind === 'word') {
-        audio.playWord(item.word.wordInLWC);
-      } else {
-        audio.playSyllable(item.syllable.syllable); // map keyed by syllable (resolveAudio)
-      }
+      shell.speak(toSpeech(item));
     },
-    [audio],
+    [shell],
   );
 
   const getCallDurationMs = useCallback(
-    (item: SourceItem): number | undefined => {
-      if (item.kind === 'word') return audio.getWordDuration(item.word.wordInLWC);
-      return audio.getSyllableDuration(item.syllable.syllable);
-    },
-    [audio],
+    (item: SourceItem): number | undefined => shell.durationOf(toSpeech(item)),
+    [shell],
   );
 
   const buildBoardCells = useCallback(

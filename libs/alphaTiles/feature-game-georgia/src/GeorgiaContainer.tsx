@@ -231,16 +231,16 @@ function GeorgiaGame({
         wordInLWC: chosen.word.wordInLWC,
       };
       shell.setRefWord(refWord);
-      // Java line 161: playActiveWordClip(false). Shell falls back to a
+      // Java line 161: playActiveWordClip(false). Pack speech falls back to a
       // syllable chain for words with no recording (composite numerals).
       // S-mode only: after the word audio, play the isolated first-syllable
       // clip so the learner hears the sound the round is asking for.
       const wordMs =
-        shell.playWordAudio(refWord) ?? SYLLABLE_AFTER_WORD_FALLBACK_MS;
+        shell.speak({ word: refWord }) ?? SYLLABLE_AFTER_WORD_FALLBACK_MS;
       syllableTimerRef.current = setTimeout(() => {
         syllableTimerRef.current = null;
         if (!isMountedRef.current) return;
-        audio.playSyllable(correctText);
+        shell.speak({ syllable: { syllable: correctText } });
       }, wordMs);
       return;
     }
@@ -311,10 +311,9 @@ function GeorgiaGame({
     };
     shell.setRefWord(refWord);
     // Java line 161: playActiveWordClip(false).
-    shell.playWordAudio(refWord);
+    shell.speak({ word: refWord });
   }, [
     shell,
-    audio,
     isSyllable,
     challengeLevel,
     visibleGameButtons,

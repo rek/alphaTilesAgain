@@ -4,7 +4,7 @@ import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useActivePlayer, usePlayersStore } from '@alphaTiles/data-players';
 import { useTotalPoints } from '@alphaTiles/data-progress';
-import { useAudio } from '@alphaTiles/data-audio';
+import { usePackSpeech } from '@alphaTiles/data-audio';
 import { track } from '@shared/util-analytics';
 import { useDoors } from './useDoors';
 // import { GameMenuScreen } from './GameMenuScreen'; // classic layout — disabled
@@ -15,7 +15,7 @@ export function GameMenuContainer(): React.JSX.Element {
   const router = useRouter();
   const { t } = useTranslation('chrome');
   const assets = useLangAssets();
-  const { playInstruction } = useAudio();
+  const { speak } = usePackSpeech({ words: assets.words.rows, syllables: assets.syllables.rows });
 
   const { allDoors } = useDoors(player?.id ?? null, 0);
   const score = useTotalPoints(player?.id ?? '');
@@ -65,7 +65,7 @@ export function GameMenuContainer(): React.JSX.Element {
   }
 
   function onAudioInstructions(): void {
-    playInstruction('zzz_earth');
+    speak({ instruction: 'zzz_earth' });
   }
 
   const commonProps = {

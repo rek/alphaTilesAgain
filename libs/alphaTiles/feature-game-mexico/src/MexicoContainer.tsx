@@ -137,7 +137,7 @@ function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.E
         void (async () => {
           await audio.playCorrect();
           if (!isMountedRef.current) return;
-          await audio.playWord(cardA.word.wordInLWC);
+          shell.speak({ word: cardA.word });
           if (isFinal && isMountedRef.current) audio.playCorrectFinal();
         })();
 

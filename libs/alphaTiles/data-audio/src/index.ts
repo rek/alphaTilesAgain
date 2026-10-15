@@ -11,8 +11,12 @@ export { preloadAudio } from './lib/preloadAudio';
 // Provider — mount above all game screens after preloadAudio resolves.
 export { AudioProvider } from './lib/AudioProvider';
 
-// Primary hook — consumed by every game feature that needs audio.
+// Chimes + load/unlock lifecycle.
 export { useAudio } from './lib/useAudio';
+
+// Pack speech — the only way to play tiles / words / syllables / instructions.
+export { usePackSpeech } from './lib/usePackSpeech';
+export type { SpeechItem } from './lib/planSpeech';
 
 
 // Static base-chime source refs — pass as baseChimes param to preloadAudio.

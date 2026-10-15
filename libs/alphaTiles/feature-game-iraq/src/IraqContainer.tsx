@@ -9,7 +9,7 @@
  *
  * State machine per tile tap (Iraq.java:236-446):
  *   1. Set isAnimating + interactionLocked (re-tap guard).
- *   2. Play tile audio (fire-and-forget Promise).
+ *   2. Speak the tile via pack speech (fire-and-forget).
  *   3. After tileAudioDuration + 500 ms → resolve a word for the tile and
  *      paint the white overlay (text + image). Skip overlay if no word.
  *   4. After 2000 ms → restore tile, clear overlay, unlock interaction.
@@ -22,7 +22,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ImageSourcePropType } from 'react-native';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
-import { useAudio } from '@alphaTiles/data-audio';
 import {
   GameShellContainer,
   useGameShell,
@@ -58,14 +57,13 @@ type RouteParams = Record<string, string | string[] | GameShellIcons | undefined
 const AUDIO_TRAIL_MS = 500;
 /** Duration the overlay stays before reverting (Iraq.java:438). */
 const OVERLAY_HOLD_MS = 2000;
-/** Fallback when getTileDuration returns undefined (no native duration metadata). */
+/** Fallback when speak({ tile }) reports no duration (no native duration metadata). */
 const DEFAULT_TILE_DURATION_MS = 800;
 
 const PALETTE_FALLBACK = ['#1565C0', '#43A047', '#E53935', '#FB8C00', '#8E24AA'];
 
 function IraqGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
-  const audio = useAudio();
   const assets = useLangAssets();
   const { t } = useTranslation();
 
@@ -172,10 +170,8 @@ function IraqGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Ele
       isAnimatingRef.current = true;
       shell.setInteractionLocked(true);
 
-      // 1. Play tile audio (fire-and-forget). Java uses tile.audioForThisTileType;
-      // the TS tile audio map is keyed by tile.base (resolveAudio), not audioName.
-      const audioId = tile.base;
-      audio.playTile(audioId);
+      // 1. Speak the tile (fire-and-forget). Pack speech resolves its clip.
+      const tileMs = shell.speak({ tile });
 
       // 2. Resolve the word for this tile (CL2 iconicWord override → scanSetting fallback).
       let chosenWord: Word | null = resolveIconicWordOverride(tile, wordRows, challengeLevel);
@@ -188,8 +184,7 @@ function IraqGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Ele
         });
       }
 
-      const tileDurationMs =
-        audio.getTileDuration(audioId) ?? DEFAULT_TILE_DURATION_MS;
+      const tileDurationMs = tileMs ?? DEFAULT_TILE_DURATION_MS;
 
       // 3. After audio + 500 ms — paint overlay (or skip if no word).
       audioTimerRef.current = setTimeout(() => {
@@ -212,7 +207,7 @@ function IraqGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Ele
       }, tileDurationMs + AUDIO_TRAIL_MS);
     },
     [
-      sortedTiles, page, audio, wordRows, scanSetting, parseWord,
+      sortedTiles, page, wordRows, scanSetting, parseWord,
       challengeLevel, assets.images.words, shell,
     ],
   );
