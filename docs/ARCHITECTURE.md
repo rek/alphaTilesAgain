@@ -312,9 +312,10 @@ V1 ships a no-op adapter. V2 swaps in a real provider (PostHog, Firebase — tbd
 
 ## 13. OTA updates
 
-Per EAS Update. Each language pack has its own update channel (`eng`, `tpx`, `yue`, …). On native launch the loading screen fires `runOtaCheck({ reload: false })` (from `@shared/util-ota`) without blocking boot: it checks the channel, downloads any update in the background, and expo-updates launches it on the next cold start (no mid-session reload). After boot, `reportApplyIfNeeded()` records an applied update. Native-code changes still require a full rebuild.
+Per EAS Update. Each language pack has its own update channel (`eng`, `tpx`, `yue`, …). On native launch BootGate fires `runOtaCheck({ reload: false })` (from `@shared/util-ota`) without blocking boot: it checks the channel, downloads any update in the background, and expo-updates launches it on the next cold start (no mid-session reload). After boot, `reportApplyIfNeeded()` records an applied update. Native-code changes still require a full rebuild.
 
-- `runtimeVersion.policy = "appVersion"` — binaries pool by `APP_VERSION` in `app.config.ts`; a mismatched update is ignored. Bump it on every native release.
+- `runtimeVersion.policy = "fingerprint"` — binaries pool by the native-surface hash (`@expo/fingerprint`); a mismatched update is ignored. No manual bump; a native change gets a new runtime automatically.
+- Roll back to embedded (`eas update:rollback`) is fetched like an update and applied on the next cold start.
 - `updates.checkAutomatically = "NEVER"` — check is manual, triggered from the loading screen.
 - One update channel per language pack, declared in `eas.json` per build profile.
 - Version-skew policy: see `docs/decisions/ADR-009-ota-via-eas-update.md`.

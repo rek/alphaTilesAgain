@@ -187,13 +187,17 @@ This validates the lang pack and regenerates the manifest (`prebuild-lang`) with
 | Bundled images / audio, language-pack content fixes | OTA |
 | New native module, Expo SDK bump, new `app.config.ts` plugin | Store release |
 | `android.package` / `ios.bundleIdentifier`, permissions, icon/splash native config | Store release |
-| Any change that needs a new `APP_VERSION` | Store release |
+| `eas.json` edits (it is part of the fingerprint) | Store release |
 
-`runtimeVersion` uses the `appVersion` policy: an update only reaches binaries whose version equals `APP_VERSION` at publish time. Content-only changes do not touch it.
+`runtimeVersion` uses the `fingerprint` policy: the runtime is a hash of the native surface (native deps, config plugins, the resolved per-language app config and the icon/splash files it points at, `eas.json`). An update only reaches binaries built from the same native surface, so a native change can never ship to an old binary by OTA — nothing to bump by hand. Content-only changes leave it unchanged.
 
-### Bumping APP_VERSION
+Check before publishing (needs a clean `npm ci`, same as the build):
 
-For a native/store release, edit `APP_VERSION` in `apps/alphaTiles/app.config.ts` (e.g. `1.0.0` to `1.1.0`), then `eas build --profile yue` and submit. Android `versionCode` auto-increments remotely. After the bump, OTA updates published from that code only reach the new binary; users on the old binary stay on the old version's updates until they upgrade. Never bump it for an OTA-only change, or no installed app will receive it.
+```sh
+cd apps/alphaTiles && APP_LANG=yue npx expo-updates runtimeversion:resolve --platform android
+```
+
+Compare with the runtime version of the build on expo.dev (or `eas fingerprint:compare`). Different → the update reaches nobody on that build; ship a store build instead. `APP_VERSION` in `app.config.ts` is only the store marketing version; Android `versionCode` auto-increments remotely.
 
 ### Rollback
 
@@ -205,7 +209,7 @@ eas update:republish --destination-channel yue-production --group <group-id>
 eas update:rollback                                  # revert to the binary's embedded bundle
 ```
 
-Users get the rolled-back version on their next cold start. Rolling back a bad `APP_VERSION` store release means shipping a new store build.
+Users get the rolled-back version on their next cold start (the app fetches the rollback directive on launch like an update). Rolling back a bad store release means shipping a new store build.
 
 ## Troubleshooting
 
