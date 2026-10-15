@@ -4,8 +4,12 @@
  * Returns stable play callbacks + duration getters + web unlock lifecycle.
  * Must be called inside <AudioProvider>. Throws if called outside.
  *
+ * Players come from the bounded LRU pool (M11): `handles.<category>` maps an
+ * id to its asset source; `pool.acquire` returns the live player, re-creating
+ * it if it was evicted.
+ *
  * Platform strategy (design D4):
- *   Native: seekTo(0) + play() on the existing handle — fire-and-forget.
+ *   Native: seekTo(0) + play() on the pooled handle — fire-and-forget.
  *   Web: pause() + seekTo(0) then play() (last-play-wins single-instance).
  *
  * Warn-once dedupe: each category has a module-level Set<string> that records
@@ -50,11 +54,27 @@ async function playHandle(handle: SoundHandle): Promise<void> {
 export function useAudio() {
   const { handles, isLoading, loadProgress, awaitLoaded, isAudioUnlocked, setIsAudioUnlocked } = useContext(AudioContext);
 
+  /** Live player for a probed clip; acquiring never throws. */
+  const acquire = (category: string, id: string, source: number): SoundHandle | null => {
+    if (!handles) return null;
+    try {
+      return handles.pool.acquire(`${category}:${id}`, source);
+    } catch (err) {
+      if (__DEV__) {
+        console.warn(
+          `[data-audio] failed to create player for ${category}:${id}`,
+          err instanceof Error ? err.message : String(err)
+        );
+      }
+      return null;
+    }
+  };
+
   // ── playTile ──────────────────────────────────────────────────────────
   const playTile = async (id: string): Promise<void> => {
     if (!handles) return;
-    const handle = handles.tiles.get(id);
-    if (handle === undefined) {
+    const source = handles.tiles.get(id);
+    if (source === undefined) {
       // tiles map is empty because hasTileAudio = false, or id not in manifest.
       if (!warnedTiles.has(id)) {
         warnedTiles.add(id);
@@ -64,7 +84,7 @@ export function useAudio() {
       }
       return;
     }
-    if (handle === null) {
+    if (source === null) {
       if (!warnedTiles.has(id)) {
         warnedTiles.add(id);
         if (__DEV__) {
@@ -73,14 +93,15 @@ export function useAudio() {
       }
       return;
     }
-    await playHandle(handle);
+    const handle = acquire('tile', id, source);
+    if (handle) await playHandle(handle);
   };
 
   // ── playWord ──────────────────────────────────────────────────────────
   const playWord = async (id: string): Promise<void> => {
     if (!handles) return;
-    const handle = handles.words.get(id);
-    if (handle === undefined || handle === null) {
+    const source = handles.words.get(id);
+    if (source === undefined || source === null) {
       if (!warnedWords.has(id)) {
         warnedWords.add(id);
         if (__DEV__) {
@@ -89,14 +110,15 @@ export function useAudio() {
       }
       return;
     }
-    await playHandle(handle);
+    const handle = acquire('word', id, source);
+    if (handle) await playHandle(handle);
   };
 
   // ── playSyllable ──────────────────────────────────────────────────────
   const playSyllable = async (id: string): Promise<void> => {
     if (!handles) return;
-    const handle = handles.syllables.get(id);
-    if (handle === undefined) {
+    const source = handles.syllables.get(id);
+    if (source === undefined) {
       if (!warnedSyllables.has(id)) {
         warnedSyllables.add(id);
         if (__DEV__) {
@@ -105,7 +127,7 @@ export function useAudio() {
       }
       return;
     }
-    if (handle === null) {
+    if (source === null) {
       if (!warnedSyllables.has(id)) {
         warnedSyllables.add(id);
         if (__DEV__) {
@@ -114,14 +136,15 @@ export function useAudio() {
       }
       return;
     }
-    await playHandle(handle);
+    const handle = acquire('syllable', id, source);
+    if (handle) await playHandle(handle);
   };
 
   // ── playInstruction ───────────────────────────────────────────────────
   const playInstruction = async (id: string): Promise<void> => {
     if (!handles) return;
-    const handle = handles.instructions.get(id);
-    if (handle === undefined || handle === null) {
+    const source = handles.instructions.get(id);
+    if (source === undefined || source === null) {
       if (!warnedInstructions.has(id)) {
         warnedInstructions.add(id);
         if (__DEV__) {
@@ -130,7 +153,8 @@ export function useAudio() {
       }
       return;
     }
-    await playHandle(handle);
+    const handle = acquire('instruction', id, source);
+    if (handle) await playHandle(handle);
   };
 
   // ── Chimes ────────────────────────────────────────────────────────────
@@ -191,10 +215,8 @@ export function useAudio() {
         primeOne(handles.chimes.correct);
         primeOne(handles.chimes.incorrect);
         primeOne(handles.chimes.correctFinal);
-        for (const h of handles.tiles.values()) primeOne(h);
-        for (const h of handles.words.values()) primeOne(h);
-        for (const h of handles.syllables.values()) primeOne(h);
-        for (const h of handles.instructions.values()) primeOne(h);
+        // Web pool is unbounded, so this primes every probed clip.
+        for (const h of handles.pool.liveHandles()) primeOne(h);
       } catch {
         if (__DEV__) {
           console.warn('[data-audio] unlockAudio: priming loop failed (non-fatal)');

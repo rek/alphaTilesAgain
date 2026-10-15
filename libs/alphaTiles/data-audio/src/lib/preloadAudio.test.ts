@@ -249,3 +249,63 @@ describe('preloadAudio — large input (concurrency bound)', () => {
     expect(nullCount).toBe(0);
   });
 });
+
+describe('preloadAudio — bounded live players (M11)', () => {
+  it('probes every clip for duration but keeps only livePlayerLimit alive', async () => {
+    const players: Array<ReturnType<typeof makeMockPlayer>> = [];
+    createPlayerSpy.mockImplementation(() => {
+      const p = makeMockPlayer(2);
+      players.push(p);
+      return p as never;
+    });
+    const tiles = Array.from({ length: 20 }, (_, i) => `t${i}`);
+    const words = Array.from({ length: 10 }, (_, i) => `w${i}`);
+
+    const handles = await preloadAudio({
+      manifest: makeManifest(tiles, words),
+      audioConfig: { hasTileAudio: true, hasSyllableAudio: false },
+      baseChimes: BASE_CHIMES,
+      livePlayerLimit: 4,
+    });
+
+    expect(handles.durations.tiles.size).toBe(20);
+    expect(handles.durations.words.size).toBe(10);
+    expect(handles.pool.size).toBe(4);
+    // 30 clip players + 3 chimes created; all but 4 pooled clips released.
+    expect(players).toHaveLength(33);
+    const removed = players.filter((p) => p.remove.mock.calls.length > 0);
+    expect(removed).toHaveLength(26);
+  });
+
+  it('stores the asset source so evicted clips can be re-created', async () => {
+    const handles = await preloadAudio({
+      manifest: makeManifest(['a', 'b'], []),
+      audioConfig: { hasTileAudio: true, hasSyllableAudio: false },
+      baseChimes: BASE_CHIMES,
+      livePlayerLimit: 1,
+    });
+    expect(handles.tiles.get('a')).toBe(100);
+    expect(handles.tiles.get('b')).toBe(101);
+    createPlayerSpy.mockClear();
+    const evicted = handles.pool.has('tile:a') ? 'b' : 'a';
+    handles.pool.acquire(`tile:${evicted}`, handles.tiles.get(evicted) as number);
+    expect(createPlayerSpy).toHaveBeenCalledWith(evicted === 'a' ? 100 : 101);
+  });
+
+  it('defaults to an unbounded pool on web (Safari gesture priming, #25)', async () => {
+    const rn = require('react-native') as { Platform: { OS: string } };
+    const prev = rn.Platform.OS;
+    rn.Platform.OS = 'web';
+    try {
+      const tiles = Array.from({ length: 40 }, (_, i) => `t${i}`);
+      const handles = await preloadAudio({
+        manifest: makeManifest(tiles, []),
+        audioConfig: { hasTileAudio: true, hasSyllableAudio: false },
+        baseChimes: BASE_CHIMES,
+      });
+      expect(handles.pool.size).toBe(40);
+    } finally {
+      rn.Platform.OS = prev;
+    }
+  });
+});

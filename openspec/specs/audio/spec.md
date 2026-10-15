@@ -36,6 +36,22 @@ The codebase SHALL expose audio via exactly one library, `libs/alphaTiles/data-a
 - **WHEN** the manifest has 200 audio entries
 - **THEN** `preloadAudio` runs at most 8 `createAsync` calls concurrently (bounded to avoid iOS resource limits)
 
+### Requirement: Bounded live players (M11)
+
+Preload SHALL probe each referenced clip once (load check + duration in ms) but SHALL NOT keep a player per clip. Probed players go into an LRU pool capped at `livePlayerLimit` (default 24 on native, unbounded on web); evicted players MUST be released (`remove()`). The handle maps SHALL store each clip's asset source (or `null` on failure) so `play*` re-creates an evicted player on demand. Duration getters stay synchronous. Web stays unbounded because Safari only unlocks `<audio>` elements primed inside the user gesture (#25).
+
+#### Scenario: Native boot keeps a bounded set alive
+
+- **GIVEN** a pack with ~400 clips on Android
+- **WHEN** `preloadAudio` resolves
+- **THEN** every clip has a duration, and at most `livePlayerLimit` clip players remain alive
+
+#### Scenario: Evicted clip replays
+
+- **GIVEN** clip `a` was evicted from the pool
+- **WHEN** `playTile('a')` is called
+- **THEN** a new player is created from `a`'s source and played, evicting the LRU player
+
 ### Requirement: Settings-gated preload of tiles and syllables
 
 When `audioConfig.hasTileAudio === false`, `preloadAudio` SHALL skip loading tile audio entirely and the resulting `tiles` handle map SHALL be empty. Same rule for `hasSyllableAudio === false` and the `syllables` map. Calls to `playTile(id)` / `playSyllable(id)` against an empty map MUST be no-ops that emit one dev-mode warning per unique id and never throw.

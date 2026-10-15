@@ -31,6 +31,7 @@ import { buildTaiwanData } from '../libs/alphaTiles/feature-game-taiwan/src/buil
 import { pickTaiwanCharacters } from '../libs/alphaTiles/feature-game-taiwan/src/pickTaiwanCharacters';
 import { countForLevel } from '../libs/alphaTiles/feature-game-georgia/src/countForLevel';
 import { buildSyllableChoicesRandom } from '../libs/alphaTiles/feature-game-georgia/src/buildSyllableChoicesRandom';
+import { buildSyllableHint } from '../libs/alphaTiles/feature-game-georgia/src/buildSyllableHint';
 import { buildMexicoData } from '../libs/alphaTiles/feature-game-mexico/src/buildMexicoData';
 import { setupMexicoBoard } from '../libs/alphaTiles/feature-game-mexico/src/setupMexicoBoard';
 import { pickEcuadorWords } from '../libs/alphaTiles/feature-game-ecuador/src/pickEcuadorWords';
@@ -173,6 +174,9 @@ const BUILDERS: Record<string, Builder> = {
         rng,
       });
       expect(texts.slice(0, visible)).toContain(parsed[0].syllable);
+      // #30: prompt shows the word minus its first syllable.
+      const hint = buildSyllableHint({ syllables: parsed.map((p) => p.syllable) });
+      expect(hint).toBe('__' + word.wordInLOP.slice(parsed[0].syllable.length));
     }
   },
 
@@ -317,6 +321,17 @@ describe('yue pack — every door builds rounds against real data', () => {
 
   it('honours "After 12 checked trackers = 1": shell keeps playing at mastery (H2)', () => {
     expect(resolveMasteryAction({ settings: assets.settings })).toBe('keep-playing');
+  });
+
+  it('keeps every tile in stage 1: doors are stage "-" with no progression (L2)', () => {
+    expect(assets.games.rows.every((r) => r.stagesIncluded === '-')).toBe(true);
+    const staged = assets.tiles.rows.filter(
+      (t) =>
+        t.stageOfFirstAppearance !== 1 ||
+        t.stageOfFirstAppearanceType2 !== 1 ||
+        t.stageOfFirstAppearanceType3 !== 1,
+    );
+    expect(staged.map((t) => t.base)).toEqual([]);
   });
 
   it('has a builder for every door', () => {

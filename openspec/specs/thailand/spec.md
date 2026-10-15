@@ -85,6 +85,16 @@ When the reference is a tile (TILE_*), the container SHALL pick the ref via the 
 - **WHEN** the next round picks a candidate equal to `"a"`
 - **THEN** the candidate is rejected unless `freshChecks > 25`
 
+### Requirement: Fixed Question Order Resumes Across Visits
+
+Refs SHALL be picked in fixed per-door order (issue #17): `roundIndex` modulo the filtered pool. The next `roundIndex` SHALL be persisted per progress key (`gameUniqueId` = door + player) as `ProgressEntry.roundCursor` after each round is built, and read back on door entry, so a returning player resumes where they stopped and every word is eventually reached (M10). Absent cursor = 0; the walk wraps at the end of the pool. Distractors stay random.
+
+#### Scenario: Second visit resumes
+
+- **GIVEN** a player left door 1 after 5 rounds
+- **WHEN** they re-enter door 1
+- **THEN** the first ref is pool item 5, not item 0
+
 ### Requirement: First Audible Tile Algorithm
 
 Both ref-tile picking from a word AND match-checking SHALL use `firstAudibleTile(Word)` from Java `Thailand.java:633-646`. Starting from the first parsed tile, the algorithm MUST advance past any tile that is `LV` followed by a non-`PC` tile, or whose type matches `PC|AD|D|T`, until it finds an audible tile.

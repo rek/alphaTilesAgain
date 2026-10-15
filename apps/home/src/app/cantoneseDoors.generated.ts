@@ -14,7 +14,7 @@ export const YUE_GAME_ROWS: readonly YueGameRow[] = [
   { index: 2, classKey: "thailand", challengeLevel: 265, syllOrTile: "T" },
   { index: 3, classKey: "thailand", challengeLevel: 365, syllOrTile: "T" },
   { index: 4, classKey: "thailand", challengeLevel: 234, syllOrTile: "T" },
-  { index: 5, classKey: "thailand", challengeLevel: 344, syllOrTile: "T" },
+  { index: 5, classKey: "thailand", challengeLevel: 364, syllOrTile: "T" },
   { index: 6, classKey: "taiwan", challengeLevel: 1, syllOrTile: "T" },
   { index: 7, classKey: "taiwan", challengeLevel: 2, syllOrTile: "T" },
   { index: 8, classKey: "taiwan", challengeLevel: 3, syllOrTile: "T" },

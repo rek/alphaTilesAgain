@@ -40,6 +40,7 @@ import { buildSyllableChoicesRandom } from './buildSyllableChoicesRandom';
 import { buildSyllableChoicesHard } from './buildSyllableChoicesHard';
 import { parseWordIntoSyllables } from '@shared/util-phoneme';
 import { shuffleArray } from './shuffleArray';
+import { buildSyllableHint } from './buildSyllableHint';
 import { stripInstructionCharacters } from './stripInstructionCharacters';
 import type { GeorgiaData } from './georgiaPreProcess';
 
@@ -81,6 +82,8 @@ type Round = {
   choices: GeorgiaChoice[];
   visibleGameButtons: GeorgiaGridShape;
   revealedText: string;
+  /** S-mode only: word with first syllable blanked, shown until solved (#30). */
+  promptText: string;
 };
 
 function GeorgiaGame({
@@ -155,7 +158,11 @@ function GeorgiaGame({
 
       // Pick a word; parse syllables; correct = parsed[0].
       let attempts = 0;
-      let chosen: { word: WordRow; correctSyllable: SyllableRow } | null = null;
+      let chosen: {
+        word: WordRow;
+        correctSyllable: SyllableRow;
+        syllables: SyllableRow[];
+      } | null = null;
       while (attempts < 50 && chosen === null) {
         const pick = pickGeorgiaSyllableWord({
           words: wordRows,
@@ -164,7 +171,11 @@ function GeorgiaGame({
         if ('error' in pick) break;
         const parsed = parseWordIntoSyllables(pick.word.wordInLOP, syllableRows);
         if (parsed.length > 0) {
-          chosen = { word: pick.word, correctSyllable: parsed[0] };
+          chosen = {
+            word: pick.word,
+            correctSyllable: parsed[0],
+            syllables: parsed,
+          };
         }
         attempts++;
       }
@@ -211,6 +222,9 @@ function GeorgiaGame({
         choices,
         visibleGameButtons,
         revealedText: '',
+        promptText: buildSyllableHint({
+          syllables: chosen.syllables.map((s) => s.syllable),
+        }),
       });
       const refWord = {
         wordInLOP: chosen.word.wordInLOP,
@@ -289,6 +303,7 @@ function GeorgiaGame({
       choices,
       visibleGameButtons,
       revealedText: '',
+      promptText: '',
     });
     const refWord = {
       wordInLOP: pick.word.wordInLOP,
@@ -397,7 +412,7 @@ function GeorgiaGame({
     <GeorgiaScreen
       wordImage={wordImage}
       wordLabel={t('chrome:a11y.active_word_picture')}
-      revealedText={round.revealedText}
+      revealedText={round.revealedText || round.promptText}
       choices={round.choices}
       gridShape={round.visibleGameButtons}
       interactionLocked={shell.interactionLocked}

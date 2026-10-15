@@ -42,12 +42,12 @@ const DOOR_CONTENT: Record<string, DoorContent> = {
     what: 'Plays a Cantonese word aloud. The student picks its written form from four choices (no picture cue).',
     good: 'Reading practice with an audio prompt — easier than the picture-to-writing door because the student hears the word.',
   },
-  'thailand-344-T': {
-    title: 'Word matching — Hard',
+  'thailand-364-T': {
+    title: 'Listen and read — Hard',
     difficulty: 'Hard',
-    mechanic: 'Thailand · written word → written word',
-    what: 'Shows a written word (no picture, no audio). The student finds the same word among four written choices with the hardest distractors.',
-    good: 'Visual character discrimination. Students must tell apart words that look alike.',
+    mechanic: 'Thailand · audio → written word',
+    what: 'Plays a Cantonese word aloud. The student picks its written form from four choices (no picture cue) with the hardest distractors.',
+    good: 'Students who can do the medium listen-and-read door and need to read more carefully.',
   },
   'taiwan-1-T': {
     title: 'Stroke order — Guided',

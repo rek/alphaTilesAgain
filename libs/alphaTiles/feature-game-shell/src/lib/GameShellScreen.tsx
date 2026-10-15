@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ScoreBar } from '@shared/ui-score-bar';
-import { Celebration } from '@shared/ui-celebration';
+import { Celebration, celebrationAnimation } from '@shared/ui-celebration';
 import type { CelebrationProps } from '@shared/ui-celebration';
 
 export type GameShellIcons = {
@@ -62,7 +62,7 @@ export type GameShellScreenProps = {
   onCelebrationBack: () => void;
   // Slot
   children: React.ReactNode;
-  /** Lottie animation source for the celebration screen — injected from app (Metro static require). */
+  /** Lottie source for the celebration screen. Defaults to the bundled in-house animation (offline, no third-party fetch). */
   celebrationSource?: CelebrationProps['animationSource'];
   /** Chrome + tracker icon images — injected from app (Metro static require). */
   icons?: GameShellIcons;
@@ -89,7 +89,7 @@ export function GameShellScreen({
   onAdvancePress,
   onCelebrationBack,
   children,
-  celebrationSource = { uri: 'https://assets10.lottiefiles.com/packages/lf20_jR229r.json' },
+  celebrationSource = celebrationAnimation,
   icons,
   a11yLabels,
 }: GameShellScreenProps): React.JSX.Element {
