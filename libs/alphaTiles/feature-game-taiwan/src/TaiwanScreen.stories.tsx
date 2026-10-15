@@ -22,6 +22,7 @@ const meta: Meta<typeof StoryHost> = {
     clearLabel: 'Clear',
     successLabel: '✓',
     success: false,
+    inkKey: 0,
     onClear: () => undefined,
     loadingLabel: 'Loading…',
   },

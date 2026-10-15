@@ -22,6 +22,7 @@ import {
 import { TaiwanScreen } from './TaiwanScreen';
 import { pickTaiwanCharacters } from './pickTaiwanCharacters';
 import { pickAudioForChar } from './pickAudioForChar';
+import { createInkResetScheduler } from './inkResetScheduler';
 import type { TaiwanData } from './buildTaiwanData';
 import type { StrokeData } from '@alphaTiles/data-stroke-data';
 
@@ -32,6 +33,9 @@ const MISTAKE_HINT_THRESHOLD = 3;
 // single-stroke chars like 一 where the upstream resets quiz.index to 0 the
 // instant the last stroke matches (issue #31). Also covers the audio.
 const SUCCESS_PAUSE_MS = 900;
+// After a rejected stroke, wipe any leftover user ink this long afterwards
+// (after the 200 ms upstream fade and the 400 ms mistake-hint animation).
+const INK_RESET_MS = 600;
 
 type CLConfig = { outlineVisible: boolean; characterVisible: boolean; leniency: number };
 
@@ -218,6 +222,15 @@ function CharRound({
     },
   });
   const startedRef = useRef(false);
+  // Bumped to remount the writer surface, which drops any user ink the
+  // upstream failed to fade out (issue #31). Quiz state lives in `writer`, so
+  // progress is unaffected.
+  const [inkKey, setInkKey] = useState(0);
+  const inkReset = useMemo(
+    () => createInkResetScheduler(INK_RESET_MS, () => setInkKey((k) => k + 1)),
+    [],
+  );
+  useEffect(() => inkReset.cancel, [inkReset]);
   const characterClass = writer.characterClass;
 
   // Single source of truth for quiz config. Used by both the mount auto-start
@@ -230,14 +243,14 @@ function CharRound({
       leniency: cl.leniency,
       showHintAfterMisses: MISTAKE_HINT_THRESHOLD,
       onMistake() {
-        // Spec § Stroke Lifecycle Events: increment a mistake counter for
-        // diagnostics / analytics. No-op until analytics is wired.
+        // Rejected strokes must not linger on screen (issue #31).
+        inkReset.schedule();
       },
       onComplete() {
         onComplete(cls.strokes.length);
       },
     });
-  }, [writer, cl.leniency, onComplete]);
+  }, [writer, cl.leniency, onComplete, inkReset]);
 
   // Auto-start once the upstream signals load. `characterClass` flips null →
   // Character one render after the loader resolves; the ref guard ensures we
@@ -258,7 +271,12 @@ function CharRound({
       characterVisible={cl.characterVisible || succeeding}
       success={succeeding}
       successLabel={successLabel}
-      onClear={startQuiz}
+      inkKey={inkKey}
+      onClear={() => {
+        inkReset.cancel();
+        setInkKey((k) => k + 1);
+        startQuiz();
+      }}
       clearLabel={clearLabel}
       progressLabel={progressLabel}
       retryLabel={retryLabel}
