@@ -23,6 +23,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useTranslation } from '@shared/util-i18n';
 import { registerContentNamespaces } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
+import { useDoors } from '@alphaTiles/data-doors';
 import { useAudio } from '@alphaTiles/data-audio';
 import { reportApplyIfNeeded } from '@shared/util-ota';
 import { track } from '@shared/util-analytics';
@@ -35,6 +36,7 @@ import { startOtaCheck } from './startOtaCheck';
 export function BootGate({ children }: { children: React.ReactNode }): React.JSX.Element {
   const { t } = useTranslation('chrome');
   const assets = useLangAssets();
+  const doors = useDoors();
 
   const [phase, setPhase] = useState<Phase>('fonts');
   const [error, setError] = useState<Error | null>(null);
@@ -68,8 +70,8 @@ export function BootGate({ children }: { children: React.ReactNode }): React.JSX
         }
 
         const game: Record<string, string> = {};
-        for (const row of assets.games.rows) {
-          game[`${row.door}.instruction`] = row.instructionAudio ?? '';
+        for (const door of doors) {
+          game[`${door.index}.instruction`] = door.instructionAudio ?? '';
         }
 
         const langMeta: Record<string, string> = {};

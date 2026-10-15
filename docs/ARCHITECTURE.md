@@ -278,7 +278,7 @@ Access: `t('chrome:score', { points: 42 })`.
 - `word:<id>` — word display text (Language-of-Play column)
 - `word:<id>.lwc` — Language-of-Wider-Communication column
 - `syllable:<id>` — syllable display text
-- `game:<doorNumber>.instruction` — game instruction text if any
+- `game:<doorIndex>.instruction` — game instruction text if any
 - `langMeta:name_local`, `langMeta:name_english`, `langMeta:player_word`, etc.
 
 Call sites: `t('tile:a')` (content — resolves against `BUILD_LANG`), `t('chrome:back')` (chrome — resolves against device locale).
