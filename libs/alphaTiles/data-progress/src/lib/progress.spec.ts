@@ -82,6 +82,24 @@ describe('markChecked12', () => {
   });
 });
 
+describe('setRoundCursor', () => {
+  it('stores the cursor without touching points or lastPlayed', () => {
+    const key = 'k';
+    useProgressStore.getState().incrementPoints(key, 4);
+    const stamped = useProgressStore.getState().progress[key].lastPlayed;
+    useProgressStore.getState().setRoundCursor(key, 7);
+    const entry = useProgressStore.getState().progress[key];
+    expect(entry.roundCursor).toBe(7);
+    expect(entry.points).toBe(4);
+    expect(entry.lastPlayed).toBe(stamped);
+  });
+
+  it('clamps negative cursors to zero', () => {
+    useProgressStore.getState().setRoundCursor('k', -3);
+    expect(useProgressStore.getState().progress['k'].roundCursor).toBe(0);
+  });
+});
+
 describe('resetGame', () => {
   it('removes entry from progress map', () => {
     const key = 'k';

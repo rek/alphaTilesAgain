@@ -11,6 +11,7 @@ Latest entry: **game-taiwan stroke-UX fix** (2026-06-04, issue #31) — never le
 Owner-delegated calls for the Cantonese pack; one line each.
 
 - **#30 Georgia S prompt** — S-mode shows the word with its first syllable blanked (`__生`) under the picture until solved (`buildSyllableHint`). Gated on S; T-mode/Java parity untouched. Only yue uses Georgia S today.
+- **M10 Thailand order** — kept #17's fixed order (owner asked for it) but persist the cursor per player+door (`ProgressEntry.roundCursor`), so each visit resumes and the whole word list is covered. Rejected shuffle: contradicts #17.
 
 ---
 

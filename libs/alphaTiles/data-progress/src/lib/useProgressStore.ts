@@ -10,6 +10,8 @@ export type ProgressEntry = {
   trackerCount: number;
   checked12Trackers: boolean;
   lastPlayed: number; // epoch ms
+  /** Next fixed-order question index (Thailand, M10). Absent = 0. */
+  roundCursor?: number;
 };
 
 const DEFAULT_ENTRY: ProgressEntry = {
@@ -28,6 +30,7 @@ type ProgressActions = {
   incrementTracker: (key: ProgressKey) => void;
   markChecked12: (key: ProgressKey) => void;
   resetGame: (key: ProgressKey) => void;
+  setRoundCursor: (key: ProgressKey, cursor: number) => void;
 };
 
 function getEntry(
@@ -85,6 +88,18 @@ export const useProgressStore = create<ProgressState & ProgressActions>()(
                 checked12Trackers: true,
                 lastPlayed: Date.now(),
               },
+            },
+          };
+        });
+      },
+
+      setRoundCursor(key, cursor) {
+        set((state) => {
+          const entry = getEntry(state.progress, key);
+          return {
+            progress: {
+              ...state.progress,
+              [key]: { ...entry, roundCursor: Math.max(0, cursor) },
             },
           };
         });

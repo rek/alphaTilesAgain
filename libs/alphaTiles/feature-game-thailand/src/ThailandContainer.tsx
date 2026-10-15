@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
+import { useProgressStore } from '@alphaTiles/data-progress';
 import { useTranslation } from '@shared/util-i18n';
 import {
   GameShellContainer,
@@ -114,10 +115,13 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   const [correctIndex, setCorrectIndex] = useState<number | null>(null);
   const [error, setError] = useState<'insufficient-content' | null>(null);
   const [refColor, setRefColor] = useState<string>('#1565C0');
-  // Round counter drives fixed question order per door (issue #17). Resets
-  // to 0 on each entry to the door (`useState` re-init), so the same door
-  // always starts on the same question.
-  const roundIndexRef = useRef<number>(0);
+  // Round counter drives fixed question order per door (issue #17). Persisted
+  // per player+door (M10) so each visit resumes where the last one stopped and
+  // the whole vocabulary gets practised; wraps via modulo in setupThailandRound.
+  const { gameUniqueId } = shell;
+  const roundIndexRef = useRef<number>(
+    useProgressStore.getState().progress[gameUniqueId]?.roundCursor ?? 0,
+  );
   // Java 618-630 parity: per-round set of distinct wrong-answer texts (cap 3).
   // Resets each round. We also keep a running level counter for diagnostics.
   const incorrectAnswersSelected = useRef<string[]>([]);
@@ -185,6 +189,9 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     }
 
     roundIndexRef.current += 1;
+    useProgressStore
+      .getState()
+      .setRoundCursor(gameUniqueId, roundIndexRef.current);
 
     // Java 140: refColor = colorList[rand.nextInt(4)] — random of first 4 entries.
     const palette = assets.colors?.hexByIndex ?? [];
@@ -199,7 +206,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     incorrectAnswersSelected.current = [];
 
     playRefAudio(result.ref);
-  }, [refType, choiceType, distractorStrategy, assets, playRefAudio]);
+  }, [refType, choiceType, distractorStrategy, assets, playRefAudio, gameUniqueId]);
 
   useEffect(() => {
     startRound();
