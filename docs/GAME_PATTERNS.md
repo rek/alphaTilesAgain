@@ -118,27 +118,27 @@ export function <Name>Container() {
 - All i18n via `useTranslation` — pass translated strings down as props.
 - `<GameShellContainer>` is always the outer wrapper.
 
-### URL params: `doorIndex` is the only authoritative pointer
+### URL params: `doorIndex` is the only authoritative pointer — read the Door
 
-The menu push (`feature-game-menu/GameMenuContainer.onDoorPress`) sends exactly `{ classKey, doorIndex, challengeLevel }` — and per `openspec/specs/game-menu/spec.md` "Door-press navigation contract" the target screen MUST resolve all other per-door state from `useLangAssets()`. Read `assets.games.rows[doorIndex - 1]` and derive `syllOrTile`, `instructionAudio`, `stagesIncluded`, `country`, etc. from that row.
+The menu push (`feature-game-menu/GameMenuContainer.onDoorPress`) sends exactly `{ classKey, doorIndex, challengeLevel }` — and per `openspec/specs/game-menu/spec.md` "Door-press navigation contract" every other per-door fact comes from the pack. That resolution lives in ONE module: `@alphaTiles/data-doors` (`doorsOf(pack)` → `Door[]`, see `GLOSSARY.md` "Door"). Never read `assets.games.rows[doorIndex - 1]` in a container.
 
-```ts
-const rowIndex = parseInt(
-  (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
-  10,
-);
-const game = assets.games.rows[rowIndex - 1];
-const syllableGame =
-  (props.syllableGame as string) ?? (game?.syllOrTile === 'S' ? 'S' : '');
+`GameShellContainer` resolves the routed Door itself (`useDoor(params)`; unknown index → `/menu`), derives progress key, colour, displayed level, tracker rule, instruction button and next-door search from it, and hands it to the mechanic via a render-prop child:
+
+```tsx
+export function BrazilContainer(props: RouteParams) {
+  return (
+    <GameShellContainer confirmOnBack={false} icons={props.icons}>
+      {(door) => <BrazilGame challengeLevel={door.challengeLevel} variant={door.variant} />}
+    </GameShellContainer>
+  );
+}
 ```
 
-Why both keys: `props.doorIndex` is what the menu actually pushes, but legacy code (and the shell container) reads `props.gameNumber`. Accepting either lets the container work for both menu navigation and direct URL hits. The override branch (`props.syllableGame ??`) is only there for ad-hoc URL testing — production traffic goes through the row lookup.
+Class-specific decoding (clamps like Peru's `1..3`, Thailand's 3-digit code) stays in the container — the Door carries the raw `challengeLevel`. A container that must act on the door *before* the shell mounts (Colombia's S-CL4 bounce) calls `useDoor(props)` itself.
 
-**Failure mode if you skip this:** default `gameNumber=1, syllableGame=''` → reads row 0 (usually Thailand) for instruction audio + runs the Tile branch even for S-mode doors. Yue/Cantonese door 9 (Georgia · S) regressed exactly this way: T-branch ran against a `corV` precompute that was empty because yue tiles all have `Type=X`, so every word failed the CorV filter and the screen rendered a single `"?"` placeholder.
+**Failure mode this prevents:** default `gameNumber=1, syllableGame=''` → reads row 0 (usually Thailand) for instruction audio + runs the Tile branch even for S-mode doors. Yue/Cantonese door 9 (Georgia · S) regressed exactly this way when a container re-derived the row by hand.
 
-Applied in every game container (Brazil, Chile, China, Colombia, Ecuador, Georgia, Iraq, Italy, Japan, Malaysia, Mexico, Myanmar, Peru, Romania, Sudan, Thailand, United-States) and in `GameShellContainer` itself. Apply the same shape any time you add a new game or touch route-param extraction.
-
-`GameShellContainer` follows the same rule: it reads only `doorIndex`/`gameNumber` and `challengeLevel` from URL params, then derives `country`, `syllOrTile` (→ `syllableGame`), `stagesIncluded` (→ `stage`) from `assets.games.rows[doorIndex - 1]`, and `playerId` from `useActivePlayer()`. The progress-key (`buildGameUniqueId`) and next-game navigation both flow from those derived values. Do not add new params to the menu push or the shell's `useLocalSearchParams` — the menu spec's "Door-press navigation contract" caps it at three.
+Do not add new params to the menu push or the shell's `useLocalSearchParams` — the menu spec's "Door-press navigation contract" caps it at three. New per-door facts (game name #37, difficulty tier #52) are one field in `doorsOf`.
 
 ---
 
@@ -170,8 +170,8 @@ export function <Name>Screen(props: <Name>ScreenProps) {
 | `updatePointsAndTrackers(N)` | `shell.incrementPointsAndTracker(N)` |
 | `playCorrectFinalSound()` | `shell.playCorrectFinal()` |
 | `playIncorrectSound()` | `shell.playIncorrect()` |
-| `getAudioInstructionsResID()` | `instructionAudioName` prop to `<GameShellContainer>` |
-| `hideInstructionAudioImage()` | `showInstructionsButton={false}` |
+| `getAudioInstructionsResID()` | `door.instructionAudio` (shell reads it from the Door) |
+| `hideInstructionAudioImage()` | `showInstructionsButton={false}` (default: shown iff the Door has a bundled clip) |
 | `ArrayList<Word>` field | `useState<Word[]>([])` in container |
 | `preprocessWords()` / static init | `registerPrecompute('name', buildNameData)` at module top |
 | `context = this` | N/A |
