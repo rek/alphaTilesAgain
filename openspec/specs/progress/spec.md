@@ -5,21 +5,21 @@ TBD - created by archiving change game-engine-base. Update Purpose after archive
 ## Requirements
 ### Requirement: Per-player per-game per-stage progress store
 
-`libs/alphaTiles/data-progress` SHALL expose a Zustand store `useProgressStore` that holds a map `progress: Record<ProgressKey, ProgressEntry>` where `ProgressEntry = { points, trackerCount, lastPlayed, checked12Trackers? (legacy, unread) }`. Keys SHALL be built by `buildGameUniqueId({ country, challengeLevel, playerId, syllableGame, stage })` and MUST match the Java `uniqueGameLevelPlayerModeStageID` string construction (`className + challengeLevel + playerString + syllableGame + stage`) exactly, substituting `country` for the fully-qualified Java class name to keep keys portable.
+`libs/alphaTiles/data-progress` SHALL expose a Zustand store `useProgressStore` that holds a map `progress: Record<ProgressKey, ProgressEntry>` where `ProgressEntry = { points, trackerCount, lastPlayed, roundCursor?, checked12Trackers? (legacy, unread) }`. Keys SHALL be built only by `Door.progressKey(playerId)` (`@alphaTiles/data-doors`) and MUST match the Java `uniqueGameLevelPlayerModeStageID` string construction (`className + challengeLevel + playerString + syllableGame + stage`) exactly, substituting `country` for the fully-qualified Java class name to keep keys portable.
 
 #### Scenario: Key construction
 
-- **WHEN** `buildGameUniqueId({ country: 'China', challengeLevel: 1, playerId: 'player01', syllableGame: '', stage: 1 })` is called
+- **WHEN** `door.progressKey('player01')` is called for the door of `aa_games.txt` row `China`, challenge level 1, tile variant, stage 1
 - **THEN** it returns the string `China1player011` (matches Java's concatenation for the country-derived className)
 
-#### Scenario: Empty syllableGame is the empty string
+#### Scenario: Tile variant has no syllable marker
 
-- **WHEN** `syllableGame` is `''` (the normal case for non-syllable games)
-- **THEN** the resulting key has no placeholder character at that position (matches Java — `String.valueOf(null)` and `""` both produce `""` in the concatenation for that slot)
+- **WHEN** the door's variant is not `S` (the normal case for non-syllable games)
+- **THEN** the resulting key has no placeholder character at that position (matches Java — `String.valueOf(null)` and `""` both produce `""` in the concatenation for that slot); an `S` door gets `S` there
 
 ### Requirement: Actions for scoring and tracker updates
 
-The store SHALL expose actions: `incrementPoints(key, delta)`, `incrementTracker(key)`, `resetGame(key)`. Actions SHALL be deterministic and idempotent within a single invocation (calling `incrementTracker` twice produces `+2`, not `+1`).
+The store SHALL expose actions: `incrementPoints(key, delta)`, `incrementTracker(key)`, `setRoundCursor(key, cursor)` (Thailand resume position), `resetGame(key)`. Actions SHALL be deterministic and idempotent within a single invocation (calling `incrementTracker` twice produces `+2`, not `+1`). The store knows nothing of game classes: which doors check trackers is decided by door progress (`recordCorrectAnswer`, which skips `incrementTracker` for doors with `tracksProgress: false`).
 
 #### Scenario: `incrementPoints`
 
@@ -27,15 +27,15 @@ The store SHALL expose actions: `incrementPoints(key, delta)`, `incrementTracker
 - **AND** `incrementPoints(K, 4)` is dispatched
 - **THEN** the entry becomes `{ points: 9, trackerCount: 3, lastPlayed: <now> }`
 
-#### Scenario: `incrementTracker` with tracker-capable country
+#### Scenario: `incrementTracker` increments any key
 
-- **WHEN** key K represents a `China` game and `incrementTracker(K)` is dispatched
-- **THEN** `trackerCount` increments by 1
+- **WHEN** `incrementTracker(K)` is dispatched
+- **THEN** `trackerCount` for K increments by 1
 
-#### Scenario: `incrementTracker` skipped for no-tracker country
+#### Scenario: No-tracker door skips the tracker (door progress)
 
-- **WHEN** key K represents a `Romania` game and `incrementTracker(K)` is dispatched
-- **THEN** `trackerCount` stays unchanged (the store consults `util-scoring.shouldIncrementTracker` based on the `country` portion of the key — or the caller passes `country` explicitly, whichever is implemented)
+- **WHEN** a correct answer is recorded on a `Romania` door via `recordCorrectAnswer`
+- **THEN** `incrementTracker` is never dispatched for its key, so `trackerCount` stays unchanged
 
 #### Scenario: No mastery flag
 

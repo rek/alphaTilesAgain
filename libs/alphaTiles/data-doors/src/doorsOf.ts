@@ -16,7 +16,8 @@ export type DoorPack = Pick<LangAssets, 'games' | 'colors' | 'settings' | 'strok
  * Door catalogue: every `aa_games.txt` row resolved once into a Door — the one
  * place class, variant, challenge level, stage, colour, instruction audio,
  * name, curriculum tier, progress rule and visibility are derived. Menu, shell, next-game search and
- * game containers all read Doors; none read `games.rows` directly.
+ * game containers all read Doors; none read `games.rows` directly (boot's i18n
+ * registration of each row's InstructionAudio id is the one other reader).
  *
  * Invariants:
  * - Returns ALL rows in file order, so `doors[i].index === i + 1`.

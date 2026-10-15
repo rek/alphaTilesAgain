@@ -57,7 +57,7 @@ Common issues and solutions.
 
 Some packages (reanimated, gesture handler) require a **dev build** and don't work in Expo Go.
 
-Build a dev client: `eas build --profile development --platform android`
+Build and run a local debug build (loads JS from Metro): `nx android-eng alphaTiles`, or `APP_LANG=yue nx run-android alphaTiles`. There is no EAS `development` profile: expo-dev-client is not an app dependency, so it would not be linked.
 
 ---
 

@@ -85,10 +85,16 @@ describe('createPackSpeech', () => {
     expect(played).toEqual(['syllable:二']);
   });
 
-  it('falls back from an unrecorded syllable to a word containing it', () => {
+  it('falls back from an unrecorded syllable to a word containing it (opt-in)', () => {
     const { speech, played } = setup({ word: { doctor: 900 } });
-    expect(speech.speak({ syllable: { syllable: '醫' } })).toBe(900);
+    expect(speech.speak({ syllable: { syllable: '醫' }, orContainingWord: true })).toBe(900);
     expect(played).toEqual(['word:doctor']);
+  });
+
+  it('without opt-in an unrecorded syllable is silent, never a different word', () => {
+    const { speech, played } = setup({ word: { doctor: 900 } });
+    expect(speech.speak({ syllable: { syllable: '醫' } })).toBeUndefined();
+    expect(played).toEqual([]);
   });
 
   it('prefers the syllable clip when present', () => {

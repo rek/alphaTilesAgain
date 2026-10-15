@@ -10,13 +10,17 @@ permissions:
   actions: read
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+  NX_NO_CLOUD: true
+
 jobs:
+  # Lint, typecheck (incl. the app: registry Record<GameClassKey, …>) and tests
+  # for affected projects. languages/ is an nx project and an implicit dependency
+  # of tools (pack contract tests) and every lib whose tests read the real packs,
+  # so a pack-only PR runs those tests too.
   main:
     runs-on: ubuntu-latest
-
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,15 +36,71 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      # Run lint and test only on affected projects
-      - run: npx nx affected -t lint test --skip-nx-cache
-        env:
-          NX_NO_CLOUD: true
+      - name: Lint, typecheck, test (affected)
+        run: npx nx affected -t lint typecheck test --skip-nx-cache
 
-      # Build the composite Storybook host. Catches story-render regressions
-      # for every game/UI lib (each game's Screen.stories.tsx is bundled).
-      # Always runs (not affected-gated) because storybook-host has no static
-      # imports of game libs — its dep graph is discovered at Vite build time.
-      - run: npx nx run storybook-host:build-storybook --skip-nx-cache
+      # Seconds per pack; always run (OTA ships pack edits directly).
+      - name: Validate every language pack
+        run: |
+          for dir in languages/*/; do
+            pack=$(basename "$dir")
+            [ -f "$dir/aa_langinfo.txt" ] || continue
+            echo "::group::validate $pack"
+            APP_LANG="$pack" npx tsx tools/validate-lang-pack.ts
+            echo "::endgroup::"
+          done
+
+  # yue static web export (routes, generateStaticParams, Metro bundle) before
+  # merge, not only in the post-merge Pages deploy. Skipped when the app is not
+  # affected (docs-only changes).
+  web-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm ci --legacy-peer-deps
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - name: Is the app affected?
+        id: affected
+        run: |
+          if npx nx show projects --affected --json | grep -q '"alphaTiles"'; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "app=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # web-export dependsOn prebuild-lang (validate + regenerate the manifest).
+      - name: Web export (yue)
+        if: steps.affected.outputs.app == 'true'
+        run: npx nx run alphaTiles:web-export --skip-nx-cache
         env:
-          NX_NO_CLOUD: true
+          APP_LANG: yue
+          EXPO_BASE_URL: /alphaTilesAgain/yueCantonese
+
+  # Build the composite Storybook host. Catches story-render regressions
+  # for every game/UI lib (each game's Screen.stories.tsx is bundled).
+  # Always runs (not affected-gated) because storybook-host has no static
+  # imports of game libs — its dep graph is discovered at Vite build time.
+  storybook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - run: npm ci --legacy-peer-deps
+
+      - run: npx nx run storybook-host:build-storybook --skip-nx-cache

@@ -89,17 +89,22 @@ Every `type:ui` library SHALL obtain theme tokens via `useTheme()`. Direct impor
 
 ### Requirement: Font loading gate in app shell
 
-`useFontsReady(fontMap)` SHALL wrap `expo-font.useFonts(fontMap)` and return a `boolean` indicating whether all fonts have finished loading. The app shell (`apps/alphaTiles/src/_layout.tsx`) SHALL render `null` (or a minimal boot splash) until `useFontsReady` returns `true`.
+`useFontsReady(fontMap)` SHALL wrap `expo-font.useFonts(fontMap)` and return `{ ready, failed }`: `ready` once all fonts have loaded or loading errored, `failed` when it errored. The app shell (feature-loading `AppShell`) SHALL render `null` (or a minimal boot splash) until `ready`, and on `failed` SHALL pass ThemeProvider no pack font names, so every screen uses the system font.
 
 #### Scenario: Fonts still loading
 
-- **WHEN** `apps/alphaTiles/src/_layout.tsx` mounts with fonts not yet loaded
-- **THEN** `useFontsReady(langManifest.fonts)` returns `false` and the layout renders no children
+- **WHEN** `AppShell` mounts with fonts not yet loaded
+- **THEN** `useFontsReady(fonts).ready` is `false` and the shell renders no children
 
 #### Scenario: Fonts loaded
 
 - **WHEN** all fonts in `langManifest.fonts` have loaded
-- **THEN** `useFontsReady` returns `true` and the layout renders children
+- **THEN** `useFontsReady(fonts).ready` is `true` and the shell renders children
+
+#### Scenario: Font load error
+
+- **WHEN** a pack font fails to load (e.g. web FontFaceObserver timeout, corrupt TTF)
+- **THEN** `ready` and `failed` are `true`, the shell renders children, and the theme names no pack font family (system font)
 
 #### Scenario: Only `util-theme` imports `expo-font`
 

@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
 
 ```typescript
 import { useCallback, useState } from 'react';
-import { useMountEffect } from '@/hooks/useMountEffect';
+import { useMountEffect } from '@shared/util-hooks';
 
 export function useGameState({ gameId }: { gameId: string }) {
   const [tiles, setTiles] = useState<Tile[]>([]);
@@ -190,7 +190,7 @@ useEffect(() => { if (submitted) { submitScore(); setSubmitted(false); } }, [sub
 #### Rule 3: `useMountEffect` for one-time setup
 
 ```typescript
-import { useMountEffect } from '@/hooks/useMountEffect';
+import { useMountEffect } from '@shared/util-hooks';
 
 function GameBoard() {
   useMountEffect(() => {

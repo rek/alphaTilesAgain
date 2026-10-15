@@ -24,26 +24,29 @@ Each language-pack build profile in `eas.json` SHALL declare a `channel` equal t
 - **THEN** it has no `channel` field
 - **AND** no OTA updates are applied to builds produced by that profile
 
-### Requirement: Runtime-version policy uses `appVersion`
+### Requirement: Runtime-version policy uses `fingerprint`
 
-`apps/alphaTiles/app.config.ts` SHALL set `runtimeVersion` to `{ policy: "appVersion" }`. An OTA update SHALL apply only when its publish-time `appVersion` equals the installed binary's `appVersion`. A mismatch SHALL cause the update to be ignored by the client runtime, and the installed binary SHALL continue using its bundled assets.
+`apps/alphaTiles/app.config.ts` SHALL set `runtimeVersion` to `{ policy: "fingerprint" }`: the runtime version is the `@expo/fingerprint` hash of the native surface (autolinked native modules, config plugins, the resolved app config, files it references, `eas.json`). An OTA update SHALL apply only when its publish-time fingerprint equals the installed binary's. A mismatch SHALL cause the update to be ignored by the client runtime, and the installed binary SHALL continue using its bundled assets. No hand-maintained version string gates OTA.
 
-#### Scenario: Matching version
+#### Scenario: Content-only change
 
-- **WHEN** an update is published against `appVersion = 1.2.0` and the installed binary is `1.2.0`
-- **THEN** `Updates.checkForUpdateAsync()` reports `isAvailable: true` and the update can be fetched and applied
+- **WHEN** only JS or language-pack content changed since the store build, and an update is published
+- **THEN** the publish-time fingerprint equals the binary's and the update can be fetched and applied
 
-#### Scenario: Mismatched version (update is newer)
+#### Scenario: Native change without a store build
 
-- **WHEN** an update is published against `appVersion = 1.3.0` and the installed binary is `1.2.0`
-- **THEN** `Updates.checkForUpdateAsync()` reports `isAvailable: false` for the `1.2.0` binary
-- **AND** the user is not served the `1.3.0` update via OTA (they must update the binary via the store)
+- **WHEN** a native module, config plugin or native config changed after the installed binary was built, and an update is published
+- **THEN** the update's fingerprint differs and `Updates.checkForUpdateAsync()` reports `isAvailable: false` for that binary
+- **AND** the user is not served JS that needs native code their binary lacks
 
-#### Scenario: Mismatched version (update is older)
+### Requirement: Roll back to embedded is honoured
 
-- **WHEN** an update is published against `appVersion = 1.1.0` and the installed binary is `1.2.0`
-- **THEN** the `1.2.0` binary does not roll back to `1.1.0`
-- **AND** the older update is ignored
+A roll-back-to-embedded directive (`eas update:rollback`) SHALL be fetched like an update, so expo-updates launches the embedded bundle on the next cold start. `runOtaCheck` SHALL return `{ kind: 'rolled-back' }` for it when `reload: false`.
+
+#### Scenario: Rollback directive
+
+- **WHEN** `checkForUpdateAsync()` reports `isRollBackToEmbedded: true`
+- **THEN** `fetchUpdateAsync()` is called and the result is `{ kind: 'rolled-back' }`
 
 ### Requirement: Development builds skip the update check
 

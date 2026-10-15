@@ -9,6 +9,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { usePlayersStore, usePlayers } from '@alphaTiles/data-players';
+import { useEffectiveSettings } from '@alphaTiles/data-settings';
 import { track } from '@shared/util-analytics';
 import { SetPlayerNameScreen } from './SetPlayerNameScreen';
 import type { KeyEntry } from '@shared/ui-custom-keyboard';
@@ -118,7 +119,7 @@ export function SetPlayerNameContainer(): React.JSX.Element {
     router.back();
   }
 
-  const rawCount = assets.settings.findInt('Number of avatars', 12);
+  const rawCount = useEffectiveSettings().numberOfAvatars;
   const avatarCount = Math.min(12, Math.max(1, rawCount));
   const avatars = assets.images.avataricons.slice(0, avatarCount);
 

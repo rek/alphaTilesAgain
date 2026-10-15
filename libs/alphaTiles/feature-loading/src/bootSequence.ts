@@ -19,7 +19,7 @@ export type BootSequenceOpts = {
 export async function bootSequence(opts: BootSequenceOpts): Promise<void> {
   const { onPhaseChange, registerContent, awaitAudio, awaitHydration } = opts;
 
-  // Phase 1: fonts (already loaded by _layout.tsx/useFontsReady before container mounts)
+  // Phase 1: fonts (already loaded by AppShell/useFontsReady before BootGate mounts)
   onPhaseChange('fonts');
 
   // Phase 2: content namespace registration

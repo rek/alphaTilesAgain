@@ -17,10 +17,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { parseWordIntoSyllables, parseWordIntoTiles, buildTileHashMap, getMultitypeTiles, parseWordIntoTilesPreliminary } from '@shared/util-phoneme';
-import { loadLangPack } from '../libs/alphaTiles/data-language-pack/src/loadLangPack';
 import type { LangAssets } from '../libs/alphaTiles/data-language-pack/src/LangAssets';
 import { validateLangPack as runValidator } from '../libs/shared/util-lang-pack-validator/src/validateLangPack';
 import { readRawFiles } from './_readRawFiles';
+import { loadPackAssets } from './_loadPackAssets';
+import { seeded } from './_seeded';
 import { buildFileInventory } from './_buildFileInventory';
 
 import { decodeThailandChallengeLevel } from '../libs/alphaTiles/feature-game-thailand/src/decodeThailandChallengeLevel';
@@ -51,64 +52,7 @@ import { pageCount, tilesForPage } from '../libs/alphaTiles/feature-game-iraq/sr
 const LANG_DIR = path.join(__dirname, '../languages/yue');
 const ROUNDS = 200;
 
-// ---------------------------------------------------------------------------
-// Pack loading — fake Metro handles, real file listings
-// ---------------------------------------------------------------------------
-
-function stems(dir: string): Record<string, number> {
-  const out: Record<string, number> = {};
-  if (!fs.existsSync(dir)) return out;
-  let n = 1;
-  for (const f of fs.readdirSync(dir).sort()) {
-    if (!fs.statSync(path.join(dir, f)).isFile()) continue;
-    out[f.replace(/\.[^.]+$/, '')] = n++;
-  }
-  return out;
-}
-
-function loadStrokes(): Record<string, unknown> {
-  const dir = path.join(LANG_DIR, 'strokes');
-  const out: Record<string, unknown> = {};
-  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.json'))) {
-    out[f.replace(/\.json$/, '')] = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
-  }
-  return out;
-}
-
-function loadYue(): LangAssets {
-  return loadLangPack({
-    code: 'yue',
-    rawFiles: readRawFiles(LANG_DIR),
-    fonts: { primary: 1, primaryBold: null },
-    images: {
-      icon: 1,
-      splash: 1,
-      avatars: Object.values(stems(path.join(LANG_DIR, 'images/avatars'))),
-      avataricons: Object.values(stems(path.join(LANG_DIR, 'images/avataricons'))),
-      tiles: {},
-      words: stems(path.join(LANG_DIR, 'images/words')),
-    },
-    audio: {
-      tiles: stems(path.join(LANG_DIR, 'audio/tiles')),
-      words: stems(path.join(LANG_DIR, 'audio/words')),
-      syllables: stems(path.join(LANG_DIR, 'audio/syllables')),
-      instructions: stems(path.join(LANG_DIR, 'audio/instructions')),
-    },
-    strokes: loadStrokes() as LangAssets['strokes'],
-  });
-}
-
-/** mulberry32 — deterministic so a failure reproduces. */
-function seeded(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+const loadYue = () => loadPackAssets('yue');
 
 // ---------------------------------------------------------------------------
 // Per-mechanic round builders. Each mirrors its container's startRound path

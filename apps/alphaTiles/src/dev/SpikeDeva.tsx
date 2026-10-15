@@ -2,6 +2,9 @@
  * Phase 1+2 spike for game-india-deva. Loads our extracted Devanagari stroke
  * JSON for any of 45 chars (12 vowels SVG + 33 consonants GIF) and feeds it
  * through @jamsch/react-native-hanzi-writer's `loader` prop.
+ *
+ * Not routed (everything under app/ ships as a route). To run it locally, add
+ * an uncommitted `app/spike.tsx`: `export { default } from '../src/dev/<this file>';`
  */
 import { useEffect, useState } from 'react';
 import { Button, Pressable, StyleSheet, Text, View } from 'react-native';

@@ -4,6 +4,7 @@
   "sourceRoot": "tools",
   "projectType": "library",
   "tags": ["scope:tools", "type:util"],
+  "implicitDependencies": ["languages"],
   "targets": {
     "test": {
       "executor": "@nx/jest:jest",

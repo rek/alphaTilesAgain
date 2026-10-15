@@ -18,15 +18,14 @@ Decisions that changed tasks are recorded in `design.md` § Implementation decis
 - [x] Add path alias to `tsconfig.base.json`: `@shared/ui-web-audio-unlock-gate`.
 - [ ] ~~Add `resumeAudioContext()` helper~~ — dropped: no AudioContext to resume (I4). Replaced by `primeAudioHandles()` (chunked) + `millisecondsSinceBoot()` in `data-audio`.
 - [x] Implement presenter `WebAudioUnlockGatePresenter.tsx` — `isLocked`, `isReady`, `title`, `label`, `onUnlock`, `children`; pure.
-- [x] Implement container `WebAudioUnlockGate.tsx` — in `feature-loading` (I3); `unlockAudio()` primes + tracks once (I6); localized label.
-- [x] Export `WebAudioUnlockGate` from `@alphaTiles/feature-loading`.
-- [x] Unit test: overlay renders initially; pressing calls `onUnlock`; children hidden until unlocked; press ignored until ready.
-- [ ] ~~Unit test: `resumeAudioContext`~~ — dropped with the helper (I4). Covered instead: `primeAudioHandles.test.ts`, `millisecondsSinceBoot.test.ts`, `shouldGateRoute.test.ts`, `bootSequence.test.ts` (gate after audio).
+- [x] ~~Implement container `WebAudioUnlockGate.tsx` in `feature-loading`~~ — superseded (1bc1f0f): the gate is `AudioGate` in `data-audio` (render prop `renderLocked`, filled by feature-loading `TapToBegin`); `unlock()` primes all clips in chunks + tracks `audio_unlock_web` once (I6).
+- [x] ~~Export `WebAudioUnlockGate` from `@alphaTiles/feature-loading`~~ — superseded: `AudioGate` exported from `@alphaTiles/data-audio`.
+- [x] Unit test: overlay renders initially; pressing calls `onUnlock`; children hidden until unlocked; press ignored until ready (`WebAudioUnlockGatePresenter.test.tsx`, `AudioGate.test.tsx`).
+- [ ] ~~Unit test: `resumeAudioContext`~~ — dropped with the helper (I4). Covered instead: `primeAudioHandles.test.ts`, `millisecondsSinceBoot.test.ts`, `AudioGate.test.tsx`.
 
 ## 2. Root Layout Wiring
 
-- [x] In `apps/alphaTiles/app/_layout.tsx`, import `WebAudioUnlockGate` and `Platform`.
-- [x] Wrap `<Stack />` with `<WebAudioUnlockGate>` only when `Platform.OS === 'web'`.
+- [x] `apps/alphaTiles/app/_layout.tsx` wraps every route in `<AudioGate renderLocked={…TapToBegin}>` (inside `AudioProvider`). No `Platform` check at the call site: `AudioGate` passes through on native.
 - [x] Verify no other app layout file needs the gate (only `app/_layout.tsx` exists).
 
 ## 3. PWA Manifest

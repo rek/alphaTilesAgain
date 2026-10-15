@@ -6,9 +6,11 @@
  *   tile        → tile clip keyed by tile.base (NOT the AudioName column)
  *   word        → word clip keyed by wordInLWC, else syllable chain over the
  *                 LOP (yue composite numerals 二十 = 二 + 十), else silent
- *   syllable    → syllable clip keyed by syllable text, else the clip of the
- *                 first word whose LOP contains it (Taiwan single hanzi), else
- *                 silent
+ *   syllable    → syllable clip keyed by syllable text, else — only when the
+ *                 item opts in with `orContainingWord: true` (Taiwan single
+ *                 hanzi) — the clip of the first word whose LOP contains it,
+ *                 else silent. Opt-in so an "isolated syllable" (Georgia S,
+ *                 Italy S call) never says a different whole word.
  *   instruction → instruction clip keyed by its InstructionAudio id
  *
  * Chain timing: each syllable starts after the previous one's measured length
@@ -28,7 +30,7 @@ type Word = { wordInLWC: string; wordInLOP: string };
 export type SpeechItem =
   | { tile: { base: string } }
   | { word: Word }
-  | { syllable: { syllable: string } }
+  | { syllable: { syllable: string }; orContainingWord?: boolean }
   | { instruction: string };
 
 export type ClipCategory = 'tile' | 'word' | 'syllable' | 'instruction';
@@ -73,7 +75,7 @@ export function planSpeech(
     const text = item.syllable.syllable;
     const c = clip('syllable', text);
     if (c) return single('clip', 'syllable', text, c.ms);
-    if (!text) return SILENT;
+    if (!text || !item.orContainingWord) return SILENT;
     for (const word of pack.words) {
       if (!word.wordInLOP.includes(text)) continue;
       const w = clip('word', word.wordInLWC);

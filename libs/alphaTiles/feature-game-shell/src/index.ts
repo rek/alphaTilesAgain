@@ -6,3 +6,6 @@ export type { GameShellContextValue } from './lib/GameShellContext';
 export { useShellWord } from './lib/useShellWord';
 export { useShellAdvance } from './lib/useShellAdvance';
 export { useShellRepeat } from './lib/useShellRepeat';
+export { GameRouteContainer } from './lib/GameRouteContainer';
+export type { GameClass, GameContainerProps } from './lib/GameRouteContainer';
+export { registerGameClassPrecomputes } from './lib/registerGameClassPrecomputes';

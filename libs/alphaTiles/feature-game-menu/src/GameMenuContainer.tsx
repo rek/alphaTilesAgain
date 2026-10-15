@@ -11,7 +11,6 @@ import { SELF_TEST_LENGTH, selfTestSources } from '@alphaTiles/feature-self-test
 import { track } from '@shared/util-analytics';
 import { doorHref } from './doorHref';
 import { useMenuDoors } from './useMenuDoors';
-// import { GameMenuScreen } from './GameMenuScreen'; // classic layout — disabled
 import { GameMenuScreenModern } from './GameMenuScreenModern';
 
 export function GameMenuContainer(): React.JSX.Element {

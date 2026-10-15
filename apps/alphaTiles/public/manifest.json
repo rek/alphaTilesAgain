@@ -1,8 +1,7 @@
 {
-  "name": "學廣話",
-  "short_name": "學廣話",
+  "name": "AlphaTiles",
+  "short_name": "AlphaTiles",
   "description": "Literacy games for minority language communities",
-  "lang": "zh-HK",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
