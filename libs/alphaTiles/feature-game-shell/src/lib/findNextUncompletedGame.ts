@@ -1,6 +1,7 @@
 /**
- * Finds the next door (file order, wrapping) the given player has not
- * mastered (checked12Trackers === false).
+ * Finds the next enabled door (file order, wrapping) the given player has not
+ * mastered (checked12Trackers === false). Hidden doors (`enabled: false`, e.g.
+ * Taiwan without stroke data) are never returned — the menu doesn't show them.
  *
  * Ports GameActivity.java:356-411 — the while-loop inside the Timer callback
  * that iterates through gameList to find the next uncompleted game.
@@ -24,7 +25,7 @@ export function findNextUncompletedGame(
     // Advance to next (wrap around)
     current = current < total ? current + 1 : 1;
     const door = doors[current - 1];
-    if (!progress[door.progressKey(playerId)]?.checked12Trackers) return door;
+    if (door.enabled && !progress[door.progressKey(playerId)]?.checked12Trackers) return door;
   }
 
   // All games completed
