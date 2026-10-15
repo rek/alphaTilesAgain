@@ -317,32 +317,19 @@ function MyanmarGame({
 
 export function MyanmarContainer(props: RouteParams): React.JSX.Element {
   const assets = useLangAssets();
-  const gameNumber = parseInt(
-    (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
-    10,
-  );
-  const rawLevel = parseInt((props.challengeLevel as string) ?? '1', 10);
-  const challengeLevel = (rawLevel >= 1 && rawLevel <= 3 ? rawLevel : 1) as ChallengeLevel;
-  const game = assets.games.rows[gameNumber - 1];
-  const instructionAudioId = game?.instructionAudio;
-  const hasInstruction =
-    !!instructionAudioId && instructionAudioId in assets.audio.instructions;
 
   // Settings key: "Selection Method for Word Search" — 1 or 2; default 1.
   const settingValue = assets.settings.findInt('Selection Method for Word Search', 1);
   const selectionMethod = (settingValue === 2 ? 2 : 1) as 1 | 2;
 
   return (
-    <GameShellContainer
-      showInstructionsButton={hasInstruction}
-      instructionAudioId={hasInstruction ? instructionAudioId : undefined}
-      confirmOnBack={false}
-      icons={props.icons}
-    >
-      <MyanmarGame
-        challengeLevel={challengeLevel}
-        selectionMethod={selectionMethod}
-      />
+    <GameShellContainer confirmOnBack={false} icons={props.icons}>
+      {(door) => (
+        <MyanmarGame
+          challengeLevel={(door.challengeLevel >= 1 && door.challengeLevel <= 3 ? door.challengeLevel : 1) as ChallengeLevel}
+          selectionMethod={selectionMethod}
+        />
+      )}
     </GameShellContainer>
   );
 }

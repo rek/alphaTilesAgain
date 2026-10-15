@@ -1,4 +1,3 @@
-import { buildGameUniqueId } from './buildGameUniqueId';
 import { useProgressStore } from './useProgressStore';
 
 function reset() {
@@ -6,44 +5,6 @@ function reset() {
 }
 
 beforeEach(reset);
-
-// --- buildGameUniqueId ---
-
-describe('buildGameUniqueId', () => {
-  it('matches Java concatenation: country+level+player+syllableGame+stage', () => {
-    expect(
-      buildGameUniqueId({
-        country: 'China',
-        challengeLevel: 1,
-        playerId: 'player01',
-        syllableGame: '',
-        stage: 1,
-      }),
-    ).toBe('China1player011');
-  });
-
-  it('empty syllableGame produces no placeholder', () => {
-    const key = buildGameUniqueId({
-      country: 'Chile',
-      challengeLevel: 2,
-      playerId: 'p2',
-      syllableGame: '',
-      stage: 3,
-    });
-    expect(key).toBe('Chile2p23');
-  });
-
-  it('non-empty syllableGame is included', () => {
-    const key = buildGameUniqueId({
-      country: 'Brazil',
-      challengeLevel: 1,
-      playerId: 'p1',
-      syllableGame: 'syl',
-      stage: 1,
-    });
-    expect(key).toBe('Brazil1p1syl1');
-  });
-});
 
 // --- useProgressStore actions ---
 

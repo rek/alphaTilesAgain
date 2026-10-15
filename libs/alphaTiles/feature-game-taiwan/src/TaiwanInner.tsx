@@ -51,23 +51,15 @@ const CL_TABLE: Record<number, CLConfig> = {
   3: { outlineVisible: true, characterVisible: false, leniency: 1.0 },
 };
 
-function decodeCl(value: unknown): CLConfig {
-  const n = typeof value === 'string' ? parseInt(value, 10) : (value as number);
-  return CL_TABLE[n] ?? CL_TABLE[1];
-}
-
 export type TaiwanInnerProps = {
   icons: GameShellIcons;
-  challengeLevel?: string | string[];
 };
 
 export function TaiwanInner(props: TaiwanInnerProps): React.JSX.Element {
-  const cl = decodeCl(Array.isArray(props.challengeLevel) ? props.challengeLevel[0] : props.challengeLevel);
-
   return (
     <GestureHandlerRootView style={styles.gestureRoot}>
       <GameShellContainer icons={props.icons} showInstructionsButton={false}>
-        <TaiwanGame cl={cl} />
+        {(door) => <TaiwanGame cl={CL_TABLE[door.challengeLevel] ?? CL_TABLE[1]} />}
       </GameShellContainer>
     </GestureHandlerRootView>
   );

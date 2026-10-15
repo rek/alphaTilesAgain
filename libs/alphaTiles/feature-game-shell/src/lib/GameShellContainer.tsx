@@ -21,20 +21,14 @@
 
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { AppState, BackHandler, Platform } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Redirect, useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
 import { useActivePlayer } from '@alphaTiles/data-players';
-import {
-  useProgressStore,
-  useProgressEntry,
-  buildGameUniqueId,
-} from '@alphaTiles/data-progress';
-import {
-  shouldIncrementTracker,
-  displayChallengeLevel,
-} from '@alphaTiles/util-scoring';
+import { useProgressStore, useProgressEntry } from '@alphaTiles/data-progress';
+import { useDoor, useDoors } from '@alphaTiles/data-doors';
+import type { Door } from '@alphaTiles/data-doors';
 import { parseWordIntoSyllables } from '@shared/util-phoneme';
 import { GameShellContextProvider } from './GameShellContext';
 import { GameShellScreen } from './GameShellScreen';
@@ -58,15 +52,17 @@ const GAP_MS = 150;
 const FALLBACK_MS = 700;
 
 type GameShellContainerProps = {
-  children: React.ReactNode;
+  /** The mechanic. Pass a function to receive the routed Door (challenge level, variant, …). */
+  children: React.ReactNode | ((door: Door) => React.ReactNode);
   /** When true, pressing back shows a confirm dialog (future mechanics with in-flight state). */
   confirmOnBack?: boolean;
-  /** Whether to show the instructions audio button. */
+  /**
+   * Set false to hide the instructions button. Otherwise shown iff the Door
+   * has a bundled instruction clip.
+   */
   showInstructionsButton?: boolean;
   /** Whether to show the advance arrow button. Defaults true. Set false for games with no lock/unlock mechanic (e.g. Romania). */
   showAdvanceArrow?: boolean;
-  /** Audio ID for the instruction clip (passed to useAudio().playInstruction). */
-  instructionAudioId?: string;
   /**
    * Optional Lottie override for the celebration screen. Omit to use the
    * bundled `celebrationAnimation` from @shared/ui-celebration. Must be bundled
@@ -77,48 +73,40 @@ type GameShellContainerProps = {
   icons?: GameShellIcons;
 };
 
-export function GameShellContainer({
+/**
+ * Resolves the routed Door (route param `doorIndex`, per the game-menu
+ * "Door-press navigation contract") and renders the shell for it. An index
+ * that names no door goes back to the menu.
+ */
+export function GameShellContainer(props: GameShellContainerProps): React.JSX.Element {
+  const door = useDoor(useLocalSearchParams<{ gameNumber?: string; doorIndex?: string }>());
+  if (!door) return <Redirect href="/menu" />;
+  return <GameShell {...props} door={door} />;
+}
+
+function GameShell({
+  door,
   children,
   confirmOnBack = false,
   showInstructionsButton = true,
   showAdvanceArrow = true,
-  instructionAudioId,
   celebrationSource,
   icons,
-}: GameShellContainerProps): React.JSX.Element {
+}: GameShellContainerProps & { door: Door }): React.JSX.Element {
   const router = useRouter();
   const { t } = useTranslation('chrome');
-
-  // Route params — only what the menu pushes per game-menu spec
-  // (classKey, doorIndex, challengeLevel). All per-door state below is
-  // derived from useLangAssets() + useActivePlayer().
-  // `gameNumber` accepted as legacy alias for `doorIndex`.
-  const params = useLocalSearchParams<{
-    gameNumber: string;
-    doorIndex: string;
-    challengeLevel: string;
-  }>();
-
-  const gameNumber = parseInt(params.gameNumber ?? params.doorIndex ?? '1', 10);
-  const challengeLevel = parseInt(params.challengeLevel ?? '1', 10);
 
   const assets = useLangAssets();
   const audio = useAudio();
   const activePlayer = useActivePlayer();
+  const doors = useDoors();
 
-  const gameRow = assets.games.rows[gameNumber - 1];
-  const country = gameRow?.country ?? '';
-  const syllableGame = gameRow?.syllOrTile === 'S' ? 'S' : '';
-  const stage = gameRow?.stagesIncluded === '-' || !gameRow
-    ? 1
-    : parseInt(gameRow.stagesIncluded, 10) || 1;
+  const gameNumber = door.index;
+  const instructionAudioId = showInstructionsButton ? door.instructionAudio : undefined;
   const playerId = activePlayer?.id ?? '';
 
   // Unique ID — mirrors GameActivity.java:175 uniqueGameLevelPlayerModeStageID
-  const gameUniqueId = useMemo(
-    () => buildGameUniqueId({ country, challengeLevel, playerId, syllableGame, stage }),
-    [country, challengeLevel, playerId, syllableGame, stage],
-  );
+  const gameUniqueId = useMemo(() => door.progressKey(playerId), [door, playerId]);
 
   // Progress store
   const { incrementPoints, incrementTracker, markChecked12 } = useProgressStore.getState();
@@ -132,18 +120,6 @@ export function GameShellContainer({
   );
   const correctSoundDuration = CORRECT_SOUND_DURATION_MS;
 
-  // Game color — GameActivity.java:256-258
-  const gameColor = useMemo(() => {
-    const game = assets.games.rows[gameNumber - 1];
-    const colorIndex = game ? parseInt(game.color, 10) : 0;
-    return assets.colors.hexByIndex[colorIndex] ?? '#666666';
-  }, [assets.games.rows, assets.colors.hexByIndex, gameNumber]);
-
-  // Displayed challenge level — GameActivity.java:261-274 → util-scoring.displayChallengeLevel
-  const displayedChallengeLevel = useMemo(
-    () => displayChallengeLevel(country, challengeLevel),
-    [country, challengeLevel],
-  );
 
   // Tracker states — 12 icons
   const trackerStates = useMemo(
@@ -292,7 +268,7 @@ export function GameShellContainer({
 
       nextGameTimerRef.current = setTimeout(() => {
         const nextGame = findNextUncompletedGame(
-          assets.games.rows,
+          doors,
           gameNumber,
           useProgressStore.getState().progress,
           playerId,
@@ -309,7 +285,7 @@ export function GameShellContainer({
     gameUniqueId,
     gameNumber,
     playerId,
-    assets.games.rows,
+    doors,
     audio,
     markChecked12,
     router,
@@ -323,7 +299,7 @@ export function GameShellContainer({
         incrementPoints(gameUniqueId, points);
 
         // Only increment tracker for non-exempt countries (design.md §D3)
-        if (shouldIncrementTracker(country)) {
+        if (door.tracksProgress) {
           incrementTracker(gameUniqueId);
           // After increment, re-read count from store to check mastery
           const newCount = (useProgressStore.getState().progress[gameUniqueId]?.trackerCount ?? 0);
@@ -334,7 +310,7 @@ export function GameShellContainer({
       }
       setRepeatLocked(!isCorrect);
     },
-    [country, gameUniqueId, incrementPoints, incrementTracker, handleMastery],
+    [door, gameUniqueId, incrementPoints, incrementTracker, handleMastery],
   );
 
   // Expected ms playWordAudio(word) plays: word clip, or syllable chain + gaps.
@@ -460,12 +436,12 @@ export function GameShellContainer({
   const screenProps: GameShellScreenProps = {
     score,
     gameNumber,
-    gameColor,
-    challengeLevel: displayedChallengeLevel,
+    gameColor: door.colorHex,
+    challengeLevel: door.displayLevel,
     trackerCount,
     trackerStates,
     interactionLocked,
-    showInstructionsButton,
+    showInstructionsButton: instructionAudioId !== undefined,
     advanceArrow,
     showCelebration,
     backLabel: t('back'),
@@ -480,7 +456,7 @@ export function GameShellContainer({
     onCelebrationBack: handleCelebrationBack,
     celebrationSource,
     icons,
-    children,
+    children: typeof children === 'function' ? children(door) : children,
     a11yLabels,
   };
 

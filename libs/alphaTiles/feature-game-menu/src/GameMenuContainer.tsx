@@ -6,7 +6,7 @@ import { useActivePlayer, usePlayersStore } from '@alphaTiles/data-players';
 import { useTotalPoints } from '@alphaTiles/data-progress';
 import { useAudio } from '@alphaTiles/data-audio';
 import { track } from '@shared/util-analytics';
-import { useDoors } from './useDoors';
+import { useMenuDoors } from './useMenuDoors';
 // import { GameMenuScreen } from './GameMenuScreen'; // classic layout — disabled
 import { GameMenuScreenModern } from './GameMenuScreenModern';
 
@@ -17,7 +17,7 @@ export function GameMenuContainer(): React.JSX.Element {
   const assets = useLangAssets();
   const { playInstruction } = useAudio();
 
-  const { allDoors } = useDoors(player?.id ?? null, 0);
+  const allDoors = useMenuDoors(player?.id ?? null);
   const score = useTotalPoints(player?.id ?? '');
 
   if (player === null) {

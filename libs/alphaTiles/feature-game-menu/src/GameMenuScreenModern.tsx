@@ -13,7 +13,9 @@ import {
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { DoorData } from './useDoors';
+import type { MenuDoor } from './buildMenuDoors';
+
+type DoorData = Pick<MenuDoor, 'index' | 'colorHex' | 'visual' | 'textColorHex'>;
 
 export type GameMenuScreenModernProps = {
   allDoors: DoorData[];
