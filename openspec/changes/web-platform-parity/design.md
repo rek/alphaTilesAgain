@@ -130,3 +130,7 @@ Spec was written before the code it describes; several assumptions did not hold.
   - Malaysia: list height from window height → 11 rows ran under the arrow bar. Now flex list/rows.
   - Taiwan: fixed 300px HanziWriter + 16px side padding overflowed 320px. Side padding removed (writer can't scale — touch maths).
   - ScoreBar badges `height` → `minHeight`; door grid container `overflow: hidden` (defensive).
+
+## Follow-up: one audio gate (supersedes I1–I3, I6 placement)
+
+`AudioGate` (data-audio) wraps every route, `/` included; `bootSequence` has no `web-gate` phase; `shouldGateRoute`, `useAudio().unlockAudio/isAudioUnlocked` and the LoadingScreen tap button are gone. Gate owns preload-wait, tap, chunked priming (I5 unchanged), `audio_unlock_web` and native pass-through. feature-loading `TapToBegin` = localized locked surface (`renderLocked`). Visible change at `/` on web: pre-tap shows the gate's progress label instead of the ring.

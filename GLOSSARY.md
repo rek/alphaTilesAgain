@@ -16,6 +16,8 @@ _Avoid_: game row, game number, level (for the whole door)
 
 **Clip**: one recorded mp3 from the pack (`audio/tiles|words|syllables|instructions`), bound at boot under its domain id: tile → `tile.base`, word → `wordInLWC`, syllable → syllable text, instruction → InstructionAudio id. _Avoid_: AudioName (that's the pack column naming the file, not the bound id).
 
+**Audio gate**: the web autoplay unlock — `<AudioGate>` in `data-audio`, around every route. Locked (tap-to-begin only, no screens) until a tap after preload; the tap primes all clips. Native: never locked. _Avoid_: web-gate phase, unlock gate on `/` only.
+
 **Chime**: a bundled app sound (correct, incorrect, correct-final), not pack content; played via `useAudio()`.
 
 **Syllable chain**: how pack speech says a word with no clip — each syllable clip of its LOP in order, 150 ms gap between. Used for the yue composite numerals (二十, 二百零三 …). Not a concatenation; the gap is a teaching cue.
