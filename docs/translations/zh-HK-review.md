@@ -3,7 +3,7 @@
 Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome` namespace) for the Cantonese (yue) release. Tracked in issue #55.
 
 - **Source:** `locales/en.json` → **draft:** `locales/zh-HK.json`
-- **Keys:** 105. **Flagged for decision (⚠):** 15.
+- **Keys:** 110. **Flagged for decision (⚠):** 16.
 - **Locale selection:** the yue build always shows zh-HK UI text, whatever the phone's language. Any key missing from zh-HK falls back to English.
 - **Scope:** UI text only. Game content (tiles, words, instructions audio) comes from the language pack and is not covered here.
 
@@ -100,11 +100,16 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/menu/a11y/share` | Share | 分享 |  |
 | `chrome/menu/a11y/resources` | Resources | 資源 |  |
 | `chrome/menu/a11y/audio_instructions` | Play audio instructions | 播放語音說明 |  |
+| `chrome/menu/a11y/settings` | Settings | 設定 | New (#44). Screen-reader label for the Settings tab. |
 | `chrome/menu/a11y/toggle_layout` | Toggle layout | 切換版面 |  |
 | `chrome/menu/tabs/about` | About | 關於 |  |
 | `chrome/menu/tabs/share` | Share | 分享 |  |
 | `chrome/menu/tabs/resources` | Library | 資源庫 | ⚠ English is "Library"; 資源庫 (resource library) chosen to match the Resources screen. Alternative: 圖書館 (literal library) seems wrong here. |
 | `chrome/menu/tabs/audio` | Listen | 聆聽 | Tab plays audio instructions. Alternative: 收聽. |
+| `chrome/menu/tabs/settings` | Settings | 設定 | New (#44). Tab opening the Settings screen. |
+| `chrome/settings/title` | Settings | 設定 | New (#44). Settings screen heading. |
+| `chrome/settings/show_game_names` | Show game names on doors | 在門上顯示遊戲名稱 | ⚠ New (#44). First settings toggle. "Door" = 門 as elsewhere; reviewers may prefer 遊戲門. |
+| `chrome/settings/show_game_names_hint` | Turn off to show only coloured, numbered doors (for children who find games by colour). | 關閉後，門上只顯示顏色和號碼（適合靠顏色找遊戲的兒童）。 | New (#44). Explains the toggle to parents/teachers. |
 | `chrome/a11y/tile` | Tile {{letter}} | 字塊 {{letter}} |  |
 | `chrome/a11y/word` | Word {{word}} | 詞語 {{word}} |  |
 | `chrome/a11y/active_word_picture` | Picture of Active Word | 目前詞語的圖片 |  |

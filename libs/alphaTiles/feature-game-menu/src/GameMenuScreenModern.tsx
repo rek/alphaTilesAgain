@@ -35,12 +35,14 @@ export type GameMenuScreenModernProps = {
   onShare: () => void;
   onResources: () => void;
   onAudioInstructions: () => void;
+  onSettings: () => void;
   a11y: {
     back: string;
     about: string;
     share: string;
     resources: string;
     audioInstructions: string;
+    settings: string;
     score: string;
   };
   doorLabel: (door: DoorData) => string;
@@ -49,6 +51,7 @@ export type GameMenuScreenModernProps = {
     share: string;
     resources: string;
     audioInstructions: string;
+    settings: string;
   };
 };
 
@@ -156,6 +159,7 @@ export function GameMenuScreenModern({
   onShare,
   onResources,
   onAudioInstructions,
+  onSettings,
   a11y,
   tabLabels,
   doorLabel,
@@ -237,6 +241,12 @@ export function GameMenuScreenModern({
             onPress={onAudioInstructions}
           />
         )}
+        <TabButton
+          icon="settings-outline"
+          label={tabLabels.settings}
+          a11yLabel={a11y.settings}
+          onPress={onSettings}
+        />
       </View>
     </SafeAreaView>
   );

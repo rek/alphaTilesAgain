@@ -88,14 +88,21 @@
         "share": "分享",
         "resources": "資源",
         "audio_instructions": "播放語音說明",
+        "settings": "設定",
         "toggle_layout": "切換版面"
       },
       "tabs": {
         "about": "關於",
         "share": "分享",
         "resources": "資源庫",
-        "audio": "聆聽"
+        "audio": "聆聽",
+        "settings": "設定"
       }
+    },
+    "settings": {
+      "title": "設定",
+      "show_game_names": "在門上顯示遊戲名稱",
+      "show_game_names_hint": "關閉後，門上只顯示顏色和號碼（適合靠顏色找遊戲的兒童）。"
     },
     "a11y": {
       "tile": "字塊 {{letter}}",

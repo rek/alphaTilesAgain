@@ -36,6 +36,7 @@ const meta: Meta<typeof GameMenuScreenModern> = {
     onShare: () => undefined,
     onResources: () => undefined,
     onAudioInstructions: () => undefined,
+    onSettings: () => undefined,
     onToggleLayout: () => undefined,
     a11y: {
       back: 'Back',
@@ -43,6 +44,7 @@ const meta: Meta<typeof GameMenuScreenModern> = {
       share: 'Share',
       resources: 'Resources',
       audioInstructions: 'Audio instructions',
+      settings: 'Settings',
       score: 'Score',
       toggleLayout: 'Toggle layout',
     },
@@ -51,6 +53,7 @@ const meta: Meta<typeof GameMenuScreenModern> = {
       share: 'Share',
       resources: 'Library',
       audioInstructions: 'Listen',
+      settings: 'Settings',
     },
   },
 };
