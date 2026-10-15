@@ -134,8 +134,10 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
       if (category === 'tile') {
         audio.playTile(key);
       } else if (category === 'word' && ref.kind === 'word') {
-        audio.playWord(key);
-        shell.setRefWord({ wordInLOP: ref.wordRow.wordInLOP, wordInLWC: ref.wordRow.wordInLWC });
+        const word = { wordInLOP: ref.wordRow.wordInLOP, wordInLWC: ref.wordRow.wordInLWC };
+        shell.setRefWord(word);
+        // Shell fallback: syllable chain for words with no recording (M3).
+        shell.playWordAudio(word);
       } else if (category === 'syllable') {
         audio.playSyllable(key);
       }
@@ -147,10 +149,12 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     (ref: ThailandRef): number | undefined => {
       const { category, key } = refAudioKey(ref);
       if (category === 'tile') return audio.getTileDuration(key);
-      if (category === 'word') return audio.getWordDuration(key);
+      if (category === 'word' && ref.kind === 'word') {
+        return shell.getWordAudioDuration({ wordInLOP: ref.wordRow.wordInLOP, wordInLWC: key });
+      }
       return audio.getSyllableDuration(key);
     },
-    [audio],
+    [audio, shell],
   );
 
   const startRound = useCallback(() => {
@@ -253,10 +257,9 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     playRefAudio(round.ref);
   }, [round, playRefAudio]);
 
-  // Shell repeat button replays tile/syllable refs (they never set
-  // shell.refWord, so the default replayWord would be a no-op). Word refs keep
-  // the default replayWord (syllable-chain fallback for composite numerals).
-  useShellRepeat(round?.ref.kind === 'word' ? null : onRefPress);
+  // Shell repeat button replays the ref (tile/syllable refs never set
+  // shell.refWord, so the default replayWord would be a no-op for them).
+  useShellRepeat(onRefPress);
 
   if (error === 'insufficient-content') {
     return (

@@ -157,7 +157,14 @@ export function GameShellContainer({
   );
 
   // In-flight state (not persisted — mirrors GameActivity.java fields)
-  const [interactionLocked, setInteractionLocked] = useState(false);
+  const [interactionLocked, setInteractionLockedState] = useState(false);
+  // Synchronous mirror so a syllable chain can restore the lock it found
+  // (state is stale inside the callbacks that start a chain).
+  const interactionLockedRef = useRef(false);
+  const setInteractionLocked = useCallback((locked: boolean) => {
+    interactionLockedRef.current = locked;
+    setInteractionLockedState(locked);
+  }, []);
   const [showCelebration, setShowCelebration] = useState(false);
   const [refWord, setRefWord] = useState<{ wordInLOP: string; wordInLWC: string } | null>(null);
   const [repeatLocked, setRepeatLocked] = useState(true);
@@ -306,6 +313,7 @@ export function GameShellContainer({
     audio,
     markChecked12,
     router,
+    setInteractionLocked,
   ]);
 
   // ── incrementPointsAndTracker — exposed to mechanics via context ──────────
@@ -329,41 +337,69 @@ export function GameShellContainer({
     [country, gameUniqueId, incrementPoints, incrementTracker, handleMastery],
   );
 
-  // replayWord — three branches:
+  // Expected ms playWordAudio(word) plays: word clip, or syllable chain + gaps.
+  const getWordAudioDuration = useCallback(
+    (word: { wordInLOP: string; wordInLWC: string }): number | undefined => {
+      const wordMs = audio.getWordDuration(word.wordInLWC);
+      if (wordMs !== undefined) return wordMs;
+      const parts = parseWordIntoSyllables(word.wordInLOP, assets.syllables.rows);
+      if (parts.length === 0) return undefined;
+      return parts.reduce(
+        (sum, p, i) => sum + (audio.getSyllableDuration(p.syllable) ?? FALLBACK_MS) + (i > 0 ? GAP_MS : 0),
+        0,
+      );
+    },
+    [audio, assets.syllables.rows],
+  );
+
+  // playWordAudio — plays a word's audio, three branches:
   //   A: per-word audio handle exists → play it (legacy single-clip path).
   //   B: no word handle but LOP fully decomposes into known syllables →
   //      schedule a syllable chain via setTimeout timer-ref. Locks interaction
-  //      for the chain's total duration; unlocks on the final timer step.
+  //      for the chain's duration, then restores the lock state it found
+  //      (so a chain after a correct answer can't unlock a solved round).
   //   C: neither resolves → no-op (audio layer's warn-once handles the log).
+  // Returns the expected playback length in ms (undefined when unknown) so
+  // mechanics can schedule follow-up audio/advance timers.
+  const playWordAudio = useCallback(
+    (word: { wordInLOP: string; wordInLWC: string }): number | undefined => {
+      clearChain();
+      const wordMs = audio.getWordDuration(word.wordInLWC);
+      if (wordMs !== undefined) {
+        audio.playWord(word.wordInLWC);
+        return wordMs;
+      }
+      const parts = parseWordIntoSyllables(word.wordInLOP, assets.syllables.rows);
+      if (parts.length === 0) {
+        // Branch C: fall through to playWord which emits the warn-once message.
+        audio.playWord(word.wordInLWC);
+        return undefined;
+      }
+      const lockedBefore = interactionLockedRef.current;
+      setInteractionLocked(true);
+      const durations = parts.map((p) => audio.getSyllableDuration(p.syllable) ?? FALLBACK_MS);
+      const playStep = (i: number) => {
+        audio.playSyllable(parts[i].syllable);
+        if (i + 1 < parts.length) {
+          chainTimerRef.current = setTimeout(() => playStep(i + 1), durations[i] + GAP_MS);
+        } else {
+          chainTimerRef.current = setTimeout(() => {
+            chainTimerRef.current = null;
+            setInteractionLocked(lockedBefore);
+          }, durations[i]);
+        }
+      };
+      playStep(0);
+      return getWordAudioDuration(word);
+    },
+    [audio, assets.syllables.rows, clearChain, setInteractionLocked, getWordAudioDuration],
+  );
+
+  // replayWord — replays the current reference word (shell repeat button).
   const replayWord = useCallback(() => {
     if (!refWord) return;
-    clearChain();
-    if (audio.getWordDuration(refWord.wordInLWC) !== undefined) {
-      audio.playWord(refWord.wordInLWC);
-      return;
-    }
-    const parts = parseWordIntoSyllables(refWord.wordInLOP, assets.syllables.rows);
-    if (parts.length === 0) {
-      // Branch C: fall through to playWord which emits the warn-once message.
-      audio.playWord(refWord.wordInLWC);
-      return;
-    }
-    setInteractionLocked(true);
-    const playStep = (i: number) => {
-      const syll = parts[i];
-      audio.playSyllable(syll.syllable);
-      const dur = audio.getSyllableDuration(syll.syllable) ?? FALLBACK_MS;
-      if (i + 1 < parts.length) {
-        chainTimerRef.current = setTimeout(() => playStep(i + 1), dur + GAP_MS);
-      } else {
-        chainTimerRef.current = setTimeout(() => {
-          chainTimerRef.current = null;
-          setInteractionLocked(false);
-        }, dur);
-      }
-    };
-    playStep(0);
-  }, [refWord, audio, assets.syllables.rows, clearChain]);
+    playWordAudio(refWord);
+  }, [refWord, playWordAudio]);
 
   const handleBackPress = useCallback(() => {
     if (showCelebration) return;
@@ -393,7 +429,7 @@ export function GameShellContainer({
     setRepeatLocked(false);
     setInteractionLocked(false);
     onAdvanceRef.current?.();
-  }, []);
+  }, [setInteractionLocked]);
 
   const handleCelebrationBack = useCallback(() => {
     clearMasteryTimers();
@@ -451,6 +487,8 @@ export function GameShellContainer({
   const contextValue = useMemo(() => ({
     incrementPointsAndTracker,
     replayWord,
+    playWordAudio,
+    getWordAudioDuration,
     interactionLocked,
     setInteractionLocked,
     refWord,
@@ -462,6 +500,8 @@ export function GameShellContainer({
   }), [
     incrementPointsAndTracker,
     replayWord,
+    playWordAudio,
+    getWordAudioDuration,
     interactionLocked,
     setInteractionLocked,
     refWord,
