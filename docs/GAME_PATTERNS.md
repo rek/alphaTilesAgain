@@ -674,7 +674,7 @@ Taiwan is the first non-Java game in the catalogue. The mechanic (stroke-order t
 1. **Pin the dep exactly** in `package.json` (no caret) — small-maintainer libs go stale; we own the rollover.
 2. **Vendor data through a per-pack prebuild step** (`tools/build-stroke-data.ts`) — never bundle the full upstream dataset; per-pack subset keeps APK size linear in pack count.
 3. **Cache fetched data under `tools/data/<lib>-cache/`** + `.gitignore` it. CDN-fetch + cache is functionally equivalent to vendoring, with first-fetch the only network dep.
-4. **Add a NOTICE entry** for license attribution. Even MIT deps get a NOTICE row when they ship a non-trivial dataset (MMH/Arphic in Taiwan's case is LGPL).
+4. **Add a NOTICE entry** for license attribution, and read the *data* licence from the upstream COPYING, not hearsay. Even MIT deps get a NOTICE row when they ship a non-trivial dataset. Taiwan's MMH stroke data is **Arphic Public License**, not LGPL (MMH's LGPL covers only `dictionary.txt`, unused). APL obligations for modified/subset data (verbatim licence, per-file change notice, public copy of the modified data, in-app attribution) are spelled out in `docs/licensing/stroke-data.md`; reuse that checklist for any copyleft dataset.
 5. **Document API quirks in `tasks.md` + spec.md** before impl. Library APIs evolve — don't assume the readme matches what's installed. The Taiwan spec originally referenced `showOutline`/`showCharacter` props that don't exist in `1.2.0`; we corrected pre-impl.
 
 ---

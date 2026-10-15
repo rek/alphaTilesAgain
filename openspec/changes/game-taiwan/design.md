@@ -8,7 +8,7 @@ Current state:
 - `data-language-pack` parses pack files; `data-language-assets` exposes them at runtime via context.
 - yue pack: 64 tile-rows of multi-character compounds (`醫生`, `護士`, …), Type `X`, script `Chinese`.
 
-Stakeholders: PM (curriculum + launch), engineering (build), legal (LGPL data shipping).
+Stakeholders: PM (curriculum + launch), engineering (build), legal (stroke-data licence — resolved, see `docs/licensing/stroke-data.md`).
 
 ## Goals / Non-Goals
 
@@ -114,7 +114,7 @@ feature-game-taiwan
 
 ## Risks / Trade-offs
 
-- **LGPL on MMH `graphics.txt`** → Mitigation: ship as a runtime data file (not static-linked); standard MMH usage. Add NOTICE entry naming Make Me a Hanzi + Arphic. Legal sign-off required before yue v1 ships.
+- **Licence on MMH `graphics.txt`** → ~~LGPL~~ Corrected 2026-10-15 (issue #46): `graphics.txt` is **Arphic Public License**; LGPL covers only MMH `dictionary.txt` (unused). Data is inlined in the JS bundle (not a runtime file); APL has no separate-file rule. Mitigation shipped: verbatim APL in-app + beside data, per-file `_notice`, public modified data in repo. See `docs/licensing/stroke-data.md`.
 - **`@jamsch/react-native-hanzi-writer` small maintainer footprint** → Mitigation: pin exact version; mirror to project-owned org as forkable backup. ~500 LOC if rewrite ever needed.
 - **Low-end Android perf — gesture-handler + reanimated path matching may frame-drop** → Mitigation: device-target perf spike during impl. If bad, fall back to `leniency=2.0` + simplified outline. Worst-case: gate Taiwan behind a "high-perf" device-class flag.
 - **MMH coverage holes** — uncommon hanzi may be missing → Mitigation: prebuild logs gaps; affected chars excluded from `availableTiles`; round-pick simply skips them.

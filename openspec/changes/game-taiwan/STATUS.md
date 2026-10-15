@@ -43,7 +43,7 @@ Pre-existing TS errors not in scope of game-taiwan:
 - §9.7 Native iOS sim QA
 - §9.8 Bundle-size delta measurement
 - §9.9 Low-end device perf spike
-- §10.3 Legal LGPL sign-off
+- §10.5 Owner acceptance of licence analysis (§10.3 done: Arphic PL, not LGPL — `docs/licensing/stroke-data.md`)
 - §10.4 PM device-target list confirmation
 - §11.3 GitHub issue #13 update comment
 - §12 PM sign-off on shipped defaults (round goal=5, mistake threshold=3, no stage gating)

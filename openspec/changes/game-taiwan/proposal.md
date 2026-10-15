@@ -37,6 +37,6 @@ OSS research (issue #13) confirms a direct React Native port of the relevant lib
 - **Pack schema:** new optional `languages/<code>/strokes/` directory. Backwards-compatible — existing packs unaffected.
 - **APK size:** ~320KB for yue (~64 chars × ~5KB). Per-pack — non-Chinese packs unaffected.
 - **Dependencies:** one new npm dep (`@jamsch/react-native-hanzi-writer`). Peer deps already present.
-- **Legal:** MMH `graphics.txt` is LGPL; shipping as a runtime data file (not static-linked) is the standard usage pattern. Needs sign-off before yue v1.
+- **Legal:** MMH `graphics.txt` is Arphic Public License (corrected 2026-10-15; originally misstated as LGPL). Compliance analysis + checklist: `docs/licensing/stroke-data.md`.
 - **Risk:** small-maintainer footprint on `@jamsch/react-native-hanzi-writer`; project-owned mirror recommended.
 - **Out of scope:** Jyutping/tone columns; `aa_sentences.txt`; radical metadata. Tracked separately in issue #13 Tier-3.
