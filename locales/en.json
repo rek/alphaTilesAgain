@@ -30,6 +30,7 @@
     "about.website": "Project website",
     "about.reportIssue": "Report an issue",
     "about.thirdParty": "Open-source licences",
+    "about.thirdPartySummary": "The stroke-order data for the writing game is used under the Arphic Public License. The licence text is in English.",
     "about.showLicence": "Show licence text",
     "about.hideLicence": "Hide licence text",
     "share": "Share",
@@ -83,7 +84,8 @@
         "door_state": {
           "not_started": "not started",
           "in_process": "in progress",
-          "mastery": "mastered"
+          "mastery": "mastered",
+          "free_explore": "free play"
         },
         "prev": "Previous page",
         "next": "Next page",
@@ -112,7 +114,8 @@
       "show_game_names": "Show game names on doors",
       "show_game_names_hint": "Turn off to show only coloured, numbered doors (for children who find games by colour).",
       "feedback": "Send feedback",
-      "feedback_hint": "Opens your email app to write to us."
+      "feedback_hint": "Opens your email app to write to us.",
+      "empty": "No settings to change for this language."
     },
     "feedback": {
       "title": "Send feedback",
@@ -125,7 +128,7 @@
     },
     "placementGuidance": {
       "title": "Where to start",
-      "intro": "Games are grouped by step, from Step 0 (easiest) to Step 6. Each door shows its step.",
+      "intro": "Games are grouped by step, from Step {{min}} (easiest) to Step {{max}}. Each door shows its step.",
       "band_0_1_title": "Steps 0–1 · Listen and explore",
       "band_0_1": "Tap tiles and words to hear them. Start here with a new reader.",
       "band_2_3_title": "Steps 2–3 · Match and recognise",
@@ -145,7 +148,10 @@
       "empty": "No questions are available for this language yet.",
       "a11y": {
         "score": "{{correct}} correct out of {{total}}"
-      }
+      },
+      "suggestion_high": "Excellent reading! Try the games from Step {{step}}.",
+      "suggestion_mid": "Good work! Start with the games from Step {{step}}.",
+      "suggestion_low": "Keep going! Start with the games from Step {{step}}."
     },
     "a11y": {
       "tile": "Tile {{letter}}",
@@ -173,7 +179,18 @@
       "submit_guess": "Submit guess",
       "advance": "Advance",
       "delete": "Delete",
-      "play_again": "Play again"
+      "play_again": "Play again",
+      "trackers_summary": "{{done}} of {{total}} trackers complete",
+      "play_word": "Play {{word}}",
+      "listen_again": "Listen again",
+      "hidden_card": "Face-down card",
+      "guess_cell": "Row {{row}}, column {{col}}: {{text}}",
+      "guess_cell_empty": "Row {{row}}, column {{col}}: empty",
+      "replay_item": "Replay: {{item}}"
+    },
+    "pack_error": {
+      "title": "Language pack failed to load",
+      "hint": "Restart the app after fixing the language pack. If this is a production build, contact the app maintainer."
     }
   }
 }

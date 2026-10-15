@@ -11,6 +11,7 @@ const meta: Meta<typeof ScoreBar> = {
     challengeLevel: 1,
     score: 0,
     scoreLabel: 'pts',
+    trackersLabel: '0 of 12 trackers complete',
   },
 };
 

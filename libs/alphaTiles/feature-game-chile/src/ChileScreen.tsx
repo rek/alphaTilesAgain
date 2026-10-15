@@ -64,6 +64,9 @@ export type ChileScreenProps = {
     backspace: string;
     playAgain: string;
     submit: string;
+    /** Guess-grid cell, 1-based row / col; empty text = blank cell. */
+    cell: (p: { row: number; col: number; text: string }) => string;
+    key: (text: string) => string;
   };
 };
 
@@ -124,7 +127,7 @@ export function ChileScreen({
                       backgroundColor: TILE_BG[color],
                     },
                   ]}
-                  accessibilityLabel={`row ${rowIdx + 1} col ${colIdx + 1}: ${text || 'empty'}`}
+                  accessibilityLabel={a11yLabels.cell({ row: rowIdx + 1, col: colIdx + 1, text })}
                 >
                   <Text
                     style={[
@@ -196,7 +199,7 @@ export function ChileScreen({
               },
               pressed && styles.pressed,
             ]}
-            accessibilityLabel={`key ${tile.text}`}
+            accessibilityLabel={a11yLabels.key(tile.text)}
             accessibilityRole="button"
           >
             <Text style={styles.keyTileText} adjustsFontSizeToFit numberOfLines={1}>

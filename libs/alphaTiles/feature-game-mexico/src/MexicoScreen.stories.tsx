@@ -55,6 +55,7 @@ const meta: Meta<typeof MexicoScreen> = {
     wordImages: {},
     logoSource: LOGO,
     themeColor: '#4CAF50',
+    cardLabels: [],
     interactionLocked: false,
     onCardPress: () => undefined,
   },

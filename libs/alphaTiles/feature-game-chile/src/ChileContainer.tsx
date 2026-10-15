@@ -69,6 +69,11 @@ function ChileGame({ challengeLevel }: { challengeLevel: number }): React.JSX.El
     backspace: t('chrome:a11y.backspace'),
     playAgain: t('chrome:a11y.play_again'),
     submit: t('chrome:a11y.submit_guess'),
+    cell: ({ row, col, text }: { row: number; col: number; text: string }) =>
+      text
+        ? t('chrome:a11y.guess_cell', { row, col, text })
+        : t('chrome:a11y.guess_cell_empty', { row, col }),
+    key: (text: string) => t('chrome:a11y.keyboard_key', { key: text }),
   }), [t]);
 
   // Read baseGuessCount from settings (Chile.java:309)

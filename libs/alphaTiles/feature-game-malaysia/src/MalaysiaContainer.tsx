@@ -91,6 +91,7 @@ function MalaysiaGame(): React.JSX.Element {
         bgColor: rowColor(idx, colorList, data.colorless),
         image: assets.images.words[word.wordInLWC] as ImageSourcePropType | undefined,
         id: word.wordInLWC,
+        a11yLabel: t('chrome:a11y.play_word', { word: text }),
       };
     });
   }, [
@@ -102,6 +103,7 @@ function MalaysiaGame(): React.JSX.Element {
     placeholderCharacter,
     colorList,
     data.colorless,
+    t,
   ]);
 
   const onPress = useCallback(

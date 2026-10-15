@@ -129,7 +129,7 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/feedback/subject_label` | Feedback | 意見 | New (#41). Word in the email subject, e.g. `學廣話 意見 \| Cantonese \| v1.0.0 \| android`. |
 | `chrome/feedback/mail_body` | Hello, (blank line) My feedback: | 你好，(blank line) 我的意見： | New (#41). Starter text of the email body; contains line breaks. |
 | `chrome/placementGuidance/title` | Where to start | 從哪一階開始？ | New (#52). Heading of the sheet opened by the menu "?" button. For parents/teachers choosing where a learner starts. |
-| `chrome/placementGuidance/intro` | Games are grouped by level, from Level 0 (easiest) to Level 6. Each door shows its level. | 遊戲按難度分為第 0 階（最容易）至第 6 階。每扇門都會顯示它的階數。 | New (#52). |
+| `chrome/placementGuidance/intro` | Games are grouped by step, from Step {{min}} (easiest) to Step {{max}}. Each door shows its step. | 遊戲按難度分階，由第 {{min}} 階（最容易）至第 {{max}} 階。每扇門都會顯示它的階數。 | New (#52). ⚠ Changed (review 2, U10): now shows the pack's real lowest/highest step instead of a fixed 0–6. |
 | `chrome/placementGuidance/band_0_1_title` | Levels 0–1 · Listen and explore | 第 0–1 階 · 聆聽和探索 | New (#52). Band heading. |
 | `chrome/placementGuidance/band_0_1` | Tap tiles and words to hear them. Start here with a new reader. | 點按字塊和詞語，聆聽讀音。剛開始學習閱讀的學習者由這裏開始。 | ⚠ New (#52). Must not mention age (no 兒童/成人): reading level only. Alternative for "new reader": 初學者. |
 | `chrome/placementGuidance/band_2_3_title` | Levels 2–3 · Match and recognise | 第 2–3 階 · 配對和認字 | New (#52). |
@@ -174,3 +174,25 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/a11y/play_again` | Play again | 再玩一次 |  |
 
 > **Note (difficulty ladder, #52):** the menu tier uses 階 / English "Step" (`chrome.menu.level`, `chrome.placementGuidance.*`); each game's own challenge level keeps 級 / English "Level" (`chrome.game_door_level`). Please confirm 階 reads naturally for learners.
+
+## Added in UX review 2 (fix/review2-ux)
+
+Screen-reader labels (`a11y`) are heard, not seen. Please check they sound natural when read aloud.
+
+| key | English | zh-HK draft | notes |
+|---|---|---|---|
+| `chrome/a11y/trackers_summary` | {{done}} of {{total}} trackers complete | 已完成 {{done}}／{{total}} | ⚠ One label for the 12-dot progress bar (was 12 English labels). Alternative: 進度：{{done}}／{{total}}. |
+| `chrome/a11y/play_word` | Play {{word}} | 播放：{{word}} | Word-browser rows (Malaysia). {{word}} is the Cantonese word. |
+| `chrome/a11y/listen_again` | Listen again | 再聽一次 | Speaker button in the self-test (was 再玩一次 "play again"). |
+| `chrome/a11y/hidden_card` | Face-down card | 未翻開的卡 | Memory game, card not yet turned over. |
+| `chrome/a11y/guess_cell` | Row {{row}}, column {{col}}: {{text}} | 第 {{row}} 行，第 {{col}} 格：{{text}} | Word-guess grid (not used by yue yet). |
+| `chrome/a11y/guess_cell_empty` | Row {{row}}, column {{col}}: empty | 第 {{row}} 行，第 {{col}} 格：空白 | As above, empty cell. |
+| `chrome/a11y/replay_item` | Replay: {{item}} | 重播：{{item}} | Lotería caller (Italy). Full-width colon. |
+| `chrome/menu/a11y/door_state/free_explore` | free play | 自由探索 | ⚠ Doors with no score (word browser etc.). Alternative: 自由玩. |
+| `chrome/settings/empty` | No settings to change for this language. | 這個語言暫時沒有可調整的設定。 | Shown when the pack has no game names and no feedback email. |
+| `chrome/selfTest/suggestion_high` | Excellent reading! Try the games from Step {{step}}. | 讀得非常好！試試第 {{step}} 階的遊戲。 | Self-test result, 8–10 correct. |
+| `chrome/selfTest/suggestion_mid` | Good work! Start with the games from Step {{step}}. | 做得好！可以由第 {{step}} 階的遊戲開始。 | 5–7 correct. |
+| `chrome/selfTest/suggestion_low` | Keep going! Start with the games from Step {{step}}. | 繼續加油！可以由第 {{step}} 階的遊戲開始。 | 0–4 correct. ⚠ Tone for young learners: 加油 OK? |
+| `chrome/pack_error/title` | Language pack failed to load | 語言包載入失敗 | Developer-facing error screen; rarely seen. |
+| `chrome/pack_error/hint` | Restart the app after fixing the language pack. If this is a production build, contact the app maintainer. | 修正語言包後請重新啟動應用程式。如果這是正式版本，請聯絡應用程式維護人員。 | As above. |
+| `chrome/about.thirdPartySummary` | The stroke-order data for the writing game is used under the Arphic Public License. The licence text is in English. | 寫字遊戲的筆順資料按 Arphic Public License 授權使用。授權條款原文為英文。 | Lead-in above the English legal text on the About page. Licence name stays in English. |

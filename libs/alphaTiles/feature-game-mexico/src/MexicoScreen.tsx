@@ -18,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { readableTextColor } from '@shared/util-theme';
 import type { CardState } from './setupMexicoBoard';
 
 const HIDDEN_BG = '#555555';
@@ -25,16 +26,7 @@ const PAIRED_BG = '#E8F5E9';
 const REVEALED_BG = '#1565C0';
 const BLANK_CARD_BG = '#E0E0E0';
 const TEXT_LIGHT = '#FFFFFF';
-const TEXT_DARK = '#000000';
 const GAP = 4;
-
-/** Minimum contrast color for text over a hex background. */
-function contrastColor(hex: string): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return 0.299 * r + 0.587 * g + 0.114 * b > 127.5 ? TEXT_DARK : TEXT_LIGHT;
-}
 
 export type MexicoScreenProps = {
   cards: CardState[];
@@ -44,6 +36,8 @@ export type MexicoScreenProps = {
   logoSource: ImageSourcePropType;
   /** Theme color hex — used for paired card text and border. */
   themeColor: string;
+  /** Pre-translated screen-reader label per card (same order as `cards`). */
+  cardLabels: string[];
   interactionLocked: boolean;
   onCardPress: (index: number) => void;
 };
@@ -53,6 +47,7 @@ export function MexicoScreen({
   wordImages,
   logoSource,
   themeColor,
+  cardLabels,
   interactionLocked,
   onCardPress,
 }: MexicoScreenProps): React.JSX.Element {
@@ -70,7 +65,7 @@ export function MexicoScreen({
   const cardByHeight = rows > 0 ? Math.floor(availableHeight / rows) : cardByWidth;
   const cardSize = Math.max(56, Math.min(cardByWidth, cardByHeight));
 
-  const themeTextColor = contrastColor(themeColor);
+  const themeTextColor = readableTextColor(themeColor);
 
   return (
     <View style={styles.root}>
@@ -105,9 +100,7 @@ export function MexicoScreen({
                 },
                 pressed && !isPaired && !isHidden && styles.pressed,
               ]}
-              accessibilityLabel={
-                isHidden ? 'hidden card' : `${card.mode.toLowerCase()} card: ${card.word.wordInLWC}`
-              }
+              accessibilityLabel={cardLabels[index]}
               accessibilityRole="button"
               accessibilityState={{ disabled: isPaired || interactionLocked }}
             >
@@ -142,7 +135,8 @@ export function MexicoScreen({
                   source={imgSrc}
                   style={styles.cardImage}
                   resizeMode="contain"
-                  accessibilityLabel={card.word.wordInLWC}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no"
                 />
               )}
 

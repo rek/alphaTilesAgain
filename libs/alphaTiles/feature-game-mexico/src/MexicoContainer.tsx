@@ -20,6 +20,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import type { ImageSourcePropType } from 'react-native';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
+import { useTranslation } from '@shared/util-i18n';
 import {
   GameShellContainer,
   useGameShell,
@@ -48,6 +49,7 @@ type RouteParams = Record<string, string | string[] | GameShellIcons | undefined
 
 function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Element {
   const shell = useGameShell();
+  const { t } = useTranslation();
   const audio = useAudio();
   const assets = useLangAssets();
   const mexicoData = usePrecompute<MexicoData>('mexico');
@@ -220,6 +222,7 @@ function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.E
         wordImages={{}}
         logoSource={logoSource}
         themeColor={themeColor}
+        cardLabels={[]}
         interactionLocked
         onCardPress={() => undefined}
       />
@@ -228,12 +231,18 @@ function MexicoGame({ challengeLevel }: { challengeLevel: number }): React.JSX.E
 
   if (cards.length === 0) return <></>;
 
+  // Pack word text, never the LWC id (yue LWC = English asset ids).
+  const cardLabels = cards.map((c) =>
+    c.status === 'HIDDEN' ? t('chrome:a11y.hidden_card') : t('chrome:a11y.word', { word: c.word.wordInLOP }),
+  );
+
   return (
     <MexicoScreen
       cards={cards}
       wordImages={wordImages}
       logoSource={logoSource}
       themeColor={themeColor}
+      cardLabels={cardLabels}
       interactionLocked={shell.interactionLocked}
       onCardPress={onCardPress}
     />

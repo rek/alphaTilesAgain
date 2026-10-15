@@ -30,6 +30,7 @@
     "about.website": "計劃網站",
     "about.reportIssue": "報告問題",
     "about.thirdParty": "開放源碼授權",
+    "about.thirdPartySummary": "寫字遊戲的筆順資料按 Arphic Public License 授權使用。授權條款原文為英文。",
     "about.showLicence": "顯示授權條款",
     "about.hideLicence": "隱藏授權條款",
     "share": "分享",
@@ -83,7 +84,8 @@
         "door_state": {
           "not_started": "未開始",
           "in_process": "進行中",
-          "mastery": "已掌握"
+          "mastery": "已掌握",
+          "free_explore": "自由探索"
         },
         "prev": "上一頁",
         "next": "下一頁",
@@ -112,7 +114,8 @@
       "show_game_names": "在門上顯示遊戲名稱",
       "show_game_names_hint": "關閉後，門上只顯示顏色和號碼（適合靠顏色找遊戲的兒童）。",
       "feedback": "傳送意見",
-      "feedback_hint": "開啟電郵應用程式，寫信給我們。"
+      "feedback_hint": "開啟電郵應用程式，寫信給我們。",
+      "empty": "這個語言暫時沒有可調整的設定。"
     },
     "feedback": {
       "title": "傳送意見",
@@ -125,7 +128,7 @@
     },
     "placementGuidance": {
       "title": "從哪一階開始？",
-      "intro": "遊戲按難度分為第 0 階（最容易）至第 6 階。每扇門都會顯示它的階數。",
+      "intro": "遊戲按難度分階，由第 {{min}} 階（最容易）至第 {{max}} 階。每扇門都會顯示它的階數。",
       "band_0_1_title": "第 0–1 階 · 聆聽和探索",
       "band_0_1": "點按字塊和詞語，聆聽讀音。剛開始學習閱讀的學習者由這裏開始。",
       "band_2_3_title": "第 2–3 階 · 配對和認字",
@@ -145,7 +148,10 @@
       "empty": "這個語言暫時沒有題目。",
       "a11y": {
         "score": "共 {{total}} 題，答對 {{correct}} 題"
-      }
+      },
+      "suggestion_high": "讀得非常好！試試第 {{step}} 階的遊戲。",
+      "suggestion_mid": "做得好！可以由第 {{step}} 階的遊戲開始。",
+      "suggestion_low": "繼續加油！可以由第 {{step}} 階的遊戲開始。"
     },
     "a11y": {
       "tile": "字塊 {{letter}}",
@@ -173,7 +179,18 @@
       "submit_guess": "提交答案",
       "advance": "繼續",
       "delete": "刪除",
-      "play_again": "再玩一次"
+      "play_again": "再玩一次",
+      "trackers_summary": "已完成 {{done}}／{{total}}",
+      "play_word": "播放：{{word}}",
+      "listen_again": "再聽一次",
+      "hidden_card": "未翻開的卡",
+      "guess_cell": "第 {{row}} 行，第 {{col}} 格：{{text}}",
+      "guess_cell_empty": "第 {{row}} 行，第 {{col}} 格：空白",
+      "replay_item": "重播：{{item}}"
+    },
+    "pack_error": {
+      "title": "語言包載入失敗",
+      "hint": "修正語言包後請重新啟動應用程式。如果這是正式版本，請聯絡應用程式維護人員。"
     }
   }
 }

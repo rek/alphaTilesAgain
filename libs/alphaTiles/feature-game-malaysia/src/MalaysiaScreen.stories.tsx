@@ -22,6 +22,7 @@ function makeRow(text: string, idx: number, colorless = false): MalaysiaRow {
   const colorIdx = colorless ? 8 : COLOR_INDEX_PYRAMID[idx] ?? 0;
   return {
     id: text,
+    a11yLabel: `Play ${text}`,
     text,
     bgColor: PALETTE[colorIdx],
     image: IMG(text),

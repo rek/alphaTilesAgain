@@ -48,6 +48,7 @@ const meta: Meta<typeof GameShellScreen> = {
     onAdvancePress: () => undefined,
     onCelebrationBack: () => undefined,
     icons: ICONS,
+    a11yLabels: { advance: 'Advance', trackers: '4 of 12 trackers complete' },
     children: FILLER,
   },
 };
