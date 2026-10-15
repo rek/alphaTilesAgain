@@ -1,9 +1,15 @@
 // https://docs.expo.dev/guides/using-eslint/
-const { defineConfig } = require('eslint/config');
+// Root nx config first: @nx/enforce-module-boundaries (type:app → type:feature)
+// and the shared hygiene rules apply to the app shell like every lib.
+import { createRequire } from 'module';
+import baseConfig from '../../eslint.config.mjs';
+
+const require = createRequire(import.meta.url);
 const expoConfig = require('eslint-config-expo/flat');
 
-module.exports = defineConfig([
-  expoConfig,
+export default [
+  ...baseConfig,
+  ...expoConfig,
   {
     ignores: ['dist/*', 'app-example/*', 'src/generated/*', 'jest.config.js', 'jest.resolver.js', '.expo/*'],
   },
@@ -12,12 +18,7 @@ module.exports = defineConfig([
     // additional resolver config. Mark them as known-resolved to avoid
     // false import/no-unresolved errors on @shared/* and @alphaTiles/* paths.
     settings: {
-      'import/ignore': [
-        '^@shared/',
-        '^@alphaTiles/',
-        '^@generated/',
-        '^expo-font',
-      ],
+      'import/ignore': ['^@shared/', '^@alphaTiles/', '^@generated/', '^expo-font'],
     },
     rules: {
       'import/no-unresolved': ['error', {
@@ -28,4 +29,9 @@ module.exports = defineConfig([
       'import/namespace': 'off',
     },
   },
-]);
+  {
+    // Parked stroke spikes (never routed): read tools/data stroke JSON directly.
+    files: ['src/dev/**'],
+    rules: { '@nx/enforce-module-boundaries': 'off' },
+  },
+];

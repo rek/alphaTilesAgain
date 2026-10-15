@@ -9,7 +9,7 @@ export default {
   coverageDirectory: '../../../coverage/libs/shared/util-ota',
   moduleNameMapper: {
     '^@shared/util-analytics$': '<rootDir>/../util-analytics/src/index.ts',
-    // expo-updates is not installed in the workspace root; map to the manual mock.
+    // expo-updates needs its native module; map to the manual mock.
     // Individual tests override via jest.mock() factory.
     '^expo-updates$': '<rootDir>/src/__mocks__/expo-updates.ts',
   },

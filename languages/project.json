@@ -1,0 +1,10 @@
+{
+  "name": "languages",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "scope:languages",
+    "type:data"
+  ],
+  "targets": {}
+}

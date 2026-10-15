@@ -5,8 +5,8 @@
  * All other libraries that need font-readiness must receive it as a prop
  * or use this hook via @shared/util-theme.
  *
- * Called in apps/alphaTiles/app/_layout.tsx:
- *   const ready = useFontsReady(langManifest.fonts);
+ * Called in feature-loading's AppShell (root layout):
+ *   const ready = useFontsReady(fontAssetMap); // from useLangAssets().fonts
  *   if (!ready) return null;
  *
  * fontMap — Record<string, FontSource> matching expo-font's useFonts signature.

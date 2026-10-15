@@ -4,5 +4,6 @@
   "sourceRoot": "libs/alphaTiles/feature-self-test/src",
   "projectType": "library",
   "tags": ["type:feature", "scope:alphaTiles"],
+  "implicitDependencies": ["languages"],
   "targets": {}
 }
