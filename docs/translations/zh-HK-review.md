@@ -3,7 +3,7 @@
 Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome` namespace) for the Cantonese (yue) release. Tracked in issue #55.
 
 - **Source:** `locales/en.json` → **draft:** `locales/zh-HK.json`
-- **Keys:** 123. **Flagged for decision (⚠):** 18.
+- **Keys:** 132. **Flagged for decision (⚠):** 18.
 - **Locale selection:** the yue build always shows zh-HK UI text, whatever the phone's language. Any key missing from zh-HK falls back to English.
 - **Scope:** UI text only. Game content (tiles, words, instructions audio) comes from the language pack and is not covered here.
 
@@ -113,6 +113,15 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/settings/title` | Settings | 設定 | New (#44). Settings screen heading. |
 | `chrome/settings/show_game_names` | Show game names on doors | 在門上顯示遊戲名稱 | ⚠ New (#44). First settings toggle. "Door" = 門 as elsewhere; reviewers may prefer 遊戲門. |
 | `chrome/settings/show_game_names_hint` | Turn off to show only coloured, numbered doors (for children who find games by colour). | 關閉後，門上只顯示顏色和號碼（適合靠顏色找遊戲的兒童）。 | New (#44). Explains the toggle to parents/teachers. |
+| `chrome/settings/feedback` | Send feedback | 傳送意見 | New (#41). Settings row opening the feedback screen; only shown when the pack has a real contact email. |
+| `chrome/settings/feedback_hint` | Opens your email app to write to us. | 開啟電郵應用程式，寫信給我們。 | New (#41). |
+| `chrome/feedback/title` | Send feedback | 傳送意見 | New (#41). Feedback screen heading. |
+| `chrome/feedback/intro` | Tell us what you like, what is confusing, or what went wrong. This opens your email app with a message ready to send. | 告訴我們你喜歡甚麼、哪裡不清楚，或遇到甚麼問題。按下按鈕會開啟電郵應用程式，並預先填好郵件。 | New (#41). |
+| `chrome/feedback/button` | Write an email | 撰寫電郵 | New (#41). |
+| `chrome/feedback/address_label` | Our email address | 我們的電郵地址 | New (#41). Label above the address shown for copying. |
+| `chrome/feedback/no_mail_app` | Could not open an email app. Please copy the address below and write to us from your email. | 無法開啟電郵應用程式。請複製下方地址，用你的電郵寫信給我們。 | New (#41). Shown when the device has no mail app. |
+| `chrome/feedback/subject_label` | Feedback | 意見 | New (#41). Word in the email subject, e.g. `學廣話 意見 \| Cantonese \| v1.0.0 \| android`. |
+| `chrome/feedback/mail_body` | Hello, (blank line) My feedback: | 你好，(blank line) 我的意見： | New (#41). Starter text of the email body; contains line breaks. |
 | `chrome/placementGuidance/title` | Where to start | 從哪一階開始？ | New (#52). Heading of the sheet opened by the menu "?" button. For parents/teachers choosing where a learner starts. |
 | `chrome/placementGuidance/intro` | Games are grouped by level, from Level 0 (easiest) to Level 6. Each door shows its level. | 遊戲按難度分為第 0 階（最容易）至第 6 階。每扇門都會顯示它的階數。 | New (#52). |
 | `chrome/placementGuidance/band_0_1_title` | Levels 0–1 · Listen and explore | 第 0–1 階 · 聆聽和探索 | New (#52). Band heading. |

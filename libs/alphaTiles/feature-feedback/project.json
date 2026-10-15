@@ -1,0 +1,29 @@
+{
+  "name": "feature-feedback",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/feature-feedback/src",
+  "projectType": "library",
+  "tags": ["type:feature", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/feature-feedback",
+        "main": "libs/alphaTiles/feature-feedback/src/index.ts",
+        "tsConfig": "libs/alphaTiles/feature-feedback/tsconfig.lib.json",
+        "assets": ["libs/alphaTiles/feature-feedback/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/alphaTiles/feature-feedback/jest.config.ts"
+      }
+    }
+  }
+}

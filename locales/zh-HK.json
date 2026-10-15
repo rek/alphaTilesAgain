@@ -105,7 +105,18 @@
     "settings": {
       "title": "設定",
       "show_game_names": "在門上顯示遊戲名稱",
-      "show_game_names_hint": "關閉後，門上只顯示顏色和號碼（適合靠顏色找遊戲的兒童）。"
+      "show_game_names_hint": "關閉後，門上只顯示顏色和號碼（適合靠顏色找遊戲的兒童）。",
+      "feedback": "傳送意見",
+      "feedback_hint": "開啟電郵應用程式，寫信給我們。"
+    },
+    "feedback": {
+      "title": "傳送意見",
+      "intro": "告訴我們你喜歡甚麼、哪裡不清楚，或遇到甚麼問題。按下按鈕會開啟電郵應用程式，並預先填好郵件。",
+      "button": "撰寫電郵",
+      "address_label": "我們的電郵地址",
+      "no_mail_app": "無法開啟電郵應用程式。請複製下方地址，用你的電郵寫信給我們。",
+      "subject_label": "意見",
+      "mail_body": "你好，\n\n我的意見：\n\n"
     },
     "placementGuidance": {
       "title": "從哪一階開始？",

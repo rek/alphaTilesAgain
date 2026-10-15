@@ -105,7 +105,18 @@
     "settings": {
       "title": "Settings",
       "show_game_names": "Show game names on doors",
-      "show_game_names_hint": "Turn off to show only coloured, numbered doors (for children who find games by colour)."
+      "show_game_names_hint": "Turn off to show only coloured, numbered doors (for children who find games by colour).",
+      "feedback": "Send feedback",
+      "feedback_hint": "Opens your email app to write to us."
+    },
+    "feedback": {
+      "title": "Send feedback",
+      "intro": "Tell us what you like, what is confusing, or what went wrong. This opens your email app with a message ready to send.",
+      "button": "Write an email",
+      "address_label": "Our email address",
+      "no_mail_app": "Could not open an email app. Please copy the address below and write to us from your email.",
+      "subject_label": "Feedback",
+      "mail_body": "Hello,\n\nMy feedback:\n\n"
     },
     "placementGuidance": {
       "title": "Where to start",
