@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import { IRAQ_GRID_COLUMNS, IRAQ_PAGE_SIZE } from './iraqPagination';
+import { readableTextColor } from '@shared/util-theme';
 
 export type IraqTileView = {
   /** Visible label — base text or stripped iconic word when overlay active. */
@@ -57,7 +58,6 @@ export type IraqScreenProps = {
 };
 
 const TILE_OVERLAY_BG = '#FFFFFF';
-const TILE_TEXT = '#FFFFFF';
 const TILE_OVERLAY_TEXT = '#000000';
 const ARROW_BG = '#E0E0E0';
 const ARROW_DISABLED = 'transparent';
@@ -101,7 +101,7 @@ export function IraqScreen({
 
           const overlayActive = overlay !== null && overlay.tileIndex === i;
           const bg = overlayActive ? TILE_OVERLAY_BG : cell.bgColor;
-          const fg = overlayActive ? TILE_OVERLAY_TEXT : TILE_TEXT;
+          const fg = overlayActive ? TILE_OVERLAY_TEXT : readableTextColor(cell.bgColor);
           const text = overlayActive && overlay !== null ? overlay.wordText : cell.text;
 
           return (

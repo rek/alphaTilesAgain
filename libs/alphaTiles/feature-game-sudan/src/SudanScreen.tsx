@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { readableTextColor } from '@shared/util-theme';
 
 const GAP = 4;
 const TEXT_LIGHT = '#FFFFFF';
@@ -22,15 +23,6 @@ const TEXT_DARK = '#000000';
 const ARROW_BG = '#1565C0';
 const MUTED_BG = '#9E9E9E';
 
-/** Choose readable text color over a background hex. */
-function contrastColor(hex: string): string {
-  if (!hex || hex.length < 7) return TEXT_DARK;
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  if ([r, g, b].some(Number.isNaN)) return TEXT_DARK;
-  return 0.299 * r + 0.587 * g + 0.114 * b > 127.5 ? TEXT_DARK : TEXT_LIGHT;
-}
 
 export type SudanCell = {
   /** Display text — tile.base or syllable.syllable. */
@@ -98,7 +90,7 @@ export function SudanScreen(props: SudanScreenProps): React.JSX.Element {
       >
         {cells.map((cell, index) => {
           const bg = cell.tappable ? cell.color : MUTED_BG;
-          const textColor = contrastColor(bg);
+          const textColor = readableTextColor(bg);
           const isPressable = !props.disabled && cell.tappable;
           return (
             <Pressable

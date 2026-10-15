@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { readableTextColor } from '@shared/util-theme';
 
 const TILE_BG = '#A9A9A9';
 const CORRECT_BG = '#4CAF50';
@@ -78,7 +79,7 @@ function ChoiceTile({
     : choice.greyed
     ? REVEALED_GRAY
     : choice.color;
-  const textColor = choice.greyed && !choice.highlightCorrect && !choice.wrong ? BLACK : WHITE;
+  const textColor = choice.greyed && !choice.highlightCorrect && !choice.wrong ? BLACK : readableTextColor(bg);
   return (
     <Pressable
       onPress={choice.disabled ? undefined : onPress}

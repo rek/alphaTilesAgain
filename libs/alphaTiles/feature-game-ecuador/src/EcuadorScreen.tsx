@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { readableTextColor } from '@shared/util-theme';
 
 const GRAYED_BG = '#A9A9A9';
 const TILE_FONT_SIZE = 22;
@@ -23,7 +24,6 @@ function tileFontSize(tileHeight: number) {
   return Math.max(10, Math.min(TILE_FONT_SIZE, Math.floor(tileHeight * 0.6)));
 }
 const GRAYED_TEXT = '#000000';
-const TILE_TEXT = '#FFFFFF';
 
 export type EcuadorTile = {
   text: string;
@@ -97,7 +97,7 @@ export function EcuadorScreen({
       >
         {tiles.map((tile, i) => {
           const bg = tile.grayed ? GRAYED_BG : tile.bgColor;
-          const fg = tile.grayed ? GRAYED_TEXT : TILE_TEXT;
+          const fg = tile.grayed ? GRAYED_TEXT : readableTextColor(tile.bgColor);
           return (
             <Pressable
               key={i}

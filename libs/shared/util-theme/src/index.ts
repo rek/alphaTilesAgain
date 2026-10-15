@@ -10,6 +10,9 @@ export { useTheme } from './lib/useTheme';
 export { useFontsReady } from './lib/useFontsReady';
 
 export { style } from './lib/style';
+export { readableTextColor } from './lib/readableTextColor';
+export { readableAccentColor } from './lib/readableAccentColor';
+export { contrastRatio } from './lib/contrastRatio';
 export type { SpacingKey } from './lib/spacing';
 
 // Testing sub-path exports — available via direct import in test/storybook files.

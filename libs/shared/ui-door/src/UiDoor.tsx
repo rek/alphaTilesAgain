@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable } from 'react-native';
+import { readableAccentColor, readableTextColor } from '@shared/util-theme';
 import { DoorSvg } from './DoorSvg';
 
 export type DoorVisual = 'not-started' | 'in-process' | 'mastery';
@@ -22,11 +23,11 @@ function resolveColors(
 ): { fill: string; stroke: string; textColor: string } {
   switch (visual) {
     case 'not-started':
-      return { fill: '#FFFFFF', stroke: colorHex, textColor: colorHex };
+      return { fill: '#FFFFFF', stroke: colorHex, textColor: readableAccentColor(colorHex) };
     case 'in-process':
-      return { fill: colorHex, stroke: '', textColor: textColorHex ?? '#FFFFFF' };
+      return { fill: colorHex, stroke: '', textColor: textColorHex ?? readableTextColor(colorHex) };
     case 'mastery':
-      return { fill: '#E0E0E0', stroke: colorHex, textColor: colorHex };
+      return { fill: '#E0E0E0', stroke: colorHex, textColor: readableAccentColor(colorHex, '#E0E0E0') };
   }
 }
 

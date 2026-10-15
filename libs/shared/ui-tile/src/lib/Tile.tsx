@@ -6,11 +6,13 @@ import {
   Text,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { readableTextColor } from '@shared/util-theme';
 
 export type TileProps = {
   text?: string;
   imageSource?: ImageSourcePropType;
   color: string;
+  /** Defaults to black / white, whichever is readable on `color` (WCAG AA large). */
   fontColor?: string;
   pressed?: boolean;
   onPress?: () => void;
@@ -22,7 +24,7 @@ export function Tile({
   text,
   imageSource,
   color,
-  fontColor = '#ffffff',
+  fontColor,
   pressed = false,
   onPress,
   accessibilityLabel,
@@ -48,7 +50,7 @@ export function Tile({
           importantForAccessibility="no"
         />
       ) : (
-        <Text style={[styles.label, { color: fontColor }]} numberOfLines={1} adjustsFontSizeToFit>
+        <Text style={[styles.label, { color: fontColor ?? readableTextColor(color) }]} numberOfLines={1} adjustsFontSizeToFit>
           {text}
         </Text>
       )}
