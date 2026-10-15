@@ -33,7 +33,7 @@ function stems(dir: string): Record<string, number> {
 
 function loadYue(): LangAssets {
   const strokes: Record<string, unknown> = {};
-  for (const f of fs.readdirSync(path.join(LANG_DIR, 'strokes'))) {
+  for (const f of fs.readdirSync(path.join(LANG_DIR, 'strokes')).filter((x) => x.endsWith('.json'))) {
     strokes[f.replace(/\.json$/, '')] = { strokes: ['M0 0'], medians: [] };
   }
   return loadLangPack({
