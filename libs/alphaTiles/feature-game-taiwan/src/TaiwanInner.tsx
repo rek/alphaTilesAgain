@@ -10,6 +10,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useHanziWriter } from '@jamsch/react-native-hanzi-writer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useMountEffect } from '@shared/util-hooks';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import {
   GameShellContainer,
@@ -214,7 +215,7 @@ function CharRound({
     () => createInkResetScheduler(INK_RESET_MS, () => setInkKey((k) => k + 1)),
     [],
   );
-  useEffect(() => inkReset.cancel, [inkReset]);
+  useMountEffect(() => inkReset.cancel);
   const characterClass = writer.characterClass;
 
   // Single source of truth for quiz config. Used by both the mount auto-start
@@ -256,6 +257,9 @@ function CharRound({
       success={succeeding}
       successLabel={successLabel}
       inkKey={inkKey}
+      // A new stroke cancels a pending reset: remounting mid-stroke would drop
+      // it (C5). If that stroke is also rejected, onMistake schedules again.
+      onStrokeStart={inkReset.cancel}
       onClear={() => {
         inkReset.cancel();
         setInkKey((k) => k + 1);

@@ -23,6 +23,7 @@ const meta: Meta<typeof StoryHost> = {
     successLabel: '✓',
     success: false,
     inkKey: 0,
+    onStrokeStart: () => undefined,
     onClear: () => undefined,
     loadingLabel: 'Loading…',
   },
