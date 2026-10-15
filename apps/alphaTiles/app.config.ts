@@ -7,9 +7,11 @@
  * this config only passes scriptDirection through extra so the entry can read it.
  *
  * OTA updates (expo-updates):
- *   - runtimeVersion.policy = "appVersion" — updates pool by APP_VERSION below.
- *     Bump APP_VERSION for every native release (store build), never for OTA.
- *   - updates.checkAutomatically = "NEVER" — the loading screen runs runOtaCheck()
+ *   - runtimeVersion.policy = "fingerprint" — the runtime is a hash of the native
+ *     surface (native deps, config plugins, this resolved config, patches). Any
+ *     native change gets a new runtime automatically, so an OTA never reaches a
+ *     binary missing its native code. No manual version bump.
+ *   - updates.checkAutomatically = "NEVER" — BootGate (feature-loading) runs runOtaCheck()
  *     on launch (native), downloads in the background, and expo-updates applies
  *     the update on the next cold start. No mid-session reload.
  *   - extra.eas.projectId must be set (run `eas init` once — see docs/GETTING_STARTED.md).
@@ -34,9 +36,8 @@ import * as path from 'path';
 const APP_ID_BASE = 'com.makektm.alphatiles';
 const PRIMARY_PACK = 'yue';
 
-// Marketing version + OTA runtime version (runtimeVersion policy "appVersion").
-// Bump on every native release so OTA updates never reach an older binary.
-// Android versionCode is auto-incremented remotely by EAS (apps/alphaTiles/eas.json).
+// Marketing version shown in the stores. Not the OTA runtime (that is the
+// fingerprint, below). Android versionCode is auto-incremented remotely by EAS.
 const APP_VERSION = '1.0.0';
 
 function resolveAppId(lang: string): string {
@@ -162,14 +163,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       output: 'static',
       favicon: './assets/images/favicon.png',
     },
+    // Native fingerprint: a store build with any native change gets a new
+    // runtime; OTA updates only reach binaries with the same native surface.
     runtimeVersion: {
-      policy: 'appVersion',
+      policy: 'fingerprint',
     },
     updates: {
       url: easProjectId
         ? `https://u.expo.dev/${easProjectId}`
         : undefined,
-      // Manual check only — LoadingContainer calls runOtaCheck({ reload: false })
+      // Manual check only — BootGate calls runOtaCheck({ reload: false })
       // on launch; downloaded updates apply on next cold start.
       checkAutomatically: 'NEVER' as const,
       enabled: true,

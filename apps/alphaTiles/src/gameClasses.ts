@@ -1,6 +1,4 @@
-import type { ComponentType } from 'react';
-import type { LangAssets } from '@alphaTiles/data-language-pack';
-import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
+import type { GameClass } from '@alphaTiles/feature-game-shell';
 import { BrazilContainer, brazilPreProcess } from '@alphaTiles/feature-game-brazil';
 import { ChileContainer, chilePreProcess } from '@alphaTiles/feature-game-chile';
 import { ChinaContainer, buildChinaData } from '@alphaTiles/feature-game-china';
@@ -20,18 +18,6 @@ import { TaiwanContainer, buildTaiwanData } from '@alphaTiles/feature-game-taiwa
 import { ThailandContainer } from '@alphaTiles/feature-game-thailand';
 import { UnitedStatesContainer, buildUnitedStatesData } from '@alphaTiles/feature-game-united-states';
 import type { GameClassKey } from './gameClassKeys';
-
-/** What the game route hands every container: route params + app chrome icons. */
-export type GameContainerProps = Record<string, string | string[] | GameShellIcons | undefined> & {
-  icons: GameShellIcons;
-};
-
-type GameClass = {
-  /** Rendered by `app/games/[classKey].tsx` for every Door of this class. */
-  Container: ComponentType<GameContainerProps>;
-  /** Boot-time precompute; the container reads it via `usePrecompute(classKey)`. */
-  precompute?: (assets: LangAssets) => unknown;
-};
 
 /**
  * Game-class registry — the one place a game class is wired into the app.

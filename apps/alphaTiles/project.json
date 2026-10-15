@@ -4,6 +4,7 @@
   "sourceRoot": "apps/alphaTiles/src",
   "projectType": "application",
   "tags": ["scope:alphaTiles", "type:app"],
+  "implicitDependencies": ["languages"],
   "targets": {
     "start": {
       "executor": "@nx/expo:start",
@@ -84,7 +85,7 @@
       "dependsOn": ["prebuild-lang"],
       "outputs": ["{workspaceRoot}/dist/web/alpha-tiles"],
       "options": {
-        "command": "npx expo export --platform web --output-dir dist/web && mkdir -p ../../dist/web/alpha-tiles && cp -r dist/web/. ../../dist/web/alpha-tiles/",
+        "command": "npx expo export --platform web --output-dir dist/web && npx tsx ../../tools/write-web-manifest.ts dist/web/manifest.json && mkdir -p ../../dist/web/alpha-tiles && cp -r dist/web/. ../../dist/web/alpha-tiles/",
         "cwd": "apps/alphaTiles"
       }
     },
@@ -129,7 +130,7 @@
     "android-eng": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "APP_LANG=eng cd apps/alphaTiles && npx expo run:android",
+        "command": "APP_LANG=eng npm run prebuild-lang && cd apps/alphaTiles && APP_LANG=eng npx expo run:android",
         "cwd": "{workspaceRoot}"
       }
     },

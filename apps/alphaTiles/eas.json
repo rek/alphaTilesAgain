@@ -10,13 +10,6 @@
         "credentialsSource": "remote"
       }
     },
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "APP_LANG": "eng"
-      }
-    },
     "eng": {
       "extends": "production",
       "channel": "eng-production",

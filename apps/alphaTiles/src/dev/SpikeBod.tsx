@@ -6,6 +6,9 @@
  *
  * Tooling smoke only — stroke order is FABRICATED. See
  * tools/data/uchen-strokes/_attribution.json `warning` field.
+ *
+ * Not routed (everything under app/ ships as a route). To run it locally, add
+ * an uncommitted `app/spike.tsx`: `export { default } from '../src/dev/<this file>';`
  */
 import { useEffect, useState } from 'react';
 import { Button, Pressable, Text, View } from 'react-native';
