@@ -3,8 +3,11 @@ import type { PlayerPreferences } from '@alphaTiles/data-players';
 
 /**
  * aa_settings.txt labels + defaults for the cross-cutting settings. The ONLY
- * place these English labels are spelled (a typo here fails the tests, not a
- * silent default at one call site — cf. 383279d).
+ * place app code spells these English labels (a typo here fails the tests, not
+ * a silent default at one call site — cf. 383279d). Exceptions: the pack
+ * validator (a util, checks label types itself) and the app root's audio
+ * preload config (apps/alphaTiles/app/_layout.tsx, which should read
+ * `hasTileAudio` / `hasSyllableAudio` from here).
  */
 const PACK = {
   showGameNames: { label: 'Show game names', fallback: true },

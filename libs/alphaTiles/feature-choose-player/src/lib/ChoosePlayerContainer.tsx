@@ -9,6 +9,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { usePlayersStore, usePlayers } from '@alphaTiles/data-players';
+import { useEffectiveSettings } from '@alphaTiles/data-settings';
 import { track, identify } from '@shared/util-analytics';
 import { ChoosePlayerScreen } from './ChoosePlayerScreen';
 import type { PlayerCardData } from './ChoosePlayerScreen';
@@ -32,7 +33,7 @@ export function ChoosePlayerContainer(): React.JSX.Element {
 
   const [deleteMap, setDeleteMap] = useState<DeleteMap>(new Map());
 
-  const rawCount = assets.settings.findInt('Number of avatars', MAX_AVATARS);
+  const rawCount = useEffectiveSettings().numberOfAvatars;
   const avatarCount = Math.min(MAX_AVATARS, Math.max(MIN_AVATARS, rawCount));
 
   // Local name — from langInfo "NAME in local language" or fallback "Player"

@@ -20,6 +20,7 @@ import {
   STROKE_DATA_ATTRIBUTION,
 } from '@alphaTiles/data-stroke-data';
 import { contactEmailOf } from '@alphaTiles/util-contact';
+import { useEffectiveSettings } from '@alphaTiles/data-settings';
 import { useTranslation } from '@shared/util-i18n';
 import { useTrackScreenMount } from '@shared/util-analytics';
 import { AboutScreen } from './AboutScreen';
@@ -85,7 +86,7 @@ export function AboutContainer(): React.JSX.Element {
   // "Hide privacy policy" setting (About.java:26,98).
   const packPrivacy = langInfo.find('Privacy Policy');
   const privacyUrl = isAbsent(packPrivacy) ? PRIVACY_URL : (packPrivacy ?? '');
-  const hidePrivacy = assets.settings.findBoolean('Hide privacy policy', false);
+  const hidePrivacy = useEffectiveSettings().hidePrivacyPolicy;
 
   // Visibility flags per design.md §D7
   const showEmail = contactEmailOf({ email }) !== undefined;

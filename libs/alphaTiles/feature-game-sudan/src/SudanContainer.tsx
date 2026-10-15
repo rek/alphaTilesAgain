@@ -26,6 +26,7 @@ import {
   useGameShell,
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
+import { useEffectiveSettings } from '@alphaTiles/data-settings';
 import { SudanScreen } from './SudanScreen';
 import type { SudanCell } from './SudanScreen';
 import { tileColor } from './tileColor';
@@ -50,10 +51,7 @@ function SudanGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
   }), [t]);
 
   const isSyllable = variant === 'S';
-  const hasSyllableAudio = useMemo(
-    () => assets.settings.findBoolean('Has syllable audio', false),
-    [assets.settings],
-  );
+  const { hasSyllableAudio } = useEffectiveSettings();
   const colorList = assets.colors.hexByIndex;
 
   const pages = isSyllable ? data.syllablePages : data.tilePages;

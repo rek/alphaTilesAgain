@@ -18,6 +18,7 @@
     "expo-web-browser": "*",
     "react": "*",
     "react-native": "*",
-    "expo-router": "~55.0.12"
+    "expo-router": "~55.0.12",
+    "@alphaTiles/data-settings": "*"
   }
 }
