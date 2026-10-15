@@ -3,7 +3,6 @@ export { GameShellScreen } from './lib/GameShellScreen';
 export type { GameShellScreenProps, GameShellIcons } from './lib/GameShellScreen';
 export { useGameShell } from './lib/GameShellContext';
 export type { GameShellContextValue } from './lib/GameShellContext';
-export { findNextUncompletedGame } from './lib/findNextUncompletedGame';
 export { useShellWord } from './lib/useShellWord';
 export { useShellAdvance } from './lib/useShellAdvance';
 export { useShellRepeat } from './lib/useShellRepeat';

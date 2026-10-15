@@ -7,7 +7,6 @@
  */
 
 import React, { createContext, useContext } from 'react';
-import type { ProgressEntry } from '@alphaTiles/data-progress';
 import type { SpeechItem } from '@alphaTiles/data-audio';
 
 export type GameShellContextValue = {
@@ -36,8 +35,6 @@ export type GameShellContextValue = {
   /** Current reference word identifier (wordInLWC for audio, wordInLOP for parsing). */
   refWord: { wordInLOP: string; wordInLWC: string } | null;
   setRefWord: (word: { wordInLOP: string; wordInLWC: string } | null) => void;
-  /** Current progress entry for this game/stage combo. */
-  progressEntry: ProgressEntry;
   /** Unique ID used to key the progress entry. */
   gameUniqueId: string;
   /** Register a callback to fire when the shell's advance arrow is pressed. Pass null to unregister. */

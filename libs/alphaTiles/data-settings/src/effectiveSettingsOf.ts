@@ -51,7 +51,7 @@ export function effectiveSettingsOf({
     hasTileAudio: bool('hasTileAudio'),
     hasSyllableAudio: bool('hasSyllableAudio'),
     hidePrivacyPolicy: bool('hidePrivacyPolicy'),
-    /** After 12 trackers: 1 keep playing, 2 menu, 3 celebrate + next game (see resolveMasteryAction). */
+    /** After 12 trackers: 1 keep playing, 2 menu, 3 celebrate + next game (acted on via @alphaTiles/data-door-progress). */
     afterTwelveCheckedTrackers: int('afterTwelveCheckedTrackers'),
     numberOfAvatars: int('numberOfAvatars'),
   };
