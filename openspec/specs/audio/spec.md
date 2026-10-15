@@ -68,7 +68,7 @@ When `audioConfig.hasTileAudio === false`, `preloadAudio` SHALL skip loading til
 
 ### Requirement: Hook API surface
 
-`useAudio()` SHALL return chimes and lifecycle only: `playCorrect`, `playIncorrect`, `playCorrectFinal`, `isLoading`, `loadProgress`, `awaitLoaded`, `isAudioUnlocked`, `unlockAudio`. Pack content (tiles, words, syllables, instructions) SHALL be played only through pack speech: `usePackSpeech(pack, holdLock?)` → `{ speak(item), durationOf(item), stop() }`, where `item` is `{ tile }`, `{ word }`, `{ syllable }` or `{ instruction }` (the pack row, never an audio key). Inside a game, mechanics use the shell's `speak` / `durationOf`. Nothing MUST throw; a missing clip is a warn-once no-op.
+`useAudio()` SHALL return chimes and lifecycle only: `playCorrect`, `playIncorrect`, `playCorrectFinal`, `isLoading`, `loadProgress`, `awaitLoaded`. The web unlock is owned by `<AudioGate>` (see below), not `useAudio()`. Pack content (tiles, words, syllables, instructions) SHALL be played only through pack speech: `usePackSpeech(pack, holdLock?)` → `{ speak(item), durationOf(item), stop() }`, where `item` is `{ tile }`, `{ word }`, `{ syllable }` or `{ instruction }` (the pack row, never an audio key). Inside a game, mechanics use the shell's `speak` / `durationOf`. Nothing MUST throw; a missing clip is a warn-once no-op.
 
 #### Scenario: Tap handler speaks a tile
 
@@ -115,22 +115,22 @@ The three base chimes (`correct.mp3`, `incorrect.mp3`, `correctFinal.mp3`) SHALL
 
 ### Requirement: Web gesture unlock lifecycle
 
-On `Platform.OS === 'web'`, `isAudioUnlocked` SHALL start `false` and flip to `true` only after `unlockAudio()` resolves, which MUST be invoked from a user-gesture handler. On native platforms, `isAudioUnlocked` SHALL be `true` from the first render and `unlockAudio()` SHALL be a no-op resolver.
+`data-audio` SHALL export `<AudioGate renderLocked children>`, mounted once in the root layout around every route. On web it SHALL render only `renderLocked({ isReady, percent, unlock })` — never `children` — until unlocked. `isReady` is `false` and `unlock` a no-op until the AudioProvider loader settles. `unlock` MUST be called from the gesture handler; it SHALL prime every clip (chimes first, 40 per chunk, first chunk synchronous, rest every 30 ms), fire `audio_unlock_web` once, then render `children`. On native it SHALL render `children` immediately.
 
 #### Scenario: Web boot before unlock
 
-- **WHEN** on web, the app has finished preload but no user gesture has occurred
-- **THEN** `isAudioUnlocked` is `false` and the loading screen's tap gate is visible
+- **WHEN** on web, any route (cold start, reload, deep link) is opened and no gesture has occurred
+- **THEN** only the locked surface renders; its button is disabled showing load % until preload settles, then "Tap to begin"
 
 #### Scenario: Web first tap
 
-- **WHEN** the user taps the web unlock gate, invoking `unlockAudio()`
-- **THEN** a zero-volume playback primes the `AudioContext`, the Promise resolves, `isAudioUnlocked` flips `true`, and the app proceeds to the first screen
+- **WHEN** the user taps the ready locked surface
+- **THEN** every clip is primed in chunks within 1 s, `audio_unlock_web` fires once, and the route's screen mounts
 
 #### Scenario: Native boot
 
 - **WHEN** on iOS or Android
-- **THEN** `isAudioUnlocked` is `true` on first render and the tap gate does not render
+- **THEN** `children` render on first render and the locked surface never renders
 
 ### Requirement: iOS silent-switch override
 

@@ -1,34 +1,27 @@
 /**
  * WebAudioUnlockGatePresenter — full-screen "tap to start" surface.
  *
- * Pure props → JSX. While `isLocked`, renders ONLY the overlay — children are
- * not mounted, so screens that auto-play audio on mount do so after the
- * unlocking gesture instead of silently before it (#47). The whole surface is
- * the press target (click or touch). Pressing is disabled until `isReady`
- * (audio preloaded) so the gesture can prime every clip.
+ * Pure props → JSX. Rendered by data-audio's AudioGate (via feature-loading
+ * TapToBegin) INSTEAD of the app while audio is locked (#47). The whole
+ * surface is the press target (click or touch). Pressing is disabled until
+ * `isReady` (audio preloaded) so the gesture can prime every clip.
  */
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export function WebAudioUnlockGatePresenter({
-  isLocked,
   isReady,
   label,
   title,
   onUnlock,
-  children,
 }: {
-  isLocked: boolean;
   isReady: boolean;
   /** Pre-translated: "Tap to start" when ready, progress text while loading. */
   label: string;
   /** Pre-translated heading, e.g. the app title. */
   title: string;
   onUnlock: () => void;
-  children: React.ReactNode;
 }) {
-  if (!isLocked) return <>{children}</>;
-
   return (
     <Pressable
       style={styles.overlay}

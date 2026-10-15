@@ -11,8 +11,11 @@ export { preloadAudio } from './lib/preloadAudio';
 // Provider — mount above all game screens after preloadAudio resolves.
 export { AudioProvider } from './lib/AudioProvider';
 
-// Chimes + load/unlock lifecycle.
+// Chimes + load lifecycle.
 export { useAudio } from './lib/useAudio';
+
+// Web autoplay gate — wrap the app; renders children once a tap unlocked audio.
+export { AudioGate } from './lib/AudioGate';
 
 // Pack speech — the only way to play tiles / words / syllables / instructions.
 export { usePackSpeech } from './lib/usePackSpeech';

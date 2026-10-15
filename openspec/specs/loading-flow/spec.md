@@ -22,19 +22,17 @@ The loading screen (`libs/alphaTiles/feature-loading`) SHALL be the only screen 
 
 ### Requirement: Phase sequence order
 
-The loading sequence SHALL execute phases in this order: `fonts` → `i18n` → `web-gate` (web only) → `audio` → `precompute` → `hydration` → `done`. Each phase MUST complete before the next begins.
+The loading sequence SHALL execute phases in this order: `fonts` → `i18n` → `audio` → `precompute` → `hydration` → `done` on every platform. Each phase MUST complete before the next begins. On web the loading screen mounts only after the root `<AudioGate>` tap (see audio spec), so it has no gesture phase.
 
 #### Scenario: Native platform sequence
 
 - **WHEN** the app boots on iOS or Android
 - **THEN** the phases run: fonts, i18n, audio, precompute, hydration, done
-- **AND** no `web-gate` phase runs
 
 #### Scenario: Web platform sequence
 
 - **WHEN** the app boots on web
-- **THEN** the phases run: fonts, i18n, web-gate, audio, precompute, hydration, done
-- **AND** the `audio` phase does not start until `web-gate` completes (user tap)
+- **THEN** the root `<AudioGate>` tap happens first (after preload), then the phases run: fonts, i18n, audio, precompute, hydration, done
 
 #### Scenario: Phase ordering guarantees
 
@@ -93,26 +91,18 @@ The audio preload SHALL treat a single file's load as failed after 30 seconds. A
 
 ### Requirement: Web audio-unlock gesture
 
-On `Platform.OS === 'web'`, the loading screen SHALL display a "Tap to begin" button during the `web-gate` phase. The button's press handler SHALL call `unlockAudio()` from `data-audio` and transition to the `audio` phase on resolution. `unlockAudio()` MUST be invoked directly inside the `onPress` callback of a `Pressable` (or equivalent user-gesture handler) — it MUST NOT be called inside a `useEffect`, `setTimeout`, or any deferred path.
+The web tap-to-begin SHALL be the root-layout `<AudioGate>` from `data-audio` (audio spec), with feature-loading's `TapToBegin` as its localized locked surface. `TapToBegin` SHALL pass the gate's `unlock` straight to the presenter's `onPress` (synchronous, never via `useEffect` / `setTimeout`). `LoadingContainer` / `bootSequence` SHALL NOT know about the gesture.
 
 #### Scenario: Web user taps
 
 - **WHEN** the web user taps "Tap to begin"
-- **THEN** `unlockAudio()` is invoked within a user-gesture event handler
-- **AND** the button is replaced by the progress ring
-- **AND** the `audio` phase starts
+- **THEN** `unlock` runs inside the gesture handler
+- **AND** the routed screen (e.g. the loading screen at `/`) mounts
 
 #### Scenario: Native platform skips gate
 
 - **WHEN** the app boots on iOS or Android
-- **THEN** no "Tap to begin" button is rendered
-- **AND** the `audio` phase starts immediately after `i18n`
-
-#### Scenario: unlockAudio call site is a direct gesture handler
-
-- **WHEN** `LoadingContainer.tsx` is inspected
-- **THEN** the `onPress` prop of the "Tap to begin" `Pressable` calls `unlockAudio()` synchronously (not via `setTimeout` or `useEffect`)
-- **AND** no path exists where `unlockAudio()` is called outside a user-gesture event
+- **THEN** no "Tap to begin" surface is rendered
 
 ### Requirement: Players store hydration gate
 

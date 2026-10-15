@@ -5,13 +5,14 @@
  * /choose-player or /menu. Audio loading now happens in AudioProvider
  * (mounted in _layout.tsx) so that direct-URL entry routes also get audio.
  * This container awaits the already-in-flight awaitLoaded Promise from useAudio().
+ * Web: mounts only after the root AudioGate's tap (#47), so no gesture step here.
  *
  * Native: kicks off a background OTA check at mount (applied next cold start).
  *
  * One permitted useEffect site (useMountEffect pattern — empty deps, one-shot kickoff).
  * All other state transitions happen inside the promise chain from bootSequence.
  */
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useRouter } from 'expo-router';
@@ -36,8 +37,7 @@ export function LoadingContainer(): React.JSX.Element {
   const [phase, setPhase] = useState<Phase>('fonts');
   const [error, setError] = useState<Error | null>(null);
 
-  const { unlockAudio, loadProgress, awaitLoaded } = useAudio();
-  const webGestureResolveRef = useRef<(() => void) | null>(null);
+  const { loadProgress, awaitLoaded } = useAudio();
 
   // One-shot mount effect — permitted per CODE_STYLE.md for boot-time kickoffs.
   useEffect(() => {
@@ -46,7 +46,6 @@ export function LoadingContainer(): React.JSX.Element {
     if (isNative) startOtaCheck();
 
     bootSequence({
-      platform: Platform.OS === 'web' ? 'web' : 'native',
       onPhaseChange: setPhase,
       registerContent: () => {
         const tile: Record<string, string> = {};
@@ -79,9 +78,6 @@ export function LoadingContainer(): React.JSX.Element {
         registerContentNamespaces({ tile, word, syllable, game, langMeta });
       },
       awaitAudio: () => awaitLoaded,
-      waitForWebGesture: Platform.OS === 'web'
-        ? () => new Promise<void>((resolve) => { webGestureResolveRef.current = resolve; })
-        : undefined,
       awaitHydration: awaitPlayersHydrated,
     })
       .then(() => {
@@ -108,15 +104,9 @@ export function LoadingContainer(): React.JSX.Element {
       phase={phase}
       audioProgress={audioProgress}
       error={error}
-      onTapToBegin={
-        phase === 'web-gate'
-          ? () => { void unlockAudio(); webGestureResolveRef.current?.(); }
-          : undefined
-      }
       labels={{
         title: t('loading.title'),
         progress: progressLabel,
-        tapToBegin: t('loading.tap_to_begin'),
         error: t('loading.error'),
       }}
     />
