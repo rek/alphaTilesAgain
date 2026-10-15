@@ -21,6 +21,23 @@ export const YUE_GAME_ROWS: readonly YueGameRow[] = [
   { index: 9, classKey: "georgia", challengeLevel: 1, syllOrTile: "S" },
   { index: 10, classKey: "georgia", challengeLevel: 2, syllOrTile: "S" },
   { index: 11, classKey: "georgia", challengeLevel: 3, syllOrTile: "S" },
+  { index: 12, classKey: "mexico", challengeLevel: 1, syllOrTile: "T" },
+  { index: 13, classKey: "mexico", challengeLevel: 2, syllOrTile: "T" },
+  { index: 14, classKey: "mexico", challengeLevel: 3, syllOrTile: "T" },
+  { index: 15, classKey: "ecuador", challengeLevel: 1, syllOrTile: "T" },
+  { index: 16, classKey: "thailand", challengeLevel: 145, syllOrTile: "T" },
+  { index: 17, classKey: "thailand", challengeLevel: 245, syllOrTile: "T" },
+  { index: 18, classKey: "thailand", challengeLevel: 154, syllOrTile: "T" },
+  { index: 19, classKey: "thailand", challengeLevel: 254, syllOrTile: "T" },
+  { index: 20, classKey: "colombia", challengeLevel: 1, syllOrTile: "S" },
+  { index: 21, classKey: "colombia", challengeLevel: 2, syllOrTile: "S" },
+  { index: 22, classKey: "colombia", challengeLevel: 3, syllOrTile: "S" },
+  { index: 23, classKey: "brazil", challengeLevel: 1, syllOrTile: "S" },
+  { index: 24, classKey: "italy", challengeLevel: 1, syllOrTile: "T" },
+  { index: 25, classKey: "italy", challengeLevel: 1, syllOrTile: "S" },
+  { index: 26, classKey: "malaysia", challengeLevel: 1, syllOrTile: "T" },
+  { index: 27, classKey: "sudan", challengeLevel: 1, syllOrTile: "S" },
+  { index: 28, classKey: "iraq", challengeLevel: 1, syllOrTile: "T" },
 ];
 
 /**
