@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets, usePrecompute } from '@alphaTiles/data-language-assets';
 import { GameShellContainer, useGameShell, useShellWord } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import {
   parseWordIntoTilesPreliminary,
   buildTileHashMap,
@@ -13,7 +14,9 @@ import type { RomaniaData } from './buildRomaniaData';
 import type { LangAssets } from '@alphaTiles/data-language-assets';
 
 type Word = LangAssets['words']['rows'][number];
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 function RomaniaGame(): React.JSX.Element {
   const shell = useGameShell();
@@ -160,6 +163,7 @@ export function RomaniaContainer(props: RouteParams): React.JSX.Element {
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       showAdvanceArrow={false}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <RomaniaGame />
     </GameShellContainer>

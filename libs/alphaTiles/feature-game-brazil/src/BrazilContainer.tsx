@@ -22,6 +22,7 @@ import {
   useGameShell,
   useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import {
   buildTileHashMap,
   getMultitypeTiles,
@@ -46,7 +47,9 @@ const FALLBACK_REPLAY_MS = 1000;
 type WordRow = LangAssets['words']['rows'][number];
 type SyllableRow = LangAssets['syllables']['rows'][number];
 
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 function challengeLevelToRequiredType(cl: number): RequiredTileType {
   if (cl >= 1 && cl <= 3) return 'vowel';
@@ -420,6 +423,7 @@ export function BrazilContainer(props: RouteParams): React.JSX.Element {
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <BrazilGame challengeLevel={challengeLevel} syllableGame={syllableGame} />
     </GameShellContainer>

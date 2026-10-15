@@ -17,6 +17,7 @@ import {
   useGameShell,
   useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import {
   buildTileHashMap,
   getMultitypeTiles,
@@ -32,7 +33,9 @@ import type { BoundaryInfo } from './JapanScreen';
 
 type Word = LangAssets['words']['rows'][number];
 
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 /** SAD tile type — tiles with type 'SAD' are stripped from the word. */
 const SAD_TYPE = 'SAD';
@@ -458,6 +461,7 @@ export function JapanContainer(props: RouteParams): React.JSX.Element {
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <JapanGame challengeLevel={challengeLevel} />
     </GameShellContainer>

@@ -26,6 +26,7 @@ import {
   useShellAdvance,
   useShellRepeat,
 } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { ItalyScreen } from './ItalyScreen';
 import type { ItalyBoardCell } from './ItalyScreen';
 import { setupRound } from './setupRound';
@@ -44,7 +45,9 @@ type SourceItem =
   | { kind: 'word'; word: Word }
   | { kind: 'syllable'; syllable: Syllable };
 
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 function getCallText(item: SourceItem): string {
   return item.kind === 'word' ? item.word.wordInLOP : item.syllable.syllable;
@@ -291,6 +294,7 @@ export function ItalyContainer(props: RouteParams): React.JSX.Element {
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <ItalyGame syllableGame={syllableGame} />
     </GameShellContainer>

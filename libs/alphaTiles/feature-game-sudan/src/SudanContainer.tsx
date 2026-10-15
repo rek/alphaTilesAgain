@@ -23,13 +23,16 @@ import {
   GameShellContainer,
   useGameShell,
 } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { SudanScreen } from './SudanScreen';
 import type { SudanCell } from './SudanScreen';
 import { tileColor } from './tileColor';
 import { syllableColor } from './syllableColor';
 import type { SudanData } from './sudanPreProcess';
 
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 const FALLBACK_COLOR = '#9E9E9E';
 
@@ -166,6 +169,7 @@ export function SudanContainer(props: RouteParams): React.JSX.Element {
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <SudanGame syllableGame={syllableGame} />
     </GameShellContainer>

@@ -15,12 +15,15 @@ import {
   GameShellContainer,
   useGameShell,
 } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { UnitedStatesScreen } from './UnitedStatesScreen';
 import { setupRound } from './setupRound';
 import type { RoundData } from './setupRound';
 import type { UnitedStatesData } from './buildUnitedStatesData';
 
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 
 /**
@@ -232,6 +235,7 @@ export function UnitedStatesContainer(props: RouteParams): React.JSX.Element {
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <UnitedStatesGame challengeLevel={challengeLevel} />
     </GameShellContainer>

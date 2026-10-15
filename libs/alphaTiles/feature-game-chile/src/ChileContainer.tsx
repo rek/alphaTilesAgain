@@ -26,6 +26,7 @@ import {
   useGameShell,
   useShellAdvance,
 } from '@alphaTiles/feature-game-shell';
+import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { ChileScreen } from './ChileScreen';
 import { evaluateGuess, countGreens } from './evaluateGuess';
 import { updateKeyboard } from './updateKeyboard';
@@ -34,7 +35,9 @@ import type { ChileData } from './chilePreProcess';
 
 const DEFAULT_BASE_GUESS_COUNT = 8;
 
-type RouteParams = Record<string, string | string[] | undefined>;
+type RouteParams = Record<string, string | string[] | GameShellIcons | undefined> & {
+  icons?: GameShellIcons;
+};
 
 function buildInitialGuessTiles(guessCount: number, wordLength: number): ColorTile[] {
   return Array.from({ length: guessCount * wordLength }, () => ({ text: '', color: 'EMPTY' as const }));
@@ -257,6 +260,7 @@ export function ChileContainer(props: RouteParams): React.JSX.Element {
       showInstructionsButton={hasInstruction}
       instructionAudioId={hasInstruction ? instructionAudioId : undefined}
       confirmOnBack={false}
+      icons={props.icons}
     >
       <ChileGame challengeLevel={challengeLevel} />
     </GameShellContainer>
