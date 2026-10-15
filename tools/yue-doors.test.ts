@@ -26,6 +26,7 @@ import { buildFileInventory } from './_buildFileInventory';
 import { decodeThailandChallengeLevel } from '../libs/alphaTiles/feature-game-thailand/src/decodeThailandChallengeLevel';
 import { setupThailandRound } from '../libs/alphaTiles/feature-game-thailand/src/setupThailandRound';
 import { refAudioKey } from '../libs/alphaTiles/feature-game-thailand/src/refAudioKey';
+import { resolveMasteryAction } from '../libs/alphaTiles/feature-game-shell/src/lib/resolveMasteryAction';
 import { buildTaiwanData } from '../libs/alphaTiles/feature-game-taiwan/src/buildTaiwanData';
 import { pickTaiwanCharacters } from '../libs/alphaTiles/feature-game-taiwan/src/pickTaiwanCharacters';
 import { countForLevel } from '../libs/alphaTiles/feature-game-georgia/src/countForLevel';
@@ -312,6 +313,10 @@ describe('yue pack — every door builds rounds against real data', () => {
     });
     const errors = report.issues.filter((i) => i.severity === 'error');
     expect(errors).toEqual([]);
+  });
+
+  it('honours "After 12 checked trackers = 1": shell keeps playing at mastery (H2)', () => {
+    expect(resolveMasteryAction({ settings: assets.settings })).toBe('keep-playing');
   });
 
   it('has a builder for every door', () => {

@@ -7,7 +7,7 @@
  * - Audio replay + correct/incorrect/final sounds (@alphaTiles/data-audio)
  * - i18n strings (react-i18next via @shared/util-i18n)
  * - AppState listener — pause audio when backgrounded (GameActivity.java: Android lifecycle)
- * - after12checkedTrackers mode 1/2/3 (GameActivity.java:319-412)
+ * - "After 12 checked trackers" mode 1/2/3 (GameActivity.java:319-412)
  * - Celebration trigger (GameActivity.java:331-412) — correctSoundDuration+1800ms / 4500ms total
  * - next-uncompleted-game search (GameActivity.java:356-412)
  * - Android hardware-back → router.back()
@@ -41,10 +41,14 @@ import { GameShellScreen } from './GameShellScreen';
 import type { GameShellScreenProps, GameShellIcons } from './GameShellScreen';
 import { findNextUncompletedGame } from './findNextUncompletedGame';
 import { buildNextGameHref } from './buildNextGameHref';
+import { resolveMasteryAction } from './resolveMasteryAction';
 
 // Java timing constants — preserved verbatim (GameActivity.java:342, 412)
 const CELEBRATION_DELAY_MS = 1800; // correctSoundDuration + this before celebration shows
 const NEXT_GAME_DELAY_MS = 4500;   // total delay before navigating to next game
+// Java LoadingScreen.java:270 derives this from zz_correct's length + 200 ms;
+// it is not a pack setting. 800 ≈ the bundled chime + 200.
+const CORRECT_SOUND_DURATION_MS = 800;
 
 // Syllable-chain fallback constants (yue-composite-numerals)
 // GAP_MS: silent pause between syllables — teaching cue, not concat.
@@ -121,15 +125,12 @@ export function GameShellContainer({
   const progressEntry = useProgressEntry(gameUniqueId);
   const { trackerCount, checked12Trackers } = progressEntry;
 
-  // Read settings from lang pack
-  const after12checkedTrackers = useMemo(
-    () => assets.settings.findInt('after12checkedTrackers', 3) as 1 | 2 | 3,
+  // aa_settings "After 12 checked trackers" (1 keep playing / 2 menu / 3 celebrate)
+  const masteryAction = useMemo(
+    () => resolveMasteryAction({ settings: assets.settings }),
     [assets.settings],
   );
-  const correctSoundDuration = useMemo(
-    () => assets.settings.findInt('correctSoundDuration', 800),
-    [assets.settings],
-  );
+  const correctSoundDuration = CORRECT_SOUND_DURATION_MS;
 
   // Game color — GameActivity.java:256-258
   const gameColor = useMemo(() => {
@@ -246,12 +247,12 @@ export function GameShellContainer({
   const handleMastery = useCallback(() => {
     markChecked12(gameUniqueId);
 
-    if (after12checkedTrackers === 1) {
+    if (masteryAction === 'keep-playing') {
       // Mode 1: keep playing, nothing happens.
       return;
     }
 
-    if (after12checkedTrackers === 2) {
+    if (masteryAction === 'return-to-menu') {
       // Mode 2: return to earth after correctSoundDuration ms (GameActivity.java:319-329)
       celebrationTimerRef.current = setTimeout(() => {
         router.push('/menu');
@@ -259,7 +260,7 @@ export function GameShellContainer({
       return;
     }
 
-    if (after12checkedTrackers === 3) {
+    if (masteryAction === 'celebrate-then-next-game') {
       // Mode 3: show celebration ~1800ms after correctSoundDuration, then next game at 4500ms
       // GameActivity.java:331-412
       setInteractionLocked(true);
@@ -279,7 +280,7 @@ export function GameShellContainer({
       }, NEXT_GAME_DELAY_MS);
     }
   }, [
-    after12checkedTrackers,
+    masteryAction,
     correctSoundDuration,
     gameUniqueId,
     gameNumber,
@@ -384,7 +385,9 @@ export function GameShellContainer({
   // Advance arrow state: blue when changeArrowColor=false or not repeatLocked
   // (design.md §D1 row: onPostCreate → setAdvanceArrowToBlue)
   const changeArrowColor = useMemo(
-    () => assets.settings.findBoolean('changeArrowColor', false),
+    // Java label "Change arrow colors" (Start.java:128). Java defaults true; TS
+    // keeps false so no-right/wrong games' arrow is never stuck gray.
+    () => assets.settings.findBoolean('Change arrow colors', false),
     [assets.settings],
   );
   const advanceArrow: 'blue' | 'gray' | 'hidden' = !showAdvanceArrow
