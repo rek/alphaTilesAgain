@@ -8,6 +8,7 @@ import { Redirect, useRouter } from 'expo-router';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { contactEmailOf } from '@alphaTiles/util-contact';
 import { useActivePlayer } from '@alphaTiles/data-players';
+import { useDoors } from '@alphaTiles/data-doors';
 import { useEffectiveSettings, useSetPreference } from '@alphaTiles/data-settings';
 import { useTranslation } from '@shared/util-i18n';
 import { useTrackScreenMount } from '@shared/util-analytics';
@@ -24,6 +25,8 @@ export function SettingsContainer(): React.JSX.Element {
 
   // Feedback is mailto the pack contact: hidden while that is absent/placeholder.
   const showFeedback = contactEmailOf({ email: assets.langInfo.find('Email') }) !== undefined;
+  // The names toggle does nothing when no door has a GameName (U5).
+  const packHasGameNames = useDoors().some((door) => door.enabled && !!door.name);
 
   if (player === null) {
     return <Redirect href="/choose-player" />;
@@ -34,6 +37,7 @@ export function SettingsContainer(): React.JSX.Element {
       title={t('settings.title')}
       backLabel={t('back')}
       onBack={() => { router.back(); }}
+      showGameNamesRow={packHasGameNames}
       showGameNames={settings.showGameNames}
       showGameNamesLabel={t('settings.show_game_names')}
       showGameNamesHint={t('settings.show_game_names_hint')}
@@ -42,6 +46,7 @@ export function SettingsContainer(): React.JSX.Element {
       feedbackLabel={t('settings.feedback')}
       feedbackHint={t('settings.feedback_hint')}
       onFeedback={() => { router.push('/feedback'); }}
+      emptyLabel={t('settings.empty')}
     />
   );
 }

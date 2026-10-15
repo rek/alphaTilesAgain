@@ -7,6 +7,7 @@ function props(overrides: Partial<Parameters<typeof SettingsScreen>[0]> = {}) {
     title: 'Settings',
     backLabel: 'Back',
     onBack: jest.fn(),
+    showGameNamesRow: true,
     showGameNames: true,
     showGameNamesLabel: 'Show game names on doors',
     showGameNamesHint: 'Turn off for colour-only doors',
@@ -15,6 +16,7 @@ function props(overrides: Partial<Parameters<typeof SettingsScreen>[0]> = {}) {
     feedbackLabel: 'Send feedback',
     feedbackHint: 'Email us',
     onFeedback: jest.fn(),
+    emptyLabel: 'Nothing to set',
     ...overrides,
   };
 }
@@ -50,6 +52,19 @@ describe('SettingsScreen', () => {
   it('feedback row hidden when showFeedback is false', () => {
     const { queryByText } = render(<SettingsScreen {...props({ showFeedback: false })} />);
     expect(queryByText('Send feedback')).toBeNull();
+  });
+
+  it('hides the game-names toggle when the pack has no game names', () => {
+    const { queryByText } = render(<SettingsScreen {...props({ showGameNamesRow: false })} />);
+    expect(queryByText('Show game names on doors')).toBeNull();
+    expect(queryByText('Nothing to set')).toBeNull();
+  });
+
+  it('shows the empty label when no setting applies', () => {
+    const { getByText } = render(
+      <SettingsScreen {...props({ showGameNamesRow: false, showFeedback: false })} />,
+    );
+    expect(getByText('Nothing to set')).toBeTruthy();
   });
 
   it('back button calls onBack', () => {

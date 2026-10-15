@@ -10,7 +10,8 @@ export type SettingsScreenProps = {
   title: string;
   backLabel: string;
   onBack: () => void;
-  /** "Show game names on doors" toggle. */
+  /** "Show game names on doors" toggle; row hidden when the pack has no game names (U5). */
+  showGameNamesRow: boolean;
   showGameNames: boolean;
   showGameNamesLabel: string;
   showGameNamesHint: string;
@@ -20,6 +21,8 @@ export type SettingsScreenProps = {
   feedbackLabel: string;
   feedbackHint: string;
   onFeedback: () => void;
+  /** Shown when no setting applies to this pack. */
+  emptyLabel: string;
 };
 
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
@@ -28,6 +31,7 @@ export function SettingsScreen({
   title,
   backLabel,
   onBack,
+  showGameNamesRow,
   showGameNames,
   showGameNamesLabel,
   showGameNamesHint,
@@ -36,6 +40,7 @@ export function SettingsScreen({
   feedbackLabel,
   feedbackHint,
   onFeedback,
+  emptyLabel,
 }: SettingsScreenProps): React.JSX.Element {
   return (
     <View style={styles.container}>
@@ -55,26 +60,32 @@ export function SettingsScreen({
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Pressable
-          onPress={() => onShowGameNamesChange(!showGameNames)}
-          accessibilityRole="switch"
-          accessibilityLabel={showGameNamesLabel}
-          accessibilityHint={showGameNamesHint}
-          accessibilityState={{ checked: showGameNames }}
-          style={styles.row}
-        >
-          <View style={styles.rowText}>
-            <Text style={styles.rowLabel}>{showGameNamesLabel}</Text>
-            <Text style={styles.rowHint}>{showGameNamesHint}</Text>
-          </View>
-          <Switch
-            value={showGameNames}
-            onValueChange={onShowGameNamesChange}
-            accessibilityElementsHidden
-            importantForAccessibility="no"
-            testID="toggle-show-game-names"
-          />
-        </Pressable>
+        {!showGameNamesRow && !showFeedback ? (
+          <Text style={styles.empty}>{emptyLabel}</Text>
+        ) : null}
+
+        {showGameNamesRow ? (
+          <Pressable
+            onPress={() => onShowGameNamesChange(!showGameNames)}
+            accessibilityRole="switch"
+            accessibilityLabel={showGameNamesLabel}
+            accessibilityHint={showGameNamesHint}
+            accessibilityState={{ checked: showGameNames }}
+            style={styles.row}
+          >
+            <View style={styles.rowText}>
+              <Text style={styles.rowLabel}>{showGameNamesLabel}</Text>
+              <Text style={styles.rowHint}>{showGameNamesHint}</Text>
+            </View>
+            <Switch
+              value={showGameNames}
+              onValueChange={onShowGameNamesChange}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+              testID="toggle-show-game-names"
+            />
+          </Pressable>
+        ) : null}
 
         {showFeedback ? (
           <Pressable
@@ -143,5 +154,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     marginTop: 2,
+  },
+  empty: {
+    fontSize: 16,
+    color: '#4B5563',
+    textAlign: 'center',
+    paddingVertical: 24,
   },
 });
