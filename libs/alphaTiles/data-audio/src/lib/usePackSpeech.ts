@@ -10,7 +10,8 @@
  * `holdLock` = optional interaction lock held while a syllable chain plays
  * (the game shell passes one; screens without a lock omit it).
  */
-import { useContext, useEffect, useRef } from 'react';
+import { useContext, useRef } from 'react';
+import { useMountEffect } from '@shared/util-hooks';
 import { AudioContext } from './AudioContext';
 import type { AudioHandles } from './AudioHandles';
 import { createPackSpeech } from './createPackSpeech';
@@ -68,8 +69,8 @@ export function usePackSpeech(pack: Pack, holdLock?: () => () => void) {
   }
   const speech = speechRef.current;
 
-  // Mount-only cleanup (useMountEffect pattern): cancel pending chain steps.
-  useEffect(() => () => speech.stop(), [speech]);
+  // Unmount: cancel pending chain steps.
+  useMountEffect(() => () => speech.stop());
 
   return speech;
 }

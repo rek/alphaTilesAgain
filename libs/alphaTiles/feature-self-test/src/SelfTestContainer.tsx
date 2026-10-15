@@ -4,8 +4,9 @@
  * stored or reported (design D5) — the run lives in this component's state
  * and is gone when the screen closes.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
+import { useMountEffect } from '@shared/util-hooks';
 import { useTranslation } from '@shared/util-i18n';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useLadderDoors } from '@alphaTiles/data-doors';
@@ -62,13 +63,12 @@ function SelfTestRun({ onTryAgain }: { onTryAgain: () => void }): React.JSX.Elem
   }
 
   // mount-only: speak the first prompt; clear a pending advance on unmount.
-  useEffect(() => {
+  useMountEffect(() => {
     speakPrompt(questions[0]);
     return () => {
       if (advanceTimer.current) clearTimeout(advanceTimer.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   function onBack() {
     if (router.canGoBack()) router.back();
