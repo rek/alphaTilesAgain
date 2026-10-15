@@ -18,6 +18,11 @@ export type TaiwanScreenProps = {
   success: boolean;
   /** Pre-translated success mark, e.g. "✓". */
   successLabel: string;
+  /**
+   * Bumped to remount the writer surface and wipe any leftover user ink from
+   * rejected strokes (issue #31).
+   */
+  inkKey: number;
   /** Resets the current character's strokes (the "Clear" button). */
   onClear: () => void;
   /** Pre-translated label for the "Clear" button. */
@@ -37,6 +42,7 @@ export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
     characterVisible,
     success,
     successLabel,
+    inkKey,
     onClear,
     clearLabel,
     progressLabel,
@@ -50,6 +56,7 @@ export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
         {success ? successLabel : progressLabel}
       </Text>
       <HanziWriter
+        key={inkKey}
         writer={writer}
         loading={
           <View style={styles.feedback}>
