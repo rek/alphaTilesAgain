@@ -147,6 +147,34 @@ const DOOR_CONTENT: Record<string, DoorContent> = {
     what: 'Same picture-to-written-word format, but the distractor words come from the same topic.',
     good: 'Students who can do the easy version and need to tell related words apart.',
   },
+  'colombia-1-S': {
+    title: 'Build the word — Easy',
+    difficulty: 'Easy',
+    mechanic: 'Colombia · build from characters',
+    what: 'Shows a picture and plays the word. The student taps characters in order to build the written word. Only the word\'s own characters are on the keyboard.',
+    good: 'First steps in writing a word by its characters — ordering is the only challenge.',
+  },
+  'colombia-2-S': {
+    title: 'Build the word — Medium',
+    difficulty: 'Medium',
+    mechanic: 'Colombia · build from characters',
+    what: 'Same build-the-word format, with extra distractor characters mixed into the keyboard.',
+    good: 'Students who can order the characters and are ready to choose the right ones.',
+  },
+  'colombia-3-S': {
+    title: 'Build the word — Hard',
+    difficulty: 'Hard',
+    mechanic: 'Colombia · build from characters',
+    what: 'Same build-the-word format with an 18-character keyboard, most of them distractors.',
+    good: 'Confident readers recalling exactly which characters make up a word.',
+  },
+  'brazil-1-S': {
+    title: 'Missing character',
+    difficulty: 'Medium',
+    mechanic: 'Brazil · fill the blank',
+    what: 'Shows a picture and the written word with one character blanked out, and plays the word. The student picks the missing character from four choices.',
+    good: 'Connecting single characters to the words they belong to.',
+  },
 };
 
 const DIFFICULTY_STYLES: Record<DoorContent['difficulty'], string> = {

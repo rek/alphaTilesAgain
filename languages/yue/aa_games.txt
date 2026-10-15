@@ -18,3 +18,7 @@ Door	Country	ChallengeLevel	Color	InstructionAudio	AudioDuration	SyllOrTile	Stag
 17	Thailand	245	1	X	1999	T	-
 18	Thailand	154	9	X	1999	T	-
 19	Thailand	254	9	X	1999	T	-
+20	Colombia	1	1	X	1999	S	-
+21	Colombia	2	1	X	1999	S	-
+22	Colombia	3	1	X	1999	S	-
+23	Brazil	1	2	X	1999	S	-
