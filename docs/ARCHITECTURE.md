@@ -356,7 +356,9 @@ A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pa
 - `doorsOf(pack) → Door[]` — pure; all rows, file order, `doors[i].index === i + 1`. Tested against the real `yue` + `eng` packs.
 - `useDoors()` / `useDoor(routeParams)` — the same, memoized from `useLangAssets()`.
 
-`Door = { index, classKey, country, challengeLevel, displayLevel, variant, stage, colorHex, name?, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }` (`name` = optional `GameName` column 9 of `aa_games.txt`, the menu door label). The menu (enabled doors), `GameShellContainer` (routed door) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
+`Door = { index, classKey, country, challengeLevel, displayLevel, tier, variant, stage, colorHex, name?, instructionAudio?, tracksProgress, enabled, progressKey(playerId) }` (`name` = optional `GameName` column 9 of `aa_games.txt`, the menu door label). The menu (enabled doors), `GameShellContainer` (routed door) and every game container (via the shell's `{(door) => …}` child) consume Doors. `index` is the raw row position and the route `doorIndex` — display sorts (difficulty ladder) must never renumber it. A new per-door fact (game name, tier) is one field in `doorsOf`.
+
+**Difficulty ladder** (#52): `tier` (0–6) = `tierForGame(classKey)` from `@alphaTiles/util-curriculum-tiers` (engine-owned, #13's ladder, unmapped → 3). `ladderOrder(doors)` / `useLadderDoors()` sort by `(tier, index)` — the menu grid order and the play order. Menu shows a "Level N" badge per door and a "?" where-to-start sheet.
 
 ### Door progress
 
@@ -367,7 +369,7 @@ A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pa
 - `nextUnmasteredDoor({ order, from, playerId, progress })` — first enabled, unmastered door after `from` in `order`, wrapping; null → menu.
 - Hooks: `useDoorProgressOf(playerId) → (door) => DoorProgress` (menu; ladder placement) and `useDoorProgress(door, playerId) → DoorProgress & { recordCorrect, nextDoor }` (shell; reads "After 12 checked trackers" from effective settings).
 
-Menu visuals, the shell's tracker bar / score / mastery action and the next-door search all consume it. Play order is file order today; the difficulty ladder (#52) passes its tier order to `nextUnmasteredDoor` (one line in `useDoorProgress`). Tested against the real `yue` pack + the real store (in-memory AsyncStorage).
+Menu visuals, the shell's tracker bar / score / mastery action and the next-door search all consume it. Play order is the difficulty ladder: `useDoorProgress` passes `useLadderDoors()` to `nextUnmasteredDoor`. Tested against the real `yue` pack + the real store (in-memory AsyncStorage).
 
 ### Game-class registry and the one game route
 
