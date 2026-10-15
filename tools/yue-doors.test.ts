@@ -25,6 +25,7 @@ import { buildFileInventory } from './_buildFileInventory';
 
 import { decodeThailandChallengeLevel } from '../libs/alphaTiles/feature-game-thailand/src/decodeThailandChallengeLevel';
 import { setupThailandRound } from '../libs/alphaTiles/feature-game-thailand/src/setupThailandRound';
+import { refAudioKey } from '../libs/alphaTiles/feature-game-thailand/src/refAudioKey';
 import { buildTaiwanData } from '../libs/alphaTiles/feature-game-taiwan/src/buildTaiwanData';
 import { pickTaiwanCharacters } from '../libs/alphaTiles/feature-game-taiwan/src/pickTaiwanCharacters';
 import { countForLevel } from '../libs/alphaTiles/feature-game-georgia/src/countForLevel';
@@ -135,6 +136,17 @@ const BUILDERS: Record<string, Builder> = {
       if ('error' in r) throw new Error(`round ${roundIndex}: ${r.error}`);
       expect(r.choices).toHaveLength(4);
       expect(r.correctIndex).toBeGreaterThanOrEqual(0);
+      // H1: TILE/SYLLABLE_AUDIO refs must resolve to a bound clip under the
+      // key the container plays (tile.base / syllable, not AudioName).
+      const { category, key } = refAudioKey(r.ref);
+      if (refType === 'TILE_AUDIO') {
+        expect(category).toBe('tile');
+        expect(assets.audio.tiles[key]).toBeDefined();
+      }
+      if (refType === 'SYLLABLE_AUDIO') {
+        expect(category).toBe('syllable');
+        expect(assets.audio.syllables[key]).toBeDefined();
+      }
     }
   },
 

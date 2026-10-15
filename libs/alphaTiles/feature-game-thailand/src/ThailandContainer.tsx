@@ -6,9 +6,11 @@ import {
   GameShellContainer,
   useGameShell,
   useShellAdvance,
+  useShellRepeat,
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { decodeThailandChallengeLevel } from './decodeThailandChallengeLevel';
+import { refAudioKey } from './refAudioKey';
 import { setupThailandRound } from './setupThailandRound';
 import type { ThailandRound, ThailandRef, ThailandChoice } from './setupThailandRound';
 import { stripInstructionCharacters } from './stripInstructionCharacters';
@@ -124,15 +126,18 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     };
   }, []);
 
+  // Audio maps are keyed by tile.base / wordInLWC / syllable (see refAudioKey),
+  // not the pack AudioName column — keying by audioName silenced TILE_AUDIO doors.
   const playRefAudio = useCallback(
     (ref: ThailandRef) => {
-      if (ref.kind === 'tile') {
-        audio.playTile(ref.tileRow.audioName);
-      } else if (ref.kind === 'word') {
-        audio.playWord(ref.wordRow.wordInLWC);
+      const { category, key } = refAudioKey(ref);
+      if (category === 'tile') {
+        audio.playTile(key);
+      } else if (category === 'word' && ref.kind === 'word') {
+        audio.playWord(key);
         shell.setRefWord({ wordInLOP: ref.wordRow.wordInLOP, wordInLWC: ref.wordRow.wordInLWC });
-      } else if (ref.kind === 'syllable') {
-        audio.playSyllable(ref.syllableRow.audioName);
+      } else if (category === 'syllable') {
+        audio.playSyllable(key);
       }
     },
     [audio, shell],
@@ -140,9 +145,10 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
 
   const getRefDurationMs = useCallback(
     (ref: ThailandRef): number | undefined => {
-      if (ref.kind === 'tile') return audio.getTileDuration(ref.tileRow.audioName);
-      if (ref.kind === 'word') return audio.getWordDuration(ref.wordRow.wordInLWC);
-      return audio.getSyllableDuration(ref.syllableRow.audioName);
+      const { category, key } = refAudioKey(ref);
+      if (category === 'tile') return audio.getTileDuration(key);
+      if (category === 'word') return audio.getWordDuration(key);
+      return audio.getSyllableDuration(key);
     },
     [audio],
   );
@@ -246,6 +252,11 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     if (!round) return;
     playRefAudio(round.ref);
   }, [round, playRefAudio]);
+
+  // Shell repeat button replays tile/syllable refs (they never set
+  // shell.refWord, so the default replayWord would be a no-op). Word refs keep
+  // the default replayWord (syllable-chain fallback for composite numerals).
+  useShellRepeat(round?.ref.kind === 'word' ? null : onRefPress);
 
   if (error === 'insufficient-content') {
     return (
