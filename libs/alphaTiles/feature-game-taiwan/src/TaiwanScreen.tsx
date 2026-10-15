@@ -7,7 +7,8 @@
  * only children. <HanziWriter.QuizMistakeHighlighter /> is always rendered so
  * the upstream's `showHintAfterMisses` mechanism has a place to draw.
  */
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
 import { HanziWriter, type useHanziWriter } from '@jamsch/react-native-hanzi-writer';
 
 export type TaiwanScreenProps = {
@@ -35,6 +36,14 @@ export type TaiwanScreenProps = {
   retryLabel: string;
   /** Pre-translated label for the loading state. */
   loadingLabel: string;
+  /** Pre-translated screen-reader label for the writing canvas, e.g. 「寫『人』」. */
+  canvasLabel: string;
+  /** Pre-translated "wrong stroke" message, shown while `missed` (U11). */
+  missLabel: string;
+  /** True briefly after a rejected stroke: red message instead of the progress line. */
+  missed: boolean;
+  /** Picture + text of a pack word containing the character (context); absent → hidden. */
+  context?: { image: ImageSourcePropType | undefined; word: string };
 };
 
 export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
@@ -51,45 +60,62 @@ export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
     progressLabel,
     retryLabel,
     loadingLabel,
+    canvasLabel,
+    missLabel,
+    missed,
+    context,
   } = props;
   const characterColor = success ? '#2e7d32' : '#1565c0';
   return (
     // Raw touch / pointer events bubble here alongside the writer's pan
     // gesture, so a new stroke can cancel a pending ink reset (C5).
     <View style={styles.root} onTouchStart={onStrokeStart} onPointerDown={onStrokeStart}>
-      <Text style={[styles.progress, success && styles.progressSuccess]}>
-        {success ? successLabel : progressLabel}
-      </Text>
-      <HanziWriter
-        key={inkKey}
-        writer={writer}
-        loading={
-          <View style={styles.feedback}>
-            <Text>{loadingLabel}</Text>
-          </View>
-        }
-        error={
-          <View style={styles.feedback}>
-            <Pressable
-              onPress={writer.refetch}
-              style={styles.retryBtn}
-              accessibilityRole="button"
-              accessibilityLabel={retryLabel}
-            >
-              <Text style={styles.retryText}>{retryLabel}</Text>
-            </Pressable>
-          </View>
-        }
-        style={styles.writer}
+      {context ? (
+        <View style={styles.context} accessibilityElementsHidden importantForAccessibility="no">
+          {context.image ? (
+            <Image source={context.image} style={styles.contextImage} resizeMode="contain" />
+          ) : null}
+          <Text style={styles.contextWord}>{context.word}</Text>
+        </View>
+      ) : null}
+      <Text
+        style={[styles.progress, success && styles.progressSuccess, missed && !success && styles.progressMiss]}
+        accessibilityLiveRegion="polite"
       >
-        <HanziWriter.GridLines color="#e5e5e5" />
-        <HanziWriter.Svg>
-          {outlineVisible ? <HanziWriter.Outline color="#bdbdbd" /> : null}
-          {characterVisible ? <HanziWriter.Character color={characterColor} radicalColor="#2e7d32" /> : null}
-          <HanziWriter.QuizStrokes color="#1565c0" radicalColor="#2e7d32" />
-          <HanziWriter.QuizMistakeHighlighter color="#e53935" strokeDuration={400} />
-        </HanziWriter.Svg>
-      </HanziWriter>
+        {success ? successLabel : missed ? missLabel : progressLabel}
+      </Text>
+      <View accessibilityRole="image" accessibilityLabel={canvasLabel}>
+        <HanziWriter
+          key={inkKey}
+          writer={writer}
+          loading={
+            <View style={styles.feedback}>
+              <Text>{loadingLabel}</Text>
+            </View>
+          }
+          error={
+            <View style={styles.feedback}>
+              <Pressable
+                onPress={writer.refetch}
+                style={styles.retryBtn}
+                accessibilityRole="button"
+                accessibilityLabel={retryLabel}
+              >
+                <Text style={styles.retryText}>{retryLabel}</Text>
+              </Pressable>
+            </View>
+          }
+          style={styles.writer}
+        >
+          <HanziWriter.GridLines color="#e5e5e5" />
+          <HanziWriter.Svg>
+            {outlineVisible ? <HanziWriter.Outline color="#bdbdbd" /> : null}
+            {characterVisible ? <HanziWriter.Character color={characterColor} radicalColor="#2e7d32" /> : null}
+            <HanziWriter.QuizStrokes color="#1565c0" radicalColor="#2e7d32" />
+            <HanziWriter.QuizMistakeHighlighter color="#e53935" strokeDuration={400} />
+          </HanziWriter.Svg>
+        </HanziWriter>
+      </View>
       <Pressable
         onPress={onClear}
         disabled={success}
@@ -116,6 +142,23 @@ const styles = StyleSheet.create({
   progress: {
     fontSize: 18,
     fontWeight: '600',
+    color: '#424242',
+  },
+  progressMiss: {
+    color: '#c62828',
+  },
+  context: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  contextImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 6,
+  },
+  contextWord: {
+    fontSize: 22,
     color: '#424242',
   },
   progressSuccess: {

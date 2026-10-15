@@ -7,6 +7,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useHanziWriter } from '@jamsch/react-native-hanzi-writer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -35,6 +36,8 @@ const SUCCESS_PAUSE_MS = 900;
 // After a rejected stroke, wipe any leftover user ink this long afterwards
 // (after the 200 ms upstream fade and the 400 ms mistake-hint animation).
 const INK_RESET_MS = 600;
+// How long the "not quite" message stays after a rejected stroke (U11).
+const MISS_MESSAGE_MS = 1500;
 
 type CLConfig = { outlineVisible: boolean; characterVisible: boolean; leniency: number };
 
@@ -96,6 +99,18 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
   );
 
   const currentChar = roundChars[currentCharIndex] ?? roundChars[0] ?? '';
+
+  // Context for the learner (U11): a pack word containing the character, with
+  // its picture — the same word pack speech falls back to for the audio.
+  const context = useMemo(() => {
+    if (!currentChar) return undefined;
+    const word = assets.words.rows.find((w) => w.wordInLOP.includes(currentChar));
+    if (!word) return undefined;
+    return {
+      word: word.wordInLOP,
+      image: assets.images.words[word.wordInLWC] as ImageSourcePropType | undefined,
+    };
+  }, [assets.words.rows, assets.images.words, currentChar]);
 
   // Syllable-first with compound-word fallback (yue-writing-audio § D1, D6 —
   // Curtis confirmed on issue #27 that repeat and completion play the same audio).
@@ -159,6 +174,9 @@ function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
       clearLabel={t('taiwan.clear')}
       successLabel={t('taiwan.well_done')}
       loadingLabel={t('loading_short')}
+      canvasLabel={t('taiwan.canvas', { char: currentChar })}
+      missLabel={t('taiwan.miss')}
+      context={context}
       onComplete={handleCharComplete}
     />
   );
@@ -183,6 +201,9 @@ function CharRound({
   clearLabel,
   successLabel,
   loadingLabel,
+  canvasLabel,
+  missLabel,
+  context,
   onComplete,
 }: {
   character: string;
@@ -194,6 +215,9 @@ function CharRound({
   clearLabel: string;
   successLabel: string;
   loadingLabel: string;
+  canvasLabel: string;
+  missLabel: string;
+  context: { image: ImageSourcePropType | undefined; word: string } | undefined;
   onComplete: (strokeCount: number) => void;
 }): React.JSX.Element {
   const writer = useHanziWriter({
@@ -216,6 +240,18 @@ function CharRound({
     [],
   );
   useMountEffect(() => inkReset.cancel);
+  // Rejected stroke → brief red "not quite" line (the upstream only fades the
+  // ink; the stroke hint appears after MISTAKE_HINT_THRESHOLD misses).
+  const [missed, setMissed] = useState(false);
+  const missTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useMountEffect(() => () => {
+    if (missTimerRef.current) clearTimeout(missTimerRef.current);
+  });
+  const flashMiss = useCallback(() => {
+    if (missTimerRef.current) clearTimeout(missTimerRef.current);
+    setMissed(true);
+    missTimerRef.current = setTimeout(() => setMissed(false), MISS_MESSAGE_MS);
+  }, []);
   const characterClass = writer.characterClass;
 
   // Single source of truth for quiz config. Used by both the mount auto-start
@@ -230,12 +266,13 @@ function CharRound({
       onMistake() {
         // Rejected strokes must not linger on screen (issue #31).
         inkReset.schedule();
+        flashMiss();
       },
       onComplete() {
         onComplete(cls.strokes.length);
       },
     });
-  }, [writer, cl.leniency, onComplete, inkReset]);
+  }, [writer, cl.leniency, onComplete, inkReset, flashMiss]);
 
   // Auto-start once the upstream signals load. `characterClass` flips null →
   // Character one render after the loader resolves; the ref guard ensures we
@@ -269,6 +306,10 @@ function CharRound({
       progressLabel={progressLabel}
       retryLabel={retryLabel}
       loadingLabel={loadingLabel}
+      canvasLabel={canvasLabel}
+      missLabel={missLabel}
+      missed={missed}
+      context={context}
     />
   );
 }
