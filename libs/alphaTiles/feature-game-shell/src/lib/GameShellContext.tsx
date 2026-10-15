@@ -18,6 +18,14 @@ export type GameShellContextValue = {
   incrementPointsAndTracker: (isCorrect: boolean, points?: number) => void;
   /** Replay the current reference word audio. */
   replayWord: () => void;
+  /**
+   * Play any word's audio with the syllable-chain fallback for words that
+   * have no recording (yue composite numerals). Use instead of
+   * `audio.playWord`. Returns expected playback ms, or undefined if unknown.
+   */
+  playWordAudio: (word: { wordInLOP: string; wordInLWC: string }) => number | undefined;
+  /** Expected ms `playWordAudio(word)` would play (word clip or syllable chain). */
+  getWordAudioDuration: (word: { wordInLOP: string; wordInLWC: string }) => number | undefined;
   /** True while audio is playing or another lock is held. */
   interactionLocked: boolean;
   /** Mechanics set this to block interaction during animation etc. */

@@ -21,6 +21,7 @@ import {
   usePrecompute,
 } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
+import { useTranslation } from '@shared/util-i18n';
 import {
   GameShellContainer,
   useGameShell,
@@ -91,6 +92,7 @@ function GeorgiaGame({
 }): React.JSX.Element {
   const shell = useGameShell();
   const audio = useAudio();
+  const { t } = useTranslation();
   const assets = useLangAssets();
   const data = usePrecompute<GeorgiaData>('georgia');
 
@@ -210,17 +212,17 @@ function GeorgiaGame({
         visibleGameButtons,
         revealedText: '',
       });
-      shell.setRefWord({
+      const refWord = {
         wordInLOP: chosen.word.wordInLOP,
         wordInLWC: chosen.word.wordInLWC,
-      });
-      // Java line 161: playActiveWordClip(false).
-      audio.playWord(chosen.word.wordInLWC);
-      // S-mode only: after the word clip, play the isolated first-syllable
+      };
+      shell.setRefWord(refWord);
+      // Java line 161: playActiveWordClip(false). Shell falls back to a
+      // syllable chain for words with no recording (composite numerals).
+      // S-mode only: after the word audio, play the isolated first-syllable
       // clip so the learner hears the sound the round is asking for.
       const wordMs =
-        audio.getWordDuration(chosen.word.wordInLWC) ??
-        SYLLABLE_AFTER_WORD_FALLBACK_MS;
+        shell.playWordAudio(refWord) ?? SYLLABLE_AFTER_WORD_FALLBACK_MS;
       syllableTimerRef.current = setTimeout(() => {
         syllableTimerRef.current = null;
         if (!isMountedRef.current) return;
@@ -288,12 +290,13 @@ function GeorgiaGame({
       visibleGameButtons,
       revealedText: '',
     });
-    shell.setRefWord({
+    const refWord = {
       wordInLOP: pick.word.wordInLOP,
       wordInLWC: pick.word.wordInLWC,
-    });
+    };
+    shell.setRefWord(refWord);
     // Java line 161: playActiveWordClip(false).
-    audio.playWord(pick.word.wordInLWC);
+    shell.playWordAudio(refWord);
   }, [
     shell,
     audio,
@@ -330,6 +333,9 @@ function GeorgiaGame({
     (index: number) => {
       if (!round) return;
       if (shell.interactionLocked) return;
+      // Round already solved: the correct button stays tappable (not grayed),
+      // so without this a re-tap re-scores once the replay unlocks (M2).
+      if (round.revealedText !== '') return;
       const choice = round.choices[index];
       if (!choice || choice.grayed || choice.text === '') return;
 
@@ -390,7 +396,7 @@ function GeorgiaGame({
   return (
     <GeorgiaScreen
       wordImage={wordImage}
-      wordLabel={round.word.wordInLWC}
+      wordLabel={t('chrome:a11y.active_word_picture')}
       revealedText={round.revealedText}
       choices={round.choices}
       gridShape={round.visibleGameButtons}

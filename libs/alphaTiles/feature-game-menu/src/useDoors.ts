@@ -47,11 +47,14 @@ export function buildDoors({
 }: BuildDoorsOpts): { pageDoors: DoorData[]; allDoors: DoorData[]; totalPages: number; doorsPerPage: number } {
   const doorsPerPage = Math.min(MAX_DOORS_PER_PAGE, Math.max(MIN_DOORS_PER_PAGE, doorsPerPageSetting));
 
-  const filteredRows = isGameEnabled
-    ? gameRows.filter((g) => isGameEnabled(g.classKey))
-    : gameRows;
+  // Keep each row's position in aa_games: the shell resolves the door as
+  // games.rows[doorIndex - 1], so numbering after filtering would point
+  // later doors at the wrong row whenever a game (e.g. Taiwan) is hidden.
+  const filteredRows = gameRows
+    .map((game, rowIndex) => ({ game, rowIndex }))
+    .filter(({ game }) => !isGameEnabled || isGameEnabled(game.classKey));
 
-  const allDoors: DoorData[] = filteredRows.map((game, i) => {
+  const allDoors: DoorData[] = filteredRows.map(({ game, rowIndex }) => {
     const { classKey } = game;
     const colorIndex = parseInt(game.color, 10) || 0;
     const colorHex = colorsHex[colorIndex] ?? '#666666';
@@ -63,7 +66,7 @@ export function buildDoors({
       : '';
     const trackerCount = trackerCounts[key] ?? 0;
     const door: DoorData = {
-      index: i + 1,
+      index: rowIndex + 1,
       classKey,
       challengeLevel: game.challengeLevel,
       colorHex,

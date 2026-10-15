@@ -95,7 +95,7 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
       if (item.kind === 'word') {
         audio.playWord(item.word.wordInLWC);
       } else {
-        audio.playSyllable(item.syllable.audioName);
+        audio.playSyllable(item.syllable.syllable); // map keyed by syllable (resolveAudio)
       }
     },
     [audio],
@@ -104,7 +104,7 @@ function ItalyGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
   const getCallDurationMs = useCallback(
     (item: SourceItem): number | undefined => {
       if (item.kind === 'word') return audio.getWordDuration(item.word.wordInLWC);
-      return audio.getSyllableDuration(item.syllable.audioName);
+      return audio.getSyllableDuration(item.syllable.syllable);
     },
     [audio],
   );

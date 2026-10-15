@@ -151,15 +151,15 @@ export function useAudio() {
 
   // ── Duration getters ──────────────────────────────────────────────────
   const getTileDuration = (id: string): number | undefined => {
-    return handles?.durations.get(id);
+    return handles?.durations.tiles.get(id);
   };
 
   const getWordDuration = (id: string): number | undefined => {
-    return handles?.durations.get(id);
+    return handles?.durations.words.get(id);
   };
 
   const getSyllableDuration = (id: string): number | undefined => {
-    return handles?.durations.get(id);
+    return handles?.durations.syllables.get(id);
   };
 
   // ── Web unlock (design D9) ────────────────────────────────────────────

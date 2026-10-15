@@ -128,6 +128,15 @@ describe('loadLangPack', () => {
     expect(assets.audio.tiles['a']).toBe(123);
   });
 
+  it('binds the menu clip zzz_earth when shipped, though no game row references it', () => {
+    const withEarth = {
+      ...baseManifest,
+      audio: { ...baseManifest.audio, instructions: { zzz_china: 789, zzz_earth: 790 } },
+    };
+    expect(loadLangPack(withEarth).audio.instructions['zzz_earth']).toBe(790);
+    expect('zzz_earth' in loadLangPack(baseManifest).audio.instructions).toBe(false);
+  });
+
   it('happy path: images.words keyed by wordInLWC', () => {
     const assets = loadLangPack(baseManifest);
     expect(assets.images.words['act']).toBe(100);

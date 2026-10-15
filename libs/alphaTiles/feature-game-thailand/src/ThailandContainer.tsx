@@ -2,13 +2,16 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
+import { useTranslation } from '@shared/util-i18n';
 import {
   GameShellContainer,
   useGameShell,
   useShellAdvance,
+  useShellRepeat,
 } from '@alphaTiles/feature-game-shell';
 import type { GameShellIcons } from '@alphaTiles/feature-game-shell';
 import { decodeThailandChallengeLevel } from './decodeThailandChallengeLevel';
+import { refAudioKey } from './refAudioKey';
 import { setupThailandRound } from './setupThailandRound';
 import type { ThailandRound, ThailandRef, ThailandChoice } from './setupThailandRound';
 import { stripInstructionCharacters } from './stripInstructionCharacters';
@@ -61,7 +64,11 @@ function buildRefDisplay(
         textColor: '#000000',
       };
     case 'WORD_IMAGE':
-      return { type: 'image', imageSource, wordLabel: ref.kind === 'word' ? ref.wordRow.wordInLWC : '' };
+      return {
+        type: 'image',
+        imageSource,
+        wordLabel: ref.kind === 'word' ? stripInstructionCharacters(ref.wordRow.wordInLOP) : '',
+      };
     case 'WORD_AUDIO':
       return { type: 'audio', refType: ref.display };
     case 'SYLLABLE_TEXT':
@@ -90,7 +97,7 @@ function buildChoiceDisplay(
   }
   const wordRow = choice.wordRow;
   if (imageSource !== undefined) {
-    return { type: 'image', imageSource, wordLabel: wordRow.wordInLWC };
+    return { type: 'image', imageSource, wordLabel: stripInstructionCharacters(wordRow.wordInLOP) };
   }
   return { type: 'text', text: stripInstructionCharacters(wordRow.wordInLOP) };
 }
@@ -99,6 +106,7 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   const shell = useGameShell();
   const audio = useAudio();
   const assets = useLangAssets();
+  const { t } = useTranslation();
 
   const { distractorStrategy, refType, choiceType } = decodeThailandChallengeLevel(challengeLevel);
 
@@ -124,15 +132,20 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     };
   }, []);
 
+  // Audio maps are keyed by tile.base / wordInLWC / syllable (see refAudioKey),
+  // not the pack AudioName column — keying by audioName silenced TILE_AUDIO doors.
   const playRefAudio = useCallback(
     (ref: ThailandRef) => {
-      if (ref.kind === 'tile') {
-        audio.playTile(ref.tileRow.audioName);
-      } else if (ref.kind === 'word') {
-        audio.playWord(ref.wordRow.wordInLWC);
-        shell.setRefWord({ wordInLOP: ref.wordRow.wordInLOP, wordInLWC: ref.wordRow.wordInLWC });
-      } else if (ref.kind === 'syllable') {
-        audio.playSyllable(ref.syllableRow.audioName);
+      const { category, key } = refAudioKey(ref);
+      if (category === 'tile') {
+        audio.playTile(key);
+      } else if (category === 'word' && ref.kind === 'word') {
+        const word = { wordInLOP: ref.wordRow.wordInLOP, wordInLWC: ref.wordRow.wordInLWC };
+        shell.setRefWord(word);
+        // Shell fallback: syllable chain for words with no recording (M3).
+        shell.playWordAudio(word);
+      } else if (category === 'syllable') {
+        audio.playSyllable(key);
       }
     },
     [audio, shell],
@@ -140,11 +153,14 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
 
   const getRefDurationMs = useCallback(
     (ref: ThailandRef): number | undefined => {
-      if (ref.kind === 'tile') return audio.getTileDuration(ref.tileRow.audioName);
-      if (ref.kind === 'word') return audio.getWordDuration(ref.wordRow.wordInLWC);
-      return audio.getSyllableDuration(ref.syllableRow.audioName);
+      const { category, key } = refAudioKey(ref);
+      if (category === 'tile') return audio.getTileDuration(key);
+      if (category === 'word' && ref.kind === 'word') {
+        return shell.getWordAudioDuration({ wordInLOP: ref.wordRow.wordInLOP, wordInLWC: key });
+      }
+      return audio.getSyllableDuration(key);
     },
-    [audio],
+    [audio, shell],
   );
 
   const startRound = useCallback(() => {
@@ -247,6 +263,10 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
     playRefAudio(round.ref);
   }, [round, playRefAudio]);
 
+  // Shell repeat button replays the ref (tile/syllable refs never set
+  // shell.refWord, so the default replayWord would be a no-op for them).
+  useShellRepeat(onRefPress);
+
   if (error === 'insufficient-content') {
     return (
       <ThailandScreen
@@ -279,23 +299,30 @@ function ThailandGame({ challengeLevel }: { challengeLevel: number }): React.JSX
   const choiceDisplays = round.choices.map((choice): ThailandChoiceDisplay => {
     if (choice.kind === 'word' && choiceType === 'WORD_IMAGE') {
       const imgSrc = assets.images.words[choice.wordRow.wordInLWC] as ImageSourcePropType | undefined;
-      return { type: 'image', imageSource: imgSrc, wordLabel: choice.wordRow.wordInLWC };
+      return {
+        type: 'image',
+        imageSource: imgSrc,
+        wordLabel: stripInstructionCharacters(choice.wordRow.wordInLOP),
+      };
     }
     return buildChoiceDisplay(choice, undefined);
   }) as [ThailandChoiceDisplay, ThailandChoiceDisplay, ThailandChoiceDisplay, ThailandChoiceDisplay];
 
+  // a11y: localized text, never the LWC slug (which reads out the answer).
   const choiceLabels = round.choices.map((c): string => {
     if (c.kind === 'tile') return c.displayText;
     if (c.kind === 'syllable') return c.syllableRow.syllable;
-    return c.wordRow.wordInLWC;
+    return stripInstructionCharacters(c.wordRow.wordInLOP);
   }) as [string, string, string, string];
 
+  // Audio refs get a generic "play" label and image refs a generic picture
+  // label, so the screen reader doesn't announce the answer.
   const refLabel =
-    round.ref.kind === 'tile'
-      ? round.ref.tileRow.base
-      : round.ref.kind === 'word'
-      ? round.ref.wordRow.wordInLWC
-      : round.ref.syllableRow.syllable;
+    refDisplay.type === 'audio'
+      ? t('chrome:a11y.play_again')
+      : refDisplay.type === 'image'
+      ? t('chrome:a11y.active_word_picture')
+      : refDisplay.text;
 
   // Java 588-595: encode the per-choice correct-tap feedback colours.
   //   - WORD_IMAGE: the THREE non-correct buttons get a white background.

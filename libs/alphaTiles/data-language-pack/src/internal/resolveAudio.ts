@@ -25,6 +25,12 @@ const NO_AUDIO_SENTINEL = 'zz_no_audio_needed';
  */
 const NO_INSTRUCTION_AUDIO_SENTINELS = new Set(['naWhileMPOnly', 'X']);
 
+/**
+ * Screen-level instruction clips not referenced by any aa_games row (Java
+ * Earth.java plays zzz_earth). Bound when the pack ships the file; optional.
+ */
+const SCREEN_INSTRUCTION_KEYS = ['zzz_earth'];
+
 type ManifestAudio = {
   tiles: Record<string, number>;
   words: Record<string, number>;
@@ -118,6 +124,10 @@ export function resolveAudio(
       });
     }
     instructions[key] = h;
+  }
+  for (const key of SCREEN_INSTRUCTION_KEYS) {
+    const h = manifestAudio.instructions[key];
+    if (h !== undefined) instructions[key] = h;
   }
 
   return { tiles, words, syllables, instructions };

@@ -119,10 +119,14 @@ function isGreyStyle(style: string): boolean {
   return false;
 }
 
-main().catch((e) => {
-  console.error('[build-stroke-data-deva] fatal:', e);
-  process.exit(1);
-});
+// Only run as a CLI — importing for tests (extractStrokes) must not start
+// network fetches, which leaked handles and hung the jest worker.
+if (require.main === module || process.argv[1]?.includes('build-stroke-data-deva')) {
+  main().catch((e) => {
+    console.error('[build-stroke-data-deva] fatal:', e);
+    process.exit(1);
+  });
+}
 
 async function main(): Promise<void> {
   ensureDir(CACHE_DIR);

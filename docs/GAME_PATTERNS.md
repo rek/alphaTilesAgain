@@ -8,10 +8,12 @@ Latest entry: **game-taiwan stroke-UX fix** (2026-06-04, issue #31) — never le
 
 ## Syllable-chain audio fallback in shell (from yue-composite-numerals)
 
-When a word entry has no `audio/words/<lwc>.mp3` but its `wordInLOP` fully decomposes into known syllables, the shell's `replayWord` plays each constituent syllable's clip in sequence with a `GAP_MS` natural pause (`150 ms` initial value). Pattern lives in `GameShellContainer.replayWord` — branches on `audio.getWordDuration(lwc)`:
+When a word entry has no `audio/words/<lwc>.mp3` but its `wordInLOP` fully decomposes into known syllables, the shell plays each constituent syllable's clip in sequence with a `GAP_MS` natural pause (`150 ms` initial value). Pattern lives in `GameShellContainer.playWordAudio` (exposed on `useGameShell()`; `replayWord` delegates to it) — branches on `audio.getWordDuration(lwc)`:
 
 - **A — handle present:** `audio.playWord(lwc)` (legacy path).
-- **B — handle absent + decomposable:** schedule recursive `setTimeout(playStep(i+1), getSyllableDuration(syll) ?? FALLBACK_MS + GAP_MS)`, lock interaction for the chain's lifetime, unlock in the final timer step.
+- **B — handle absent + decomposable:** schedule recursive `setTimeout(playStep(i+1), getSyllableDuration(syll) ?? FALLBACK_MS + GAP_MS)`, lock interaction for the chain's lifetime, then **restore the lock state found at chain start** (a chain replayed after a correct answer must not unlock a solved round — Georgia point-farming bug).
+
+**Games must call `shell.playWordAudio(word)` (and `shell.getWordAudioDuration(word)` for timers), never `audio.playWord` directly** — the direct call is silent for words with no recording, which in WORD_AUDIO rounds makes the round unanswerable.
 - **C — handle absent + indecomposable:** fall through to `audio.playWord` (warn-once no-op).
 
 Critical: this is **NOT smoothed concat**. Each syllable's leading/trailing micro-silence is preserved and the `GAP_MS` gap is intentional — pedagogically the gap *is* a teaching cue ("this is X, this is Y, together = XY"). Concatenating clips end-to-end was rejected for tone-sandhi and connected-speech reasons.

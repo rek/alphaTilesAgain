@@ -95,7 +95,7 @@ function ColombiaGame({
   const shell = useGameShell();
   const {
     setRefWord, setInteractionLocked, incrementPointsAndTracker,
-    replayWord, interactionLocked,
+    replayWord, interactionLocked, playWordAudio,
   } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
@@ -222,9 +222,9 @@ function ColombiaGame({
       wordInLOP: nextRound.word.wordInLOP,
       wordInLWC: nextRound.word.wordInLWC,
     });
-    audio.playWord(nextRound.word.wordInLWC);
+    playWordAudio(nextRound.word);
   }, [
-    setRefWord, setInteractionLocked, audio, assets.tiles.rows, assets.syllables.rows, assets.keys.rows,
+    setRefWord, setInteractionLocked, playWordAudio, assets.tiles.rows, assets.syllables.rows, assets.keys.rows,
     scriptType, placeholderChar, variant, challengeLevel, colorList, sadStrings,
     pickNextWord,
   ]);

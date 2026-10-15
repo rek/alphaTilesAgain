@@ -7,7 +7,7 @@
  * - Audio replay + correct/incorrect/final sounds (@alphaTiles/data-audio)
  * - i18n strings (react-i18next via @shared/util-i18n)
  * - AppState listener — pause audio when backgrounded (GameActivity.java: Android lifecycle)
- * - after12checkedTrackers mode 1/2/3 (GameActivity.java:319-412)
+ * - "After 12 checked trackers" mode 1/2/3 (GameActivity.java:319-412)
  * - Celebration trigger (GameActivity.java:331-412) — correctSoundDuration+1800ms / 4500ms total
  * - next-uncompleted-game search (GameActivity.java:356-412)
  * - Android hardware-back → router.back()
@@ -41,10 +41,14 @@ import { GameShellScreen } from './GameShellScreen';
 import type { GameShellScreenProps, GameShellIcons } from './GameShellScreen';
 import { findNextUncompletedGame } from './findNextUncompletedGame';
 import { buildNextGameHref } from './buildNextGameHref';
+import { resolveMasteryAction } from './resolveMasteryAction';
 
 // Java timing constants — preserved verbatim (GameActivity.java:342, 412)
 const CELEBRATION_DELAY_MS = 1800; // correctSoundDuration + this before celebration shows
 const NEXT_GAME_DELAY_MS = 4500;   // total delay before navigating to next game
+// Java LoadingScreen.java:270 derives this from zz_correct's length + 200 ms;
+// it is not a pack setting. 800 ≈ the bundled chime + 200.
+const CORRECT_SOUND_DURATION_MS = 800;
 
 // Syllable-chain fallback constants (yue-composite-numerals)
 // GAP_MS: silent pause between syllables — teaching cue, not concat.
@@ -121,15 +125,12 @@ export function GameShellContainer({
   const progressEntry = useProgressEntry(gameUniqueId);
   const { trackerCount, checked12Trackers } = progressEntry;
 
-  // Read settings from lang pack
-  const after12checkedTrackers = useMemo(
-    () => assets.settings.findInt('after12checkedTrackers', 3) as 1 | 2 | 3,
+  // aa_settings "After 12 checked trackers" (1 keep playing / 2 menu / 3 celebrate)
+  const masteryAction = useMemo(
+    () => resolveMasteryAction({ settings: assets.settings }),
     [assets.settings],
   );
-  const correctSoundDuration = useMemo(
-    () => assets.settings.findInt('correctSoundDuration', 800),
-    [assets.settings],
-  );
+  const correctSoundDuration = CORRECT_SOUND_DURATION_MS;
 
   // Game color — GameActivity.java:256-258
   const gameColor = useMemo(() => {
@@ -156,7 +157,14 @@ export function GameShellContainer({
   );
 
   // In-flight state (not persisted — mirrors GameActivity.java fields)
-  const [interactionLocked, setInteractionLocked] = useState(false);
+  const [interactionLocked, setInteractionLockedState] = useState(false);
+  // Synchronous mirror so a syllable chain can restore the lock it found
+  // (state is stale inside the callbacks that start a chain).
+  const interactionLockedRef = useRef(false);
+  const setInteractionLocked = useCallback((locked: boolean) => {
+    interactionLockedRef.current = locked;
+    setInteractionLockedState(locked);
+  }, []);
   const [showCelebration, setShowCelebration] = useState(false);
   const [refWord, setRefWord] = useState<{ wordInLOP: string; wordInLWC: string } | null>(null);
   const [repeatLocked, setRepeatLocked] = useState(true);
@@ -170,6 +178,19 @@ export function GameShellContainer({
     if (chainTimerRef.current) {
       clearTimeout(chainTimerRef.current);
       chainTimerRef.current = null;
+    }
+  }, []);
+
+  // Leaving the game must cancel pending mastery navigation: a pushed menu keeps
+  // this screen mounted, so unmount cleanup alone never clears these timers.
+  const clearMasteryTimers = useCallback(() => {
+    if (celebrationTimerRef.current) {
+      clearTimeout(celebrationTimerRef.current);
+      celebrationTimerRef.current = null;
+    }
+    if (nextGameTimerRef.current) {
+      clearTimeout(nextGameTimerRef.current);
+      nextGameTimerRef.current = null;
     }
   }, []);
 
@@ -213,6 +234,7 @@ export function GameShellContainer({
       if (confirmOnBack) {
         // Future: show confirm dialog. For v1 none needed — fall through.
       }
+      clearMasteryTimers(); // e.g. pending mode-2 menu return
       if (router.canGoBack()) {
         router.back();
       } else {
@@ -221,7 +243,7 @@ export function GameShellContainer({
       return true;
     });
     return () => sub.remove();
-  }, [router, confirmOnBack, showCelebration]);
+  }, [router, confirmOnBack, showCelebration, clearMasteryTimers]);
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -246,20 +268,20 @@ export function GameShellContainer({
   const handleMastery = useCallback(() => {
     markChecked12(gameUniqueId);
 
-    if (after12checkedTrackers === 1) {
+    if (masteryAction === 'keep-playing') {
       // Mode 1: keep playing, nothing happens.
       return;
     }
 
-    if (after12checkedTrackers === 2) {
+    if (masteryAction === 'return-to-menu') {
       // Mode 2: return to earth after correctSoundDuration ms (GameActivity.java:319-329)
       celebrationTimerRef.current = setTimeout(() => {
-        router.push('/menu');
+        router.dismissTo('/menu');
       }, correctSoundDuration);
       return;
     }
 
-    if (after12checkedTrackers === 3) {
+    if (masteryAction === 'celebrate-then-next-game') {
       // Mode 3: show celebration ~1800ms after correctSoundDuration, then next game at 4500ms
       // GameActivity.java:331-412
       setInteractionLocked(true);
@@ -275,11 +297,14 @@ export function GameShellContainer({
           useProgressStore.getState().progress,
           playerId,
         );
-        router.push(buildNextGameHref(nextGame));
+        // replace (not push) so the finished game leaves the stack.
+        const href = buildNextGameHref(nextGame);
+        if (href === '/menu') router.dismissTo('/menu');
+        else router.replace(href);
       }, NEXT_GAME_DELAY_MS);
     }
   }, [
-    after12checkedTrackers,
+    masteryAction,
     correctSoundDuration,
     gameUniqueId,
     gameNumber,
@@ -288,6 +313,7 @@ export function GameShellContainer({
     audio,
     markChecked12,
     router,
+    setInteractionLocked,
   ]);
 
   // ── incrementPointsAndTracker — exposed to mechanics via context ──────────
@@ -311,50 +337,79 @@ export function GameShellContainer({
     [country, gameUniqueId, incrementPoints, incrementTracker, handleMastery],
   );
 
-  // replayWord — three branches:
+  // Expected ms playWordAudio(word) plays: word clip, or syllable chain + gaps.
+  const getWordAudioDuration = useCallback(
+    (word: { wordInLOP: string; wordInLWC: string }): number | undefined => {
+      const wordMs = audio.getWordDuration(word.wordInLWC);
+      if (wordMs !== undefined) return wordMs;
+      const parts = parseWordIntoSyllables(word.wordInLOP, assets.syllables.rows);
+      if (parts.length === 0) return undefined;
+      return parts.reduce(
+        (sum, p, i) => sum + (audio.getSyllableDuration(p.syllable) ?? FALLBACK_MS) + (i > 0 ? GAP_MS : 0),
+        0,
+      );
+    },
+    [audio, assets.syllables.rows],
+  );
+
+  // playWordAudio — plays a word's audio, three branches:
   //   A: per-word audio handle exists → play it (legacy single-clip path).
   //   B: no word handle but LOP fully decomposes into known syllables →
   //      schedule a syllable chain via setTimeout timer-ref. Locks interaction
-  //      for the chain's total duration; unlocks on the final timer step.
+  //      for the chain's duration, then restores the lock state it found
+  //      (so a chain after a correct answer can't unlock a solved round).
   //   C: neither resolves → no-op (audio layer's warn-once handles the log).
+  // Returns the expected playback length in ms (undefined when unknown) so
+  // mechanics can schedule follow-up audio/advance timers.
+  const playWordAudio = useCallback(
+    (word: { wordInLOP: string; wordInLWC: string }): number | undefined => {
+      clearChain();
+      const wordMs = audio.getWordDuration(word.wordInLWC);
+      if (wordMs !== undefined) {
+        audio.playWord(word.wordInLWC);
+        return wordMs;
+      }
+      const parts = parseWordIntoSyllables(word.wordInLOP, assets.syllables.rows);
+      if (parts.length === 0) {
+        // Branch C: fall through to playWord which emits the warn-once message.
+        audio.playWord(word.wordInLWC);
+        return undefined;
+      }
+      const lockedBefore = interactionLockedRef.current;
+      setInteractionLocked(true);
+      const durations = parts.map((p) => audio.getSyllableDuration(p.syllable) ?? FALLBACK_MS);
+      const playStep = (i: number) => {
+        audio.playSyllable(parts[i].syllable);
+        if (i + 1 < parts.length) {
+          chainTimerRef.current = setTimeout(() => playStep(i + 1), durations[i] + GAP_MS);
+        } else {
+          chainTimerRef.current = setTimeout(() => {
+            chainTimerRef.current = null;
+            setInteractionLocked(lockedBefore);
+          }, durations[i]);
+        }
+      };
+      playStep(0);
+      return getWordAudioDuration(word);
+    },
+    [audio, assets.syllables.rows, clearChain, setInteractionLocked, getWordAudioDuration],
+  );
+
+  // replayWord — replays the current reference word (shell repeat button).
   const replayWord = useCallback(() => {
     if (!refWord) return;
-    clearChain();
-    if (audio.getWordDuration(refWord.wordInLWC) !== undefined) {
-      audio.playWord(refWord.wordInLWC);
-      return;
-    }
-    const parts = parseWordIntoSyllables(refWord.wordInLOP, assets.syllables.rows);
-    if (parts.length === 0) {
-      // Branch C: fall through to playWord which emits the warn-once message.
-      audio.playWord(refWord.wordInLWC);
-      return;
-    }
-    setInteractionLocked(true);
-    const playStep = (i: number) => {
-      const syll = parts[i];
-      audio.playSyllable(syll.syllable);
-      const dur = audio.getSyllableDuration(syll.syllable) ?? FALLBACK_MS;
-      if (i + 1 < parts.length) {
-        chainTimerRef.current = setTimeout(() => playStep(i + 1), dur + GAP_MS);
-      } else {
-        chainTimerRef.current = setTimeout(() => {
-          chainTimerRef.current = null;
-          setInteractionLocked(false);
-        }, dur);
-      }
-    };
-    playStep(0);
-  }, [refWord, audio, assets.syllables.rows, clearChain]);
+    playWordAudio(refWord);
+  }, [refWord, playWordAudio]);
 
   const handleBackPress = useCallback(() => {
     if (showCelebration) return;
+    clearMasteryTimers();
     if (router.canGoBack()) {
       router.back();
     } else {
       router.replace('/menu');
     }
-  }, [router, showCelebration]);
+  }, [router, showCelebration, clearMasteryTimers]);
 
   const handleReplayPress = useCallback(() => {
     if (onRepeatRef.current) {
@@ -374,17 +429,21 @@ export function GameShellContainer({
     setRepeatLocked(false);
     setInteractionLocked(false);
     onAdvanceRef.current?.();
-  }, []);
+  }, [setInteractionLocked]);
 
   const handleCelebrationBack = useCallback(() => {
+    clearMasteryTimers();
     setShowCelebration(false);
-    router.push('/menu');
-  }, [router]);
+    // dismissTo pops back to the existing menu instead of stacking another.
+    router.dismissTo('/menu');
+  }, [router, clearMasteryTimers]);
 
   // Advance arrow state: blue when changeArrowColor=false or not repeatLocked
   // (design.md §D1 row: onPostCreate → setAdvanceArrowToBlue)
   const changeArrowColor = useMemo(
-    () => assets.settings.findBoolean('changeArrowColor', false),
+    // Java label "Change arrow colors" (Start.java:128). Java defaults true; TS
+    // keeps false so no-right/wrong games' arrow is never stuck gray.
+    () => assets.settings.findBoolean('Change arrow colors', false),
     [assets.settings],
   );
   const advanceArrow: 'blue' | 'gray' | 'hidden' = !showAdvanceArrow
@@ -428,6 +487,8 @@ export function GameShellContainer({
   const contextValue = useMemo(() => ({
     incrementPointsAndTracker,
     replayWord,
+    playWordAudio,
+    getWordAudioDuration,
     interactionLocked,
     setInteractionLocked,
     refWord,
@@ -439,6 +500,8 @@ export function GameShellContainer({
   }), [
     incrementPointsAndTracker,
     replayWord,
+    playWordAudio,
+    getWordAudioDuration,
     interactionLocked,
     setInteractionLocked,
     refWord,

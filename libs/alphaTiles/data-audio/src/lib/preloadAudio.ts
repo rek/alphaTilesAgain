@@ -146,7 +146,13 @@ export async function preloadAudio({
     }
   }
 
-  const durations = new Map<string, number>();
+  // Separate map per category — keys collide across categories (L4).
+  const durations = {
+    tiles: new Map<string, number>(),
+    words: new Map<string, number>(),
+    syllables: new Map<string, number>(),
+    instructions: new Map<string, number>(),
+  };
 
   // Count total load targets for progress reporting.
   const tileEntries = audioConfig.hasTileAudio ? Object.entries(manifest.tiles) : [];
@@ -166,10 +172,10 @@ export async function preloadAudio({
 
   // Load all categories in parallel, each internally bounded by CONCURRENCY.
   const [tilesMap, wordsMap, syllablesMap, instructionsMap] = await Promise.all([
-    loadCategory(tileEntries, durations, itemDone),
-    loadCategory(wordEntries, durations, itemDone),
-    loadCategory(syllableEntries, durations, itemDone),
-    loadCategory(instructionEntries, durations, itemDone),
+    loadCategory(tileEntries, durations.tiles, itemDone),
+    loadCategory(wordEntries, durations.words, itemDone),
+    loadCategory(syllableEntries, durations.syllables, itemDone),
+    loadCategory(instructionEntries, durations.instructions, itemDone),
   ]);
 
   // Load base chimes (D5 — ship with the app, not the pack).

@@ -86,7 +86,8 @@ function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
       setDisabled(true);
       shell.setInteractionLocked(true);
       try {
-        await audio.playTile(tile.audioForThisTileType);
+        // Tile audio map is keyed by tile.base (resolveAudio), not audioName.
+        await audio.playTile(tile.base);
       } finally {
         setDisabled(false);
         shell.setInteractionLocked(false);
@@ -104,7 +105,8 @@ function SudanGame({ syllableGame }: { syllableGame: string }): React.JSX.Elemen
       setDisabled(true);
       shell.setInteractionLocked(true);
       try {
-        await audio.playSyllable(syl.audioName);
+        // Syllable audio map is keyed by syllable text (resolveAudio).
+        await audio.playSyllable(syl.syllable);
       } finally {
         setDisabled(false);
         shell.setInteractionLocked(false);

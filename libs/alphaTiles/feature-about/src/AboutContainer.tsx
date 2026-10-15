@@ -23,8 +23,10 @@ import { AboutScreen } from './AboutScreen';
 const PROJECT_URL = 'https://rek.github.io/alphaTilesAgain/';
 /** Public issue tracker for bug reports and feedback. */
 const ISSUES_URL = 'https://github.com/rek/alphaTilesAgain/issues';
-/** Project-wide privacy policy. Empty string hides the link. */
+/** Fallback privacy policy when the pack has none. Empty string hides the link. */
 const PRIVACY_URL = '';
+/** RFC 2606 reserved domains — placeholder contacts, never shown. */
+const PLACEHOLDER_EMAIL = /@(example\.(com|org|net)|.*\.example)$/i;
 
 function isAbsent(value: string | undefined): boolean {
   return value === undefined || value === '' || value.toLowerCase() === 'none';
@@ -58,10 +60,15 @@ export function AboutContainer(): React.JSX.Element {
   const creditsText = langInfo.find('Audio and image credits') ?? '';
   const secondaryCreditsText = langInfo.find('Audio and image credits (lang 2)') ?? '';
   const email = langInfo.find('Email');
+  // Java About.java:87 — link from aa_langinfo "Privacy Policy", hidden by the
+  // "Hide privacy policy" setting (About.java:26,98).
+  const packPrivacy = langInfo.find('Privacy Policy');
+  const privacyUrl = isAbsent(packPrivacy) ? PRIVACY_URL : (packPrivacy ?? '');
+  const hidePrivacy = assets.settings.findBoolean('Hide privacy policy', false);
 
   // Visibility flags per design.md §D7
-  const showEmail = !isAbsent(email);
-  const showPrivacy = PRIVACY_URL !== '';
+  const showEmail = !isAbsent(email) && !PLACEHOLDER_EMAIL.test(email ?? '');
+  const showPrivacy = privacyUrl !== '' && !hidePrivacy;
   const showSecondaryCredits = !isAbsent(secondaryCreditsText);
 
   // Mirroring Java About.java names_plus_countryA vs B:
@@ -84,7 +91,7 @@ export function AboutContainer(): React.JSX.Element {
 
   const onWebsiteTap = (): void => { openUrl(PROJECT_URL); };
   const onReportIssueTap = (): void => { openUrl(ISSUES_URL); };
-  const onPrivacyTap = (): void => { openUrl(PRIVACY_URL); };
+  const onPrivacyTap = (): void => { openUrl(privacyUrl); };
 
   return (
     <AboutScreen

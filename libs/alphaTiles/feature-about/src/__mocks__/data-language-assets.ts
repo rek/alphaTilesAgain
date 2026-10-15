@@ -15,5 +15,8 @@ export function useLangAssets() {
         return map[key];
       },
     },
+    settings: {
+      findBoolean: (_label: string, defaultValue: boolean) => defaultValue,
+    },
   };
 }

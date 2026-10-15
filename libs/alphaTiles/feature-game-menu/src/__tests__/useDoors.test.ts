@@ -22,6 +22,19 @@ const baseOpts = {
 };
 
 describe('buildDoors', () => {
+  it('hidden games keep later door indexes pointing at their own row', () => {
+    const result = buildDoors({
+      ...baseOpts,
+      gameRows: [makeGame(0), { ...makeGame(1), classKey: 'taiwan' }, makeGame(2)],
+      doorsPerPageSetting: 20,
+      isGameEnabled: (k) => k !== 'taiwan',
+    });
+    expect(result.allDoors.map((d) => [d.index, d.classKey])).toEqual([
+      [1, 'country0'],
+      [3, 'country2'],
+    ]);
+  });
+
   it('empty game list → totalPages=1, pageDoors=[]', () => {
     const result = buildDoors({ ...baseOpts, gameRows: [], doorsPerPageSetting: 20 });
     expect(result.totalPages).toBe(1);

@@ -172,11 +172,10 @@ function IraqGame({ challengeLevel }: { challengeLevel: number }): React.JSX.Ele
       isAnimatingRef.current = true;
       shell.setInteractionLocked(true);
 
-      // 1. Play tile audio (fire-and-forget). Java uses tile.audioForThisTileType.
-      const audioId = tile.audioName;
-      if (audioId) {
-        audio.playTile(audioId);
-      }
+      // 1. Play tile audio (fire-and-forget). Java uses tile.audioForThisTileType;
+      // the TS tile audio map is keyed by tile.base (resolveAudio), not audioName.
+      const audioId = tile.base;
+      audio.playTile(audioId);
 
       // 2. Resolve the word for this tile (CL2 iconicWord override → scanSetting fallback).
       let chosenWord: Word | null = resolveIconicWordOverride(tile, wordRows, challengeLevel);
