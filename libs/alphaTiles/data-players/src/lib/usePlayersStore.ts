@@ -32,6 +32,8 @@ type PlayersActions = {
   /** Sets activePlayerId and stamps lastPlayedAt = Date.now(). */
   selectPlayer: (id: string) => void;
   clearActivePlayer: () => void;
+  /** Record that the player has seen the "where to start" sheet. */
+  markPlacementGuidanceSeen: (id: string) => void;
 };
 
 export const usePlayersStore = create<PlayersState & PlayersActions>()(
@@ -81,6 +83,14 @@ export const usePlayersStore = create<PlayersState & PlayersActions>()(
 
       clearActivePlayer() {
         set({ activePlayerId: null });
+      },
+
+      markPlacementGuidanceSeen(id) {
+        set((state) => ({
+          players: state.players.map((p) =>
+            p.id === id ? { ...p, seenPlacementGuidance: true } : p,
+          ),
+        }));
       },
     }),
     {

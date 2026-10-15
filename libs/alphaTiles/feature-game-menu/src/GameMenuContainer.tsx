@@ -22,6 +22,15 @@ export function GameMenuContainer(): React.JSX.Element {
   const { speak } = usePackSpeech({ words: assets.words.rows, syllables: assets.syllables.rows });
 
   const [guidanceOpen, setGuidanceOpen] = useState(false);
+  // First menu visit per player: the "where to start" sheet opens by itself
+  // once; closing it records it as seen (U8).
+  const guidanceVisible = guidanceOpen || (player !== null && !player.seenPlacementGuidance);
+  function closeGuidance(): void {
+    setGuidanceOpen(false);
+    if (player !== null && !player.seenPlacementGuidance) {
+      usePlayersStore.getState().markPlacementGuidanceSeen(player.id);
+    }
+  }
   const menuDoors = useMenuDoors(player?.id ?? null);
   const { showGameNames } = useEffectiveSettings();
   // Ladder order (tier, then file order); "Level N" badge per door. Names off
@@ -85,6 +94,22 @@ export function GameMenuContainer(): React.JSX.Element {
     'in-process': t('menu.a11y.door_state.in_process'),
     mastery: t('menu.a11y.door_state.mastery'),
   };
+  // No-right/wrong doors (Malaysia, Sudan, Iraq…) are drawn filled (Java
+  // parity) but are not "in progress" — announce them as free exploration (U10).
+  const freeExplore = t('menu.a11y.door_state.free_explore');
+
+  // Guidance sheet lists only the step bands this pack has doors in (U10).
+  const tiers = allDoors.map((d) => d.tier);
+  const minTier = tiers.length > 0 ? Math.min(...tiers) : 0;
+  const maxTier = tiers.length > 0 ? Math.max(...tiers) : 0;
+  const hasTierIn = (lo: number, hi: number) => tiers.some((n) => n >= lo && n <= hi);
+  const bands = [
+    { lo: 0, hi: 1, title: t('placementGuidance.band_0_1_title'), body: t('placementGuidance.band_0_1') },
+    { lo: 2, hi: 3, title: t('placementGuidance.band_2_3_title'), body: t('placementGuidance.band_2_3') },
+    { lo: 4, hi: 6, title: t('placementGuidance.band_4_6_title'), body: t('placementGuidance.band_4_6') },
+  ]
+    .filter((b) => hasTierIn(b.lo, b.hi))
+    .map(({ title, body }) => ({ title, body }));
 
   const commonProps = {
     playerName: player.name,
@@ -102,17 +127,13 @@ export function GameMenuContainer(): React.JSX.Element {
     onAudioInstructions,
     onSettings,
     guidance: {
-      visible: guidanceOpen,
+      visible: guidanceVisible,
       onOpen: () => setGuidanceOpen(true),
-      onClose: () => setGuidanceOpen(false),
+      onClose: closeGuidance,
       strings: {
         title: t('placementGuidance.title'),
-        intro: t('placementGuidance.intro'),
-        bands: [
-          { title: t('placementGuidance.band_0_1_title'), body: t('placementGuidance.band_0_1') },
-          { title: t('placementGuidance.band_2_3_title'), body: t('placementGuidance.band_2_3') },
-          { title: t('placementGuidance.band_4_6_title'), body: t('placementGuidance.band_4_6') },
-        ],
+        intro: t('placementGuidance.intro', { min: minTier, max: maxTier }),
+        bands,
         tip: t('placementGuidance.tip'),
         close: t('placementGuidance.close'),
       },
@@ -134,10 +155,17 @@ export function GameMenuContainer(): React.JSX.Element {
       audioInstructions: t('menu.tabs.audio'),
       settings: t('menu.tabs.settings'),
     },
-    doorLabel: (door: { index: number; name?: string; visual: keyof typeof doorStates; levelLabel?: string }) => {
+    doorLabel: (door: {
+      index: number;
+      name?: string;
+      visual: keyof typeof doorStates;
+      tracksProgress: boolean;
+      levelLabel?: string;
+    }) => {
+      const state = door.tracksProgress ? doorStates[door.visual] : freeExplore;
       const label = door.name
-        ? t('menu.a11y.door_named', { index: door.index, name: door.name, state: doorStates[door.visual] })
-        : t('menu.a11y.door', { index: door.index, state: doorStates[door.visual] });
+        ? t('menu.a11y.door_named', { index: door.index, name: door.name, state })
+        : t('menu.a11y.door', { index: door.index, state });
       return door.levelLabel ? t('menu.a11y.door_with_level', { door: label, level: door.levelLabel }) : label;
     },
   };

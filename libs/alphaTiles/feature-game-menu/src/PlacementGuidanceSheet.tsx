@@ -11,8 +11,9 @@ export type PlacementGuidanceStrings = {
 
 /**
  * "Where to start" explainer for the difficulty ladder (placement-guidance).
- * Static reference text in level bands; no "seen" flag — reopens unchanged
- * every time. Pure presenter: strings pre-translated by the container.
+ * Reference text in level bands (only bands the pack has doors in). Opens by
+ * itself once per player (container tracks `seenPlacementGuidance`), then
+ * from the "?" button. Pure presenter: strings pre-translated by the container.
  */
 export function PlacementGuidanceSheet({
   visible,
