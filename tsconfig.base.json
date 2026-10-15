@@ -68,6 +68,10 @@
       "@alphaTiles/feature-settings": [
         "libs/alphaTiles/feature-settings/src/index.ts"
       ],
+      "@alphaTiles/feature-feedback": [
+        "libs/alphaTiles/feature-feedback/src/index.ts"
+      ],
+      "@alphaTiles/util-contact": ["libs/alphaTiles/util-contact/src/index.ts"],
       "@alphaTiles/feature-share": [
         "libs/alphaTiles/feature-share/src/index.ts"
       ],

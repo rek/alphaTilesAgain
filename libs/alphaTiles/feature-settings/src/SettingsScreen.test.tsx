@@ -11,6 +11,10 @@ function props(overrides: Partial<Parameters<typeof SettingsScreen>[0]> = {}) {
     showGameNamesLabel: 'Show game names on doors',
     showGameNamesHint: 'Turn off for colour-only doors',
     onShowGameNamesChange: jest.fn(),
+    showFeedback: true,
+    feedbackLabel: 'Send feedback',
+    feedbackHint: 'Email us',
+    onFeedback: jest.fn(),
     ...overrides,
   };
 }
@@ -34,6 +38,18 @@ describe('SettingsScreen', () => {
     const { getByRole } = render(<SettingsScreen {...p} />);
     fireEvent.press(getByRole('switch'));
     expect(p.onShowGameNamesChange).toHaveBeenCalledWith(true);
+  });
+
+  it('feedback row shows and opens feedback when enabled', () => {
+    const p = props();
+    const { getByText } = render(<SettingsScreen {...p} />);
+    fireEvent.press(getByText('Send feedback'));
+    expect(p.onFeedback).toHaveBeenCalledTimes(1);
+  });
+
+  it('feedback row hidden when showFeedback is false', () => {
+    const { queryByText } = render(<SettingsScreen {...props({ showFeedback: false })} />);
+    expect(queryByText('Send feedback')).toBeNull();
   });
 
   it('back button calls onBack', () => {

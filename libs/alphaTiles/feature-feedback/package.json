@@ -1,0 +1,21 @@
+{
+  "name": "@alphaTiles/feature-feedback",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@alphaTiles/data-language-assets": "*",
+    "@alphaTiles/util-contact": "*",
+    "@expo/vector-icons": "^15.0.3",
+    "@shared/util-analytics": "*",
+    "@shared/util-i18n": "*",
+    "expo-application": "*",
+    "expo-constants": "*",
+    "expo-router": "~55.0.12",
+    "react": "*",
+    "react-native": "*"
+  }
+}

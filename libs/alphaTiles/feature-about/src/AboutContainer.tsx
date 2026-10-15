@@ -15,6 +15,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
+import { contactEmailOf } from '@alphaTiles/util-contact';
 import { useTranslation } from '@shared/util-i18n';
 import { useTrackScreenMount } from '@shared/util-analytics';
 import { AboutScreen } from './AboutScreen';
@@ -25,8 +26,6 @@ const PROJECT_URL = 'https://rek.github.io/alphaTilesAgain/';
 const ISSUES_URL = 'https://github.com/rek/alphaTilesAgain/issues';
 /** Fallback privacy policy when the pack has none. Empty string hides the link. */
 const PRIVACY_URL = '';
-/** RFC 2606 reserved domains — placeholder contacts, never shown. */
-const PLACEHOLDER_EMAIL = /@(example\.(com|org|net)|.*\.example)$/i;
 
 function isAbsent(value: string | undefined): boolean {
   return value === undefined || value === '' || value.toLowerCase() === 'none';
@@ -67,7 +66,7 @@ export function AboutContainer(): React.JSX.Element {
   const hidePrivacy = assets.settings.findBoolean('Hide privacy policy', false);
 
   // Visibility flags per design.md §D7
-  const showEmail = !isAbsent(email) && !PLACEHOLDER_EMAIL.test(email ?? '');
+  const showEmail = contactEmailOf({ email }) !== undefined;
   const showPrivacy = privacyUrl !== '' && !hidePrivacy;
   const showSecondaryCredits = !isAbsent(secondaryCreditsText);
 

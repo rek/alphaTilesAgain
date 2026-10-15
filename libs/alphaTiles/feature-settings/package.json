@@ -7,7 +7,9 @@
   "types": "./src/index.d.ts",
   "dependencies": {
     "tslib": "^2.3.0",
+    "@alphaTiles/data-language-assets": "*",
     "@alphaTiles/data-players": "*",
+    "@alphaTiles/util-contact": "*",
     "@alphaTiles/data-settings": "*",
     "@expo/vector-icons": "^15.0.3",
     "@shared/util-analytics": "*",

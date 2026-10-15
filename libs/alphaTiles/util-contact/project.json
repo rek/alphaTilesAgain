@@ -1,0 +1,19 @@
+{
+  "name": "util-contact",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/alphaTiles/util-contact/src",
+  "projectType": "library",
+  "tags": ["type:util", "scope:alphaTiles"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/alphaTiles/util-contact",
+        "main": "libs/alphaTiles/util-contact/src/index.ts",
+        "tsConfig": "libs/alphaTiles/util-contact/tsconfig.lib.json",
+        "assets": ["libs/alphaTiles/util-contact/*.md"]
+      }
+    }
+  }
+}
