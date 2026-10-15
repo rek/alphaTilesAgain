@@ -8,55 +8,18 @@
  *
  * Documented fallbacks:
  *   - word with no recording → syllable chain (yue composite numerals)
- *   - syllable with no recording → first word containing it (Taiwan hanzi)
+ *   - syllable with no recording → first word containing it (Taiwan hanzi,
+ *     opt-in `orContainingWord`)
  *
  * Run: npx jest -c tools/jest.config.ts tools/yue-speech.test.ts
  */
-import * as fs from 'fs';
-import * as path from 'path';
-import { loadLangPack } from '../libs/alphaTiles/data-language-pack/src/loadLangPack';
-import type { LangAssets } from '../libs/alphaTiles/data-language-pack/src/LangAssets';
 import { buildTaiwanData } from '../libs/alphaTiles/feature-game-taiwan/src/buildTaiwanData';
-import { readRawFiles } from './_readRawFiles';
+import { loadPackAssets } from './_loadPackAssets';
 import { packSpeechFor } from './_packSpeechFor';
 
-const LANG_DIR = path.join(__dirname, '../languages/yue');
 const COMPOSITE_NUMERALS = ['zz_20', 'zz_30', 'zz_50', 'zz_1000000', 'zz_203'];
 
-function stems(dir: string): Record<string, number> {
-  const out: Record<string, number> = {};
-  if (!fs.existsSync(dir)) return out;
-  let n = 1;
-  for (const f of fs.readdirSync(dir).sort()) out[f.replace(/\.[^.]+$/, '')] = n++;
-  return out;
-}
-
-function loadYue(): LangAssets {
-  const strokes: Record<string, unknown> = {};
-  for (const f of fs.readdirSync(path.join(LANG_DIR, 'strokes')).filter((x) => x.endsWith('.json'))) {
-    strokes[f.replace(/\.json$/, '')] = { strokes: ['M0 0'], medians: [] };
-  }
-  return loadLangPack({
-    code: 'yue',
-    rawFiles: readRawFiles(LANG_DIR),
-    fonts: { primary: 1, primaryBold: null },
-    images: {
-      icon: 1,
-      splash: 1,
-      avatars: Object.values(stems(path.join(LANG_DIR, 'images/avatars'))),
-      avataricons: Object.values(stems(path.join(LANG_DIR, 'images/avataricons'))),
-      tiles: {},
-      words: stems(path.join(LANG_DIR, 'images/words')),
-    },
-    audio: {
-      tiles: stems(path.join(LANG_DIR, 'audio/tiles')),
-      words: stems(path.join(LANG_DIR, 'audio/words')),
-      syllables: stems(path.join(LANG_DIR, 'audio/syllables')),
-      instructions: stems(path.join(LANG_DIR, 'audio/instructions')),
-    },
-    strokes: strokes as LangAssets['strokes'],
-  });
-}
+const loadYue = () => loadPackAssets('yue', { strokes: 'stub' });
 
 type Item = Parameters<ReturnType<typeof packSpeechFor>['speech']['speak']>[0];
 
@@ -162,7 +125,7 @@ describe('yue pack speech (real pack)', () => {
     });
 
     it('every traceable char speaks (syllable, else a word containing it)', () => {
-      const silent = data.availableTiles.filter((ch) => hear({ syllable: { syllable: ch } }).length === 0);
+      const silent = data.availableTiles.filter((ch) => hear({ syllable: { syllable: ch }, orContainingWord: true }).length === 0);
       expect(silent).toEqual([]);
     });
   });
