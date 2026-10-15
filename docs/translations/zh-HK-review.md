@@ -4,6 +4,7 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 
 - **Source:** `locales/en.json` → **draft:** `locales/zh-HK.json`
 - **Keys:** 132. **Flagged for decision (⚠):** 18.
+- **Keys:** 133. **Flagged for decision (⚠):** 19.
 - **Locale selection:** the yue build always shows zh-HK UI text, whatever the phone's language. Any key missing from zh-HK falls back to English.
 - **Scope:** UI text only. Game content (tiles, words, instructions audio) comes from the language pack and is not covered here.
 
@@ -113,6 +114,8 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/menu/tabs/resources` | Library | 資源庫 | ⚠ English is "Library"; 資源庫 (resource library) chosen to match the Resources screen. Alternative: 圖書館 (literal library) seems wrong here. |
 | `chrome/menu/tabs/audio` | Listen | 聆聽 | Tab plays audio instructions. Alternative: 收聽. |
 | `chrome/menu/tabs/settings` | Settings | 設定 | New (#44). Tab opening the Settings screen. |
+| `chrome/menu/self_test` | Check yourself | 自我測驗 | ⚠ New (#42). Button below the doors that opens the self-test (10 questions, own score at the end, nothing saved). Alternative: 考考自己 (friendlier, more colloquial). |
+| `chrome/menu/a11y/self_test` | Check yourself: {{n}} questions, score not saved | 自我測驗：{{n}} 條題目，分數不會儲存 | New (#42). Screen-reader label for that button; {{n}} = 10. |
 | `chrome/settings/title` | Settings | 設定 | New (#44). Settings screen heading. |
 | `chrome/settings/show_game_names` | Show game names on doors | 在門上顯示遊戲名稱 | ⚠ New (#44). First settings toggle. "Door" = 門 as elsewhere; reviewers may prefer 遊戲門. |
 | `chrome/settings/show_game_names_hint` | Turn off to show only coloured, numbered doors (for children who find games by colour). | 關閉後，門上只顯示顏色和號碼（適合靠顏色找遊戲的兒童）。 | New (#44). Explains the toggle to parents/teachers. |
@@ -135,6 +138,14 @@ Draft Traditional Chinese (Hong Kong) translation of the app's UI text (`chrome`
 | `chrome/placementGuidance/band_4_6` | Spell words, take them apart and solve word puzzles. For confident readers. | 拼出詞語、拆解詞語和解答文字謎題。適合有信心的讀者。 | New (#52). In yue, "spell" = build a word from its characters. |
 | `chrome/placementGuidance/tip` | Move up a level when the learner gets most answers right. A tick on a door means it is mastered. | 學習者答對大部分題目時，便可升上一階。門上有剔號，表示已掌握該遊戲。 | New (#52). 剔號 = tick (HK usage); matches `door_state/mastery` 已掌握. |
 | `chrome/placementGuidance/close` | Close | 關閉 | New (#52). |
+| `chrome/selfTest/title` | Check yourself | 自我測驗 | New (#42). Self-test screen heading; same term as `menu/self_test`. |
+| `chrome/selfTest/progress` | Question {{current}} of {{total}} | 第 {{current}} 題，共 {{total}} 題 | New (#42). Shown at the top during the test. |
+| `chrome/selfTest/end_title` | End of test | 測驗完成 | New (#42). Heading of the score screen. Literal 測驗結束 also possible; 完成 sounds less abrupt. |
+| `chrome/selfTest/score` | {{correct}} / {{total}} | {{correct}} / {{total}} | New (#42). Large score, e.g. 8 / 10. Not translated. |
+| `chrome/selfTest/a11y/score` | {{correct}} correct out of {{total}} | 共 {{total}} 題，答對 {{correct}} 題 | New (#42). Screen-reader reading of the score. |
+| `chrome/selfTest/try_again` | Try again | 再試一次 | New (#42). Starts a new set of questions. Same wording as `retry`. |
+| `chrome/selfTest/back_to_menu` | Back to menu | 返回主選單 | New (#42). |
+| `chrome/selfTest/empty` | No questions are available for this language yet. | 這個語言暫時沒有題目。 | New (#42). Only seen if the language pack has no question games. |
 | `chrome/a11y/tile` | Tile {{letter}} | 字塊 {{letter}} |  |
 | `chrome/a11y/word` | Word {{word}} | 詞語 {{word}} |  |
 | `chrome/a11y/active_word_picture` | Picture of Active Word | 目前詞語的圖片 |  |

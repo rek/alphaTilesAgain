@@ -95,7 +95,8 @@
         "settings": "Settings",
         "toggle_layout": "Toggle layout",
         "door_with_level": "{{door}}, {{level}}",
-        "how_levels_work": "How steps work"
+        "how_levels_work": "How steps work",
+        "self_test": "Check yourself: {{n}} questions, score not saved"
       },
       "tabs": {
         "about": "About",
@@ -103,7 +104,8 @@
         "resources": "Library",
         "audio": "Listen",
         "settings": "Settings"
-      }
+      },
+      "self_test": "Check yourself"
     },
     "settings": {
       "title": "Settings",
@@ -132,6 +134,18 @@
       "band_4_6": "Spell words, take them apart and solve word puzzles. For confident readers.",
       "tip": "Move up a step when the learner gets most answers right. A tick on a door means it is mastered.",
       "close": "Close"
+    },
+    "selfTest": {
+      "title": "Check yourself",
+      "progress": "Question {{current}} of {{total}}",
+      "end_title": "End of test",
+      "score": "{{correct}} / {{total}}",
+      "try_again": "Try again",
+      "back_to_menu": "Back to menu",
+      "empty": "No questions are available for this language yet.",
+      "a11y": {
+        "score": "{{correct}} correct out of {{total}}"
+      }
     },
     "a11y": {
       "tile": "Tile {{letter}}",

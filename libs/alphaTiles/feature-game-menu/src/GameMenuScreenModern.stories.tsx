@@ -129,3 +129,15 @@ export const GuidanceOpen: Story = {
     guidance: { ...meta.args?.guidance, visible: true } as GameMenuScreenModernProps['guidance'],
   },
 };
+
+/** Self-test entry below the grid (#42). */
+export const WithSelfTest: Story = {
+  args: {
+    allDoors: Ladder.args?.allDoors,
+    selfTest: {
+      label: 'Check yourself',
+      a11yLabel: 'Check yourself: 10 questions, score not saved',
+      onPress: () => undefined,
+    },
+  },
+};

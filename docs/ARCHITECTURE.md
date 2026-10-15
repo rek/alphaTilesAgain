@@ -371,6 +371,10 @@ A **Door** (see `GLOSSARY.md`) is one `aa_games.txt` row resolved against the pa
 
 Menu visuals, the shell's tracker bar / score / mastery action and the next-door search all consume it. Play order is the difficulty ladder: `useDoorProgress` passes `useLadderDoors()` to `nextUnmasteredDoor`. Tested against the real `yue` pack + the real store (in-memory AsyncStorage).
 
+### Self-test (#42)
+
+`@alphaTiles/feature-self-test`, route `/self-test`, entry button below the menu door grid. An ungraded run of 10 questions built by `buildSelfTest` from Thailand's question builder (`thailandQuestion`, exported by `feature-game-thailand` with its `ThailandScreen` + `thailandRoundView`), cycling the pack's enabled Thailand Doors in ladder order. Not a Door; score lives in component state only — the lib must never import `data-progress`, `data-door-progress` or `util-analytics` (guarded by a test). Design: `openspec/changes/self-test-mode/design.md`.
+
 ### Game-class registry and the one game route
 
 `apps/alphaTiles/src/gameClasses.ts` maps classKey → `{ Container, precompute? }`, typed `Record<GameClassKey, …>` over the plain key list `gameClassKeys.ts` (plain so `tools/` can import it). It is the one place a game class is wired into the app — **add a game = one registry entry**. App-level because only the app may import every `feature-game-*` lib and resolve app assets.

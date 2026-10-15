@@ -27,6 +27,9 @@ _Avoid_: reading `useProgressStore` entries directly for a door.
 **Mastered**: a Door that tracks progress with ≥ 12 checked trackers (Java `Earth` / `hasChecked12Trackers`). Never depends on the "After 12 checked trackers" setting; no-right/wrong Doors are never mastered.
 _Avoid_: completed, checked12, "finished game".
 
+**Self-test**: the ungraded self-check (#42, `/self-test`, `@alphaTiles/feature-self-test`) — 10 single-answer questions from the pack's enabled Thailand Doors' question builder (`thailandQuestion`), one answer each, own score at the end. Not a Door (no tier, no progress key); writes no Door progress, points or analytics. Menu entry below the door grid.
+_Avoid_: test/quiz mode, assessment (nothing is graded or reported).
+
 **Mastery action**: what the shell does when a correct answer checks the 12th tracker (and each 12th after) — `keep-playing` / `return-to-menu` / `celebrate-then-next-door`, from the "After 12 checked trackers" effective setting (1 / 2 / 3). Next door = first enabled, unmastered Door after this one in ladder order.
 
 ## Settings
