@@ -10,7 +10,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { LangAssets } from '@alphaTiles/data-language-assets';
-import { parseGametiles, parseSyllables, parseWordlist } from '../../../shared/util-lang-pack-parser/src';
+import { parseGametiles, parseSyllables, parseWordlist } from '@shared/util-lang-pack-parser';
 import { buildTaiwanData } from './buildTaiwanData';
 import { pickAudioForChar } from './pickAudioForChar';
 
