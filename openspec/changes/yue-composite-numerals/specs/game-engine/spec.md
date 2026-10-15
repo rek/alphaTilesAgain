@@ -2,49 +2,34 @@
 
 ### Requirement: Audio-replay button plays the active reference word
 
-The shell SHALL expose a prominent audio-replay button that, when pressed, plays the current `refWord` using `useAudio().playWord`. While audio is playing, both the replay button and the mechanic's game buttons MUST be locked against further input; they SHALL re-enable on `onComplete`. This mirrors `GameActivity.playActiveWordClip`'s lock/unlock around `mediaPlayerIsPlaying`.
+The shell SHALL expose a prominent audio-replay button that, when pressed, speaks the current `refWord` via the shell's `speak({ word: refWord })` (pack speech, including the syllable-chain fallback for unrecorded words). While audio is playing, both the replay button and the mechanic's game buttons MUST be locked against further input; they SHALL re-enable on `onComplete`. This mirrors `GameActivity.playActiveWordClip`'s lock/unlock around `mediaPlayerIsPlaying`.
 
-When `refWord` has no per-word audio handle (i.e. `useAudio().getWordDuration(refWord.wordInLWC)` returns `undefined`) but `refWord.wordInLOP` fully decomposes into known syllables via `parseWordIntoSyllables`, the shell SHALL play each constituent syllable's clip in sequence via `useAudio().playSyllable`, separated by a `GAP_MS` natural pause and scheduled via a `setTimeout` timer-ref (not chained promises — `audio.playSyllable` resolves on playback *start*, not end). The timer-ref MUST be cleared at the top of every `startRound` and on container unmount.
+In-flight speech (a syllable chain's pending steps) SHALL be cancelled via pack speech `stop()` whenever the shell's `setRefWord` starts a new round, when the app goes to background, and when the shell unmounts, so no syllable of a previous word plays afterwards.
 
-If `refWord` has neither word audio nor a full syllable decomposition, the replay button SHALL be a no-op (existing missing-handle warn-once behavior).
+#### Scenario: Replay during silence
 
-#### Scenario: Replay during silence with word audio present
-
-- **WHEN** no audio is playing, `audio.getWordDuration(refWord.wordInLWC)` returns a positive number, and the user taps the replay button
-- **THEN** `useAudio().playWord(refWord.wordInLWC)` fires, game buttons lock, and they unlock on completion
+- **WHEN** no audio is playing and the user taps the replay button
+- **THEN** `speak({ word: refWord })` fires, game buttons lock, and they unlock on completion
 
 #### Scenario: Replay during playback
 
 - **WHEN** audio is already playing and the user taps the replay button
 - **THEN** the tap is ignored (no overlap, no queue)
 
-#### Scenario: Replay falls back to syllable chain when word audio is absent
+#### Scenario: Unrecorded refWord replays as a syllable chain
 
-- **GIVEN** `refWord.wordInLOP` is `"二十"` and `audio.handles.words.get('zz_20')` returns `undefined`
-- **AND** `audio.handles.syllables.get('二')` and `audio.handles.syllables.get('十')` both return valid handles
+- **GIVEN** `refWord` is yue `二十` (`zz_20`), which has no word clip, and `二` and `十` have syllable clips
 - **WHEN** the user taps the replay button
-- **THEN** `audio.playSyllable('二')` fires immediately, game buttons lock
-- **AND** after `audio.getSyllableDuration('二') + GAP_MS` ms, `audio.playSyllable('十')` fires via a `setTimeout` timer-ref
-- **AND** after the second syllable's duration completes, game buttons unlock
+- **THEN** `二` plays, then `十` after `二`'s duration + 150 ms, and the interaction lock is held until the chain ends
 
-#### Scenario: Replay no-op when neither word audio nor decomposition resolves
-
-- **GIVEN** `refWord.wordInLOP = "未知"` and neither `audio.handles.words.get(lwc)` nor `parseWordIntoSyllables("未知", syllables)` resolves (chars not in syllable list)
-- **WHEN** the user taps the replay button
-- **THEN** the existing warn-once dev-mode message fires
-- **AND** no audio plays
-- **AND** game buttons stay unlocked (the round continues)
-
-#### Scenario: Timer-ref cleared on round transition
-
-- **GIVEN** a syllable chain is mid-playback (first syllable played, second scheduled via timer-ref)
-- **WHEN** `startRound` is called (e.g. correct answer triggers next round)
-- **THEN** the pending `setTimeout` is cleared
-- **AND** no orphan syllable from the previous word plays after the new round begins
-
-#### Scenario: Timer-ref cleared on container unmount
+#### Scenario: Round transition cancels a running chain
 
 - **GIVEN** a syllable chain is mid-playback
-- **WHEN** the game container unmounts (e.g. back button to menu)
-- **THEN** the pending `setTimeout` is cleared in the unmount cleanup
-- **AND** no orphan syllable plays into a torn-down container
+- **WHEN** the mechanic calls `setRefWord` for the next round
+- **THEN** the pending chain steps are cancelled and no syllable of the previous word plays
+
+#### Scenario: Unmount cancels a running chain
+
+- **GIVEN** a syllable chain is mid-playback
+- **WHEN** the game unmounts (e.g. back to the menu)
+- **THEN** the pending chain steps are cancelled and nothing plays into the torn-down screen

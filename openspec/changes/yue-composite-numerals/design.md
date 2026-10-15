@@ -37,6 +37,13 @@ Existing syllable parser:
 
 ### D1: Syllable-chain fallback lives in `feature-game-shell`, not `data-audio`
 
+> **Superseded (2026-10) by the pack-speech refactor.** The chain now lives in pack
+> speech (`data-audio` `planSpeech` / `createPackSpeech`, `speak({ word })`), which
+> receives the pack's word + syllable rows as plain data — so the NX boundary concern
+> below no longer applies. The shell only calls `speech.stop()` on `setRefWord`,
+> background and unmount. D3/D4 timing (150 ms gap, 700 ms fallback, chain total as
+> duration) carried over unchanged into `planSpeech`.
+
 **Decision:** Modify `GameShellContainer.replayWord` to detect missing word audio and play a syllable chain instead.
 
 **Alternatives considered:**
