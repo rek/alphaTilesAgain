@@ -1,9 +1,18 @@
 /**
- * preloadAudio — loads all audio clips into AudioPlayer handles.
+ * preloadAudio — probes every audio clip once (duration + load check) and
+ * keeps a bounded pool of live players.
  *
  * Called once by the loading screen after the language manifest resolves.
- * Awaiting this Promise before mounting the app gives SoundPool-equivalent
- * tap-to-sound latency on native (ADR-007, design.md D3).
+ * Durations are measured up front so useAudio's duration getters stay
+ * synchronous (the shell picks word clip vs syllable chain from them).
+ *
+ * M11: players are NOT kept per clip. Each probed player is handed to an LRU
+ * pool capped at `livePlayerLimit` (native default 24); older ones are
+ * `remove()`d and re-created on demand by useAudio. Peak live players ≈
+ * limit + 4 × CONCURRENCY + 3 chimes instead of one per clip (~400 for yue).
+ * Web keeps every player (limit Infinity): Safari only unlocks <audio>
+ * elements primed inside the user gesture (issue #25), so a player created
+ * later would be silent.
  *
  * Concurrency is bounded to 8 simultaneous loads (design D3 / ADR-007 impl notes)
  * to avoid iOS resource limits.
@@ -12,6 +21,8 @@
  * of the app can boot (design risk mitigation).
  */
 import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
+import { Platform } from 'react-native';
+import { createPlayerPool } from './createPlayerPool';
 import type { AudioConfig } from './AudioConfig';
 import type { AudioHandles } from './AudioHandles';
 import type { SoundHandle } from './SoundHandle';
@@ -35,9 +46,12 @@ type PreloadAudioParams = {
   baseChimes: BaseChimes;
   onProgress?: (loaded: number, total: number) => void;
   batchEvery?: number;
+  /** Max live players kept after boot. Default: 24 native, Infinity web. */
+  livePlayerLimit?: number;
 };
 
 const CONCURRENCY = 8;
+const NATIVE_LIVE_PLAYER_LIMIT = 24;
 
 /** Simple semaphore to bound concurrent createAudioPlayer calls. */
 async function withConcurrencyLimit<T>(
@@ -99,11 +113,13 @@ function waitForLoaded(player: SoundHandle): Promise<void> {
 }
 
 async function loadCategory(
+  category: string,
   entries: [string, number][],
   durations: Map<string, number>,
+  pool: ReturnType<typeof createPlayerPool>,
   onItemDone?: () => void
-): Promise<Map<string, SoundHandle | null>> {
-  const map = new Map<string, SoundHandle | null>();
+): Promise<Map<string, number | null>> {
+  const map = new Map<string, number | null>();
   if (entries.length === 0) return map;
 
   const keys = entries.map(([k]) => k);
@@ -114,16 +130,18 @@ async function loadCategory(
     if (durationMs > 0) {
       durations.set(key, durationMs);
     }
-    return handle as SoundHandle;
+    // Pool may evict (remove) it straight away — only the source is kept.
+    pool.adopt(`${category}:${key}`, handle);
+    return source;
   });
 
   const results = await withConcurrencyLimit(tasks, CONCURRENCY, onItemDone);
 
-  results.forEach((handle, i) => {
-    if (handle === null) {
+  results.forEach((source, i) => {
+    if (source === null) {
       console.warn(`[data-audio] Null handle for key: ${keys[i]}`);
     }
-    map.set(keys[i], handle);
+    map.set(keys[i], source);
   });
 
   return map;
@@ -135,6 +153,7 @@ export async function preloadAudio({
   baseChimes,
   onProgress,
   batchEvery = 10,
+  livePlayerLimit = Platform.OS === 'web' ? Infinity : NATIVE_LIVE_PLAYER_LIMIT,
 }: PreloadAudioParams): Promise<AudioHandles> {
   // D1 — iOS silent mode override so audio plays with the silent switch engaged.
   try {
@@ -170,12 +189,15 @@ export async function preloadAudio({
     onProgress?.(loaded, total);
   };
 
-  // Load all categories in parallel, each internally bounded by CONCURRENCY.
+  const pool = createPlayerPool({ capacity: livePlayerLimit, create: createAudioPlayer });
+
+  // Categories probe in parallel, each bounded by CONCURRENCY, so at most
+  // 4 × CONCURRENCY probe players exist beyond the pool at any moment.
   const [tilesMap, wordsMap, syllablesMap, instructionsMap] = await Promise.all([
-    loadCategory(tileEntries, durations.tiles, itemDone),
-    loadCategory(wordEntries, durations.words, itemDone),
-    loadCategory(syllableEntries, durations.syllables, itemDone),
-    loadCategory(instructionEntries, durations.instructions, itemDone),
+    loadCategory('tile', tileEntries, durations.tiles, pool, itemDone),
+    loadCategory('word', wordEntries, durations.words, pool, itemDone),
+    loadCategory('syllable', syllableEntries, durations.syllables, pool, itemDone),
+    loadCategory('instruction', instructionEntries, durations.instructions, pool, itemDone),
   ]);
 
   // Load base chimes (D5 — ship with the app, not the pack).
@@ -202,6 +224,7 @@ export async function preloadAudio({
     words: wordsMap,
     syllables: syllablesMap,
     instructions: instructionsMap,
+    pool,
     chimes: {
       correct: correctHandle,
       incorrect: incorrectHandle,
