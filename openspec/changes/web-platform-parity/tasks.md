@@ -2,62 +2,71 @@
 
 Implement web platform parity: audio unlock gate, PWA manifest, layout fixes.
 
+Decisions that changed tasks are recorded in `design.md` § Implementation decisions (I1–I10).
+
 ## 0. Preflight
 
-- [ ] Read `proposal.md` and `design.md`.
-- [ ] Read `apps/alphaTiles/app/_layout.tsx` — understand current root layout structure.
-- [ ] Read `libs/alphaTiles/data-audio/src/index.ts` — confirm exported API; note if `resumeAudioContext` already exists.
-- [ ] Read `libs/shared/util-analytics/src/` — confirm `track()` signature and `audio_unlock_web` event shape.
-- [ ] Confirm icon assets at `apps/alphaTiles/assets/`: verify ≥192×192 and ≥512×512 PNGs exist.
+- [x] Read `proposal.md` and `design.md`.
+- [x] Read `apps/alphaTiles/app/_layout.tsx` — understand current root layout structure.
+- [x] Read `libs/alphaTiles/data-audio/src/index.ts` — confirm exported API; note if `resumeAudioContext` already exists. (No; an unused `WebAudioUnlockGate` existed — removed, see I2.)
+- [x] Read `libs/shared/util-analytics/src/` — confirm `track()` signature and `audio_unlock_web` event shape. (`track(type, props)`.)
+- [x] Confirm icon assets at `apps/alphaTiles/assets/`: verify ≥192×192 and ≥512×512 PNGs exist. (Only the 1024² Expo placeholder `icon.png`; PWA icons resized from it, I8.)
 
 ## 1. WebAudioUnlockGate Component
 
-- [ ] Generate library: `./nx g @nx/js:lib ui-web-audio-unlock-gate --directory=libs/alphaTiles/ui-web-audio-unlock-gate --tags='type:ui,scope:alphaTiles'`.
-- [ ] Add path alias to `tsconfig.base.json`: `"@alphaTiles/ui-web-audio-unlock-gate": ["libs/alphaTiles/ui-web-audio-unlock-gate/src/index.ts"]`.
-- [ ] Add `resumeAudioContext()` helper to `libs/alphaTiles/data-audio/src/lib/resumeAudioContext.ts`; export from `data-audio` index. Uses `typeof AudioContext !== 'undefined'` capability check — no `Platform.OS` guard.
-- [ ] Implement presenter `libs/alphaTiles/ui-web-audio-unlock-gate/src/lib/WebAudioUnlockGatePresenter.tsx` — accepts `onUnlock: () => void`, `label: string`, `children: React.ReactNode`; renders full-screen `<Pressable>` overlay until dismissed; pure props→JSX, no hooks, no i18n.
-- [ ] Implement container `libs/alphaTiles/ui-web-audio-unlock-gate/src/lib/WebAudioUnlockGate.tsx` — owns `unlocked` state, calls `resumeAudioContext()`, calls `track({ type: 'audio_unlock_web', props: { millisecondsSinceBoot } })` on first gesture, passes `label="Tap to start"` (fixed English for v1 per design unresolved Q).
-- [ ] Export `WebAudioUnlockGate` from `libs/alphaTiles/ui-web-audio-unlock-gate/src/index.ts`.
-- [ ] Unit test: overlay renders initially; pressing calls `onUnlock` and hides overlay.
-- [ ] Unit test: `resumeAudioContext` calls `AudioContext.prototype.resume` when `AudioContext` exists in global; is a no-op when absent.
+- [x] Generate library — created as `libs/shared/ui-web-audio-unlock-gate` (`type:ui,scope:shared`, I3).
+- [x] Add path alias to `tsconfig.base.json`: `@shared/ui-web-audio-unlock-gate`.
+- [ ] ~~Add `resumeAudioContext()` helper~~ — dropped: no AudioContext to resume (I4). Replaced by `primeAudioHandles()` (chunked) + `millisecondsSinceBoot()` in `data-audio`.
+- [x] Implement presenter `WebAudioUnlockGatePresenter.tsx` — `isLocked`, `isReady`, `title`, `label`, `onUnlock`, `children`; pure.
+- [x] Implement container `WebAudioUnlockGate.tsx` — in `feature-loading` (I3); `unlockAudio()` primes + tracks once (I6); localized label.
+- [x] Export `WebAudioUnlockGate` from `@alphaTiles/feature-loading`.
+- [x] Unit test: overlay renders initially; pressing calls `onUnlock`; children hidden until unlocked; press ignored until ready.
+- [ ] ~~Unit test: `resumeAudioContext`~~ — dropped with the helper (I4). Covered instead: `primeAudioHandles.test.ts`, `millisecondsSinceBoot.test.ts`, `shouldGateRoute.test.ts`, `bootSequence.test.ts` (gate after audio).
 
 ## 2. Root Layout Wiring
 
-- [ ] In `apps/alphaTiles/app/_layout.tsx`, import `WebAudioUnlockGate` and `Platform`.
-- [ ] Wrap `<Slot />` with `<WebAudioUnlockGate>` only when `Platform.OS === 'web'` (ternary or inline conditional per design D1).
-- [ ] Verify no other app layout file needs the gate (check nested layouts in `apps/alphaTiles/app/`).
+- [x] In `apps/alphaTiles/app/_layout.tsx`, import `WebAudioUnlockGate` and `Platform`.
+- [x] Wrap `<Stack />` with `<WebAudioUnlockGate>` only when `Platform.OS === 'web'`.
+- [x] Verify no other app layout file needs the gate (only `app/_layout.tsx` exists).
 
 ## 3. PWA Manifest
 
-- [ ] Create `apps/alphaTiles/public/manifest.json` with all fields from design D4 table.
-- [ ] Copy or symlink icon assets to `apps/alphaTiles/public/icons/icon-192.png` and `icon-512.png`.
-- [ ] Update `app.config.ts` (or `app.json`) to reference manifest per Expo PWA docs — `expo.web.output: 'static'` if not already set; add `<link rel="manifest">` injection.
-- [ ] Smoke-test: `npx expo export --platform web` then `npx serve dist/` — confirm `/manifest.json` responds 200 with correct `Content-Type: application/json`.
+- [x] Create `apps/alphaTiles/public/manifest.json` with all fields from design D4 (relative URLs, I8).
+- [x] Copy icon assets to `apps/alphaTiles/public/icons/icon-192.png` and `icon-512.png` (placeholder resizes).
+- [x] Link manifest — `web.output` already `static`; added `app/+html.tsx` with base-URL-aware `<link rel="manifest">` (I8).
+- [x] Smoke-test: yue export served under `/alphaTilesAgain/yueCantonese/` — `/manifest.json` 200 `application/json`, both icons 200, link present in HTML.
 
 ## 4. Layout Fixes
 
 ### 4a. ui-door-grid
 
-- [ ] Read `libs/alphaTiles/ui-door-grid/src/` — identify row container style.
-- [ ] Add `flexWrap: 'wrap'` and `overflow: 'hidden'` to row container StyleSheet entry.
-- [ ] Compute tile `flexBasis` as `(100% - (numCols - 1) * gapSize) / numCols` — derive from existing props, no new props needed.
-- [ ] Visual test at 320px, 375px, 768px viewport widths: tiles remain inside container.
+- [x] Read `libs/shared/ui-door-grid/src/` — identify row container style.
+- [x] Add `flexWrap: 'wrap'` and `overflow: 'hidden'` (wrap already present; `overflow: 'hidden'` added).
+- [ ] ~~Compute tile `flexBasis`~~ — not needed: door size comes from the menu container and the grid already wraps; no overflow measured at 320/375/768 (I10).
+- [x] Visual test at 320px, 375px, 768px viewport widths: tiles remain inside container (Playwright, headless Chromium).
 
 ### 4b. ui-score-bar
 
-- [ ] Read `libs/alphaTiles/ui-score-bar/src/` — identify fixed `height` constant.
-- [ ] Replace `height: SCORE_BAR_HEIGHT` with `minHeight: SCORE_BAR_HEIGHT` + `paddingVertical: 4` (or equivalent) in StyleSheet.
-- [ ] Confirm no downstream consumers rely on the fixed height for positioning (grep for `SCORE_BAR_HEIGHT` outside the lib).
-- [ ] Visual test at 320px viewport: bar visible and not collapsed.
+- [x] Read `libs/shared/ui-score-bar/src/` — identify fixed `height` constant. (No `SCORE_BAR_HEIGHT`; row uses padding. Badges had fixed `height: 36`.)
+- [x] Replace fixed badge `height` with `minHeight` (row already has `paddingVertical: 4`).
+- [x] Confirm no downstream consumers rely on the fixed height (`SCORE_BAR_HEIGHT` does not exist).
+- [x] Visual test at 320px viewport: bar visible and not collapsed.
+
+### 4c. Game screens (added — found by 28-door sweep at 320px, I10)
+
+- [x] Ecuador: place tiles in measured field; font capped to tile height.
+- [x] Georgia: flex rows instead of window-height button maths.
+- [x] Malaysia: flex list/rows above arrow bar.
+- [x] Taiwan: drop side padding around fixed 300px writer.
 
 ## 5. Verification
 
-- [ ] Type-check: `npx tsc --noEmit -p apps/alphaTiles/tsconfig.json`.
-- [ ] Lint: `nx lint alphaTiles-ui-web-audio-unlock-gate`.
-- [ ] Unit tests pass: `nx test alphaTiles-ui-web-audio-unlock-gate`.
-- [ ] `nx lint alphaTiles-data-audio` — confirm `resumeAudioContext` passes lint.
-- [ ] Grep libs for `Platform.OS === 'web'` — must find zero matches.
-- [ ] Manual smoke (web, Chrome): load app, confirm gate overlay visible; tap/click, confirm gate dismisses and audio plays in a game.
-- [ ] Manual smoke (web, Chrome): open DevTools → Application → Manifest; confirm all required fields present.
-- [ ] Manual smoke (web, 320px viewport): door grid tiles wrap; score bar visible.
-- [ ] Manual smoke (native iOS/Android): confirm gate never appears; audio plays normally.
+- [x] Type-check: `nx run-many -t typecheck`.
+- [x] Lint: `nx lint ui-web-audio-unlock-gate`.
+- [x] Unit tests pass: `nx test ui-web-audio-unlock-gate`.
+- [x] `nx lint data-audio`.
+- [ ] Grep libs for `Platform.OS === 'web'` — must find zero matches. **Not met**: 9 pre-existing matches in unrelated libs; new code adds none (I7).
+- [x] Smoke (web, headless Chromium, yue export): gate visible; tap dismisses after preload; deep link `/menu` gated then revealed; in-game `play()` calls all resolve (0 `NotAllowedError`), 0 console errors. Audible check on real Chrome desktop + Android Chrome still needs a human.
+- [x] Manifest fields present (fetched + parsed in smoke). DevTools → Application → Manifest check on a real browser still recommended.
+- [x] Smoke (web, 320px viewport): door grid wraps; score bar visible; all 28 yue doors with no horizontal overflow.
+- [ ] Manual smoke (native iOS/Android): confirm gate never appears; audio plays normally. Needs a device (gate is behind `Platform.OS === 'web'`; native `isAudioUnlocked` starts true).
