@@ -219,6 +219,7 @@ not app logic. The `data-language-assets` and `data-language-pack` libs use this
 - **Do not use `useEffect` directly.** Use derived state, event handlers, `useMountEffect`, or the `key` prop. See `docs/CODE_STYLE.md`.
 - **Zustand store per domain**, not one god-store. Each store owns its slice, has its own persist config, and exposes typed selectors.
 - **Context providers for immutable data only.** If something changes, it belongs in Zustand.
+- **Effective settings** — cross-cutting settings (`showGameNames`, `changeArrowColors`, audio flags, avatars, mastery mode …) are read through `useEffectiveSettings()` (`@alphaTiles/data-settings`): pack `aa_settings.txt` typed + defaulted once, with the active player's preferences (`usePlayerPreferencesStore`, `data-players`) layered on top. Game-specific settings stay with their game. Settings screen (`feature-settings`, `/settings`) writes via `useSetPreference()`.
 
 ## 8. Audio
 

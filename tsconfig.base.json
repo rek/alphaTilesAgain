@@ -65,6 +65,9 @@
       "@alphaTiles/feature-about": [
         "libs/alphaTiles/feature-about/src/index.ts"
       ],
+      "@alphaTiles/feature-settings": [
+        "libs/alphaTiles/feature-settings/src/index.ts"
+      ],
       "@alphaTiles/feature-share": [
         "libs/alphaTiles/feature-share/src/index.ts"
       ],
@@ -78,6 +81,7 @@
         "libs/alphaTiles/data-progress/src/index.ts"
       ],
       "@alphaTiles/data-doors": ["libs/alphaTiles/data-doors/src/index.ts"],
+      "@alphaTiles/data-settings": ["libs/alphaTiles/data-settings/src/index.ts"],
       "@alphaTiles/feature-game-shell": [
         "libs/alphaTiles/feature-game-shell/src/index.ts"
       ],

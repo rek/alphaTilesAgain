@@ -29,6 +29,7 @@ import type { SpeechItem } from '@alphaTiles/data-audio';
 import { useActivePlayer } from '@alphaTiles/data-players';
 import { useProgressStore, useProgressEntry } from '@alphaTiles/data-progress';
 import { useDoor, useDoors } from '@alphaTiles/data-doors';
+import { useEffectiveSettings } from '@alphaTiles/data-settings';
 import type { Door } from '@alphaTiles/data-doors';
 import { GameShellContextProvider } from './GameShellContext';
 import { GameShellScreen } from './GameShellScreen';
@@ -361,12 +362,7 @@ function GameShell({
 
   // Advance arrow state: blue when changeArrowColor=false or not repeatLocked
   // (design.md §D1 row: onPostCreate → setAdvanceArrowToBlue)
-  const changeArrowColor = useMemo(
-    // Java label "Change arrow colors" (Start.java:128). Java defaults true; TS
-    // keeps false so no-right/wrong games' arrow is never stuck gray.
-    () => assets.settings.findBoolean('Change arrow colors', false),
-    [assets.settings],
-  );
+  const changeArrowColor = useEffectiveSettings().changeArrowColors;
   const advanceArrow: 'blue' | 'gray' | 'hidden' = !showAdvanceArrow
     ? 'hidden'
     : (!changeArrowColor || !repeatLocked ? 'blue' : 'gray');
