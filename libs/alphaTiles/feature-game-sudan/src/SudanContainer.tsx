@@ -8,7 +8,7 @@
  *   - page: number (0-indexed)
  *   - disabled: boolean (true while audio plays — gates grid + options row)
  *
- * Variant from `syllableGame` route param:
+ * Variant from the door's games row `SyllOrTile` (or `syllableGame` URL override):
  *   - 'T' (or anything not 'S'): tile variant — 63/page, type-coloured
  *   - 'S': syllable variant — 35/page, syllable.color-coloured
  *
@@ -155,8 +155,11 @@ export function SudanContainer(props: RouteParams): React.JSX.Element {
     (props.gameNumber as string) ?? (props.doorIndex as string) ?? '1',
     10,
   );
-  const syllableGame = (props.syllableGame as string) ?? '';
   const game = assets.games.rows[gameNumber - 1];
+  // Variant comes from the games row (menu pushes only doorIndex) — see
+  // GAME_PATTERNS "doorIndex is the only authoritative pointer".
+  const syllableGame =
+    (props.syllableGame as string) ?? (game?.syllOrTile === 'S' ? 'S' : '');
   const instructionAudioId = game?.instructionAudio;
   const hasInstruction =
     !!instructionAudioId && instructionAudioId in assets.audio.instructions;

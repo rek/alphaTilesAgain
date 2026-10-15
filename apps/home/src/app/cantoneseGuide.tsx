@@ -175,6 +175,41 @@ const DOOR_CONTENT: Record<string, DoorContent> = {
     what: 'Shows a picture and the written word with one character blanked out, and plays the word. The student picks the missing character from four choices.',
     good: 'Connecting single characters to the words they belong to.',
   },
+  'italy-1-T': {
+    title: 'Listening bingo — words',
+    difficulty: 'Medium',
+    mechanic: 'Italy · Lotería',
+    what: 'A 4×4 board of written words. A word is called out; the student marks it on the board. Four in a row wins.',
+    good: 'Listening and reading together — hearing a word and finding its written form quickly.',
+  },
+  'italy-1-S': {
+    title: 'Listening bingo — characters',
+    difficulty: 'Medium',
+    mechanic: 'Italy · Lotería',
+    what: 'Same bingo format with single characters: a character is called out and the student marks it on a 4×4 board.',
+    good: 'Linking the sound of each character to its written form.',
+  },
+  'malaysia-1-T': {
+    title: 'Word browser',
+    difficulty: 'Easy',
+    mechanic: 'Malaysia · browse and listen (no score)',
+    what: 'Pages of words with their pictures. Tap any word to hear it. Nothing is scored.',
+    good: 'Free exploration and review of the whole vocabulary list.',
+  },
+  'sudan-1-S': {
+    title: 'Character browser',
+    difficulty: 'Easy',
+    mechanic: 'Sudan · browse and listen (no score)',
+    what: 'Pages of every character in the pack. Tap a character to hear it on its own. Nothing is scored.',
+    good: 'Looking up how a single character sounds; review before the character games.',
+  },
+  'iraq-1-T': {
+    title: 'Word explorer',
+    difficulty: 'Easy',
+    mechanic: 'Iraq · tap to explore (no score)',
+    what: 'Pages of written words. Tap one to hear it and see its picture. Nothing is scored.',
+    good: 'Self-paced reading review — checking what a written word means.',
+  },
 };
 
 const DIFFICULTY_STYLES: Record<DoorContent['difficulty'], string> = {
