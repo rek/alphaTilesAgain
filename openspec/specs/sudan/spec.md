@@ -77,13 +77,13 @@ The screen SHALL render prev/next page arrows whose visibility mirrors `Sudan.ja
 
 ### Requirement: Tap Plays Audio
 
-Tapping a tile MUST play its audio via `playTileClip`. Tapping a syllable MUST play its audio via `playSyllableClip` only when the global `hasSyllableAudio` flag is true; otherwise the tap MUST be a no-op (matching Java's `setClickable(false)` for the whole syllable page when `!hasSyllableAudio`). While audio is playing, all tile/syllable buttons AND the options row MUST be disabled; they SHALL re-enable when the clip's duration elapses. Java reference: `Sudan.java onBtnClick`.
+Tapping a tile MUST play its audio via `shell.speak({ tile })`. Tapping a syllable MUST play its audio via `shell.speak({ syllable })` only when the global `hasSyllableAudio` flag is true; otherwise the tap MUST be a no-op (matching Java's `setClickable(false)` for the whole syllable page when `!hasSyllableAudio`). While audio is playing, all tile/syllable buttons AND the options row MUST be disabled; they SHALL re-enable when the clip's duration elapses. Java reference: `Sudan.java onBtnClick`.
 
 #### Scenario: Tile tap plays tile audio
 
 - **GIVEN** the tile variant is rendered and `disabled === false`
 - **WHEN** the user taps tile index `i`
-- **THEN** `playTileClip(tilesOnPage[i])` is invoked and `disabled` becomes true
+- **THEN** `shell.speak({ tile: tilesOnPage[i] })` is invoked and `disabled` becomes true
 
 #### Scenario: Syllable tap is no-op when hasSyllableAudio is false
 

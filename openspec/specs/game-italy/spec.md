@@ -96,20 +96,20 @@ When `deckIndex` reaches the last deck position without a lotería and the calle
 
 The game SHALL support two variants driven by the `syllableGame` route param.
 
-- T variant (`syllableGame === "T"`): cell text = `wordInLOP`; cell image = variant-2 word image (`assets.images.wordsAlt[wordInLWC]`); audio = `playWord(wordInLWC)`.
-- S variant (`syllableGame === "S"`): cell text = `syllable.syllable`; cell image = undefined (Java has no syllable image lookup); audio = `playSyllable(syllable.audioName)`.
+- T variant (`syllableGame === "T"`): cell text = `wordInLOP`; cell image = variant-2 word image (`assets.images.wordsAlt[wordInLWC]`); audio = `speak({ word })`.
+- S variant (`syllableGame === "S"`): cell text = `syllable.syllable`; cell image = undefined (Java has no syllable image lookup); audio = `speak({ syllable })`.
 
-The repeat button MUST replay the current call's audio in both variants. Because the shell's default `replayWord` only plays words, the container SHALL register an `onRepeat` handler via `setOnRepeat` so the S variant plays a syllable clip rather than a non-existent word clip.
+The repeat button MUST replay the current call's audio in both variants. Because the shell's default `replayWord` speaks only the ref word, the container SHALL register an `onRepeat` handler via `setOnRepeat` so the S variant plays a syllable clip rather than a non-existent word clip.
 
 #### Scenario: T variant call
 - **GIVEN** `syllableGame === "T"` and the current call is a word row
 - **WHEN** the call advances
-- **THEN** the cell renders `wordInLOP` text and the audio plays via `playWord`
+- **THEN** the cell renders `wordInLOP` text and the audio plays via `speak({ word })`
 
 #### Scenario: S variant call
 - **GIVEN** `syllableGame === "S"` and the current call is a syllable row
 - **WHEN** the call advances
-- **THEN** the cell renders the syllable text and the audio plays via `playSyllable`
+- **THEN** the cell renders the syllable text and the audio plays via `speak({ syllable })`
 
 ### Requirement: Reset After Lotería
 

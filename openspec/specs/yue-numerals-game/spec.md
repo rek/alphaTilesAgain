@@ -109,7 +109,7 @@ The `yue` pack SHALL define two new game doors that launch the Georgia class in 
 - **WHEN** the game menu is built by `useDoors`
 - **THEN** the door appears with `classKey='georgia'` and `challengeLevel=2`
 - **AND** selecting it routes to `apps/alphaTiles/app/games/georgia.tsx` with the row's 1-based `doorIndex`
-- **AND** `GeorgiaContainer` resolves `syllableGame='S'` by reading `assets.games.rows[doorIndex - 1].syllOrTile`
+- **AND** `GeorgiaContainer` resolves `syllableGame='S'` from the routed Door (`useDoor`, `door.variant`)
 - **AND** a round renders 12 choice tiles
 
 #### Scenario: 18-choice door launches Georgia S-mode at CL3

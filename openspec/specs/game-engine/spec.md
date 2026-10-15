@@ -19,12 +19,12 @@ A `<GameShellContainer>` SHALL provide the shared game lifecycle — score + tra
 
 ### Requirement: Route params drive shell configuration
 
-The shell SHALL read its per-game configuration (`country`, `challengeLevel`, `stage`, `syllableGame`, `gameNumber`, `playerId`) from `expo-router`'s route params. It MUST NOT require these as explicit props when mounted as a screen. Extracting them from Android `Intent.getIntExtra` (e.g. `GameActivity.java:163–171`) moves to the route-param hook.
+The shell SHALL read its per-game configuration (`country`, `challengeLevel`, `stage`, `syllableGame`, `gameNumber`, `playerId`) from the routed Door — `useDoor(routeParams)` from `@alphaTiles/data-doors`, which resolves `doorIndex` against the pack — and the active player. It MUST NOT require these as explicit props when mounted as a screen. Extracting them from Android `Intent.getIntExtra` (e.g. `GameActivity.java:163–171`) moves to the route-param hook.
 
 #### Scenario: Mounted from game menu with route params
 
 - **WHEN** the user taps game door 88 (China) from Earth, producing a route `/game?gameNumber=88&challengeLevel=1&stage=1&syllableGame=&country=China`
-- **THEN** the shell resolves these values via `useLocalSearchParams` and passes them into `useProgressStore`, `useAudio`, and the mechanic's `useGameShell()` context
+- **THEN** the shell resolves the routed Door via `useDoor` (route params from `useLocalSearchParams`) and passes them into `useProgressStore`, `useAudio`, and the mechanic's `useGameShell()` context
 
 #### Scenario: Missing route params
 
@@ -33,12 +33,12 @@ The shell SHALL read its per-game configuration (`country`, `challengeLevel`, `s
 
 ### Requirement: Audio-replay button plays the active reference word
 
-The shell SHALL expose a prominent audio-replay button that, when pressed, plays the current `refWord` using `useAudio().playWord`. While audio is playing, both the replay button and the mechanic's game buttons MUST be locked against further input; they SHALL re-enable on `onComplete`. This mirrors `GameActivity.playActiveWordClip`'s lock/unlock around `mediaPlayerIsPlaying`.
+The shell SHALL expose a prominent audio-replay button that, when pressed, speaks the current `refWord` via the shell's `speak({ word: refWord })` (pack speech, including the syllable-chain fallback for unrecorded words). While audio is playing, both the replay button and the mechanic's game buttons MUST be locked against further input; they SHALL re-enable on `onComplete`. This mirrors `GameActivity.playActiveWordClip`'s lock/unlock around `mediaPlayerIsPlaying`.
 
 #### Scenario: Replay during silence
 
 - **WHEN** no audio is playing and the user taps the replay button
-- **THEN** `useAudio().playWord(refWord)` fires, game buttons lock, and they unlock on completion
+- **THEN** `speak({ word: refWord })` fires, game buttons lock, and they unlock on completion
 
 #### Scenario: Replay during playback
 

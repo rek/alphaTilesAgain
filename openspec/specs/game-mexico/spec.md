@@ -98,7 +98,7 @@ The match check SHALL compare the two selected cards by `wordInLWC` (the unstrip
 
 - **GIVEN** a non-final pair just matched
 - **WHEN** the audio sequence runs
-- **THEN** `audio.playCorrect()` plays followed by `audio.playWord(matchedWord.wordInLWC)` (no celebration)
+- **THEN** `audio.playCorrect()` plays followed by `shell.speak({ word: matchedWord })` (no celebration)
 
 ### Requirement: Mismatch flip-back with settings-driven delay
 

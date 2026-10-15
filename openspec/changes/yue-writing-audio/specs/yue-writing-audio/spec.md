@@ -34,6 +34,8 @@ The `syllables[char]` check is a **pack-shipped** predicate (every `aa_syllables
 
 The pure helper SHALL live at `libs/alphaTiles/feature-game-taiwan/src/pickAudioForChar.ts` (one function per file per `docs/CODE_STYLE.md`), with a co-located unit test covering all three branches.
 
+> Superseded mechanism: `pickAudioForChar` and `audioForChar` were removed by the pack-speech refactor. The Taiwan container now calls `shell.speak({ syllable: char })`; pack speech applies the same rule (syllable clip wins, else the first containing word, else silent no-op).
+
 #### Scenario: Syllable audio plays when the pack ships it
 - **GIVEN** the current practice character is `女`
 - **AND** `assets.audio.syllables['女']` is defined (i.e. `aa_syllables.txt` has a `女` row and `audio/syllables/女.mp3` exists)

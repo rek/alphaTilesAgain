@@ -56,7 +56,7 @@ While a tap is animating (`isAnimating === true`), all game buttons, the options
 #### Scenario: Tap plays tile audio first
 
 - **WHEN** the user taps a visible tile
-- **THEN** `playTileClip(tile)` is invoked before any word audio
+- **THEN** `shell.speak({ tile })` is invoked before any word audio
 
 #### Scenario: Overlay clears after 2000 ms
 
