@@ -108,14 +108,23 @@ function ItalyGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
     [shell],
   );
 
+  // Card art: the '<word>2' alternate image (Italy.java:228). Java leaves the
+  // card blank when it is missing (resID 0); packs like yue ship few alternates,
+  // which read as broken cards, so fall back to the primary word image (U4).
+  const cardImageFor = useCallback(
+    (wordInLWC: string) =>
+      (assets.images.wordsAlt[wordInLWC] ?? assets.images.words[wordInLWC]) as
+        | ImageSourcePropType
+        | undefined,
+    [assets.images.wordsAlt, assets.images.words],
+  );
+
   const buildBoardCells = useCallback(
     (items: readonly SourceItem[]): ItalyBoardCell[] => {
       return items.map((item, i) => {
         const text = getCallText(item);
         const image: ImageSourcePropType | undefined =
-          item.kind === 'word'
-            ? (assets.images.wordsAlt[item.word.wordInLWC] as ImageSourcePropType | undefined)
-            : undefined;
+          item.kind === 'word' ? cardImageFor(item.word.wordInLWC) : undefined;
         return {
           text,
           image,
@@ -125,7 +134,7 @@ function ItalyGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
         };
       });
     },
-    [assets.images.wordsAlt, cellTextColors],
+    [cardImageFor, cellTextColors],
   );
 
   const startRound = useCallback(() => {
@@ -239,7 +248,7 @@ function ItalyGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
     [won, shell, board, currentCall, audio, playCallAudio, getCallDurationMs, advanceCaller],
   );
 
-  const callerLabel = t('replay');
+  const callerLabelFor = (text: string) => t('a11y.replay_item', { item: text });
 
   if (insufficient || board.length === 0 || !currentCall) {
     return (
@@ -249,7 +258,7 @@ function ItalyGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
         currentCallImage={undefined}
         won={false}
         disabled
-        callerLabel={callerLabel}
+        callerA11yLabel={t('replay')}
         onTilePress={() => undefined}
         onCallerPress={() => undefined}
       />
@@ -257,9 +266,7 @@ function ItalyGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
   }
 
   const currentCallImage =
-    currentCall.kind === 'word'
-      ? (assets.images.wordsAlt[currentCall.word.wordInLWC] as ImageSourcePropType | undefined)
-      : undefined;
+    currentCall.kind === 'word' ? cardImageFor(currentCall.word.wordInLWC) : undefined;
 
   return (
     <ItalyScreen
@@ -268,7 +275,7 @@ function ItalyGame({ variant }: { variant: 'T' | 'S' }): React.JSX.Element {
       currentCallImage={currentCallImage}
       won={won}
       disabled={shell.interactionLocked}
-      callerLabel={callerLabel}
+      callerA11yLabel={callerLabelFor(getCallText(currentCall))}
       onTilePress={onTilePress}
       onCallerPress={onRepeat}
     />

@@ -46,7 +46,7 @@ const meta: Meta<typeof ItalyScreen> = {
   title: 'Games/Italy/ItalyScreen',
   component: ItalyScreen,
   args: {
-    callerLabel: 'tap to repeat',
+    callerA11yLabel: 'Replay: sun',
     onTilePress: () => undefined,
     onCallerPress: () => undefined,
   },

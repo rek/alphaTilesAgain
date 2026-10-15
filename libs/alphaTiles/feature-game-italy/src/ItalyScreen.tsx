@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ImageSourcePropType } from 'react-native';
+import { readableAccentColor } from '@shared/util-theme';
 
 export type ItalyBoardCell = {
   /** Text to render on the cell (wordInLOP for T variant, syllable for S). */
@@ -49,8 +50,8 @@ export type ItalyScreenProps = {
   won: boolean;
   /** True while the shell holds an interaction lock. */
   disabled: boolean;
-  /** Pre-translated label for the caller area (a11y). */
-  callerLabel: string;
+  /** Pre-translated screen-reader label for the caller area, e.g. 「重播：五」. */
+  callerA11yLabel: string;
   onTilePress: (boardIndex: number) => void;
   onCallerPress: () => void;
 };
@@ -63,7 +64,7 @@ export function ItalyScreen({
   loteriaImage,
   won,
   disabled,
-  callerLabel,
+  callerA11yLabel,
   onTilePress,
   onCallerPress,
 }: ItalyScreenProps): React.JSX.Element {
@@ -81,7 +82,7 @@ export function ItalyScreen({
       <Pressable
         onPress={disabled ? undefined : onCallerPress}
         accessibilityRole="button"
-        accessibilityLabel={`${callerLabel}: ${currentCallText}`}
+        accessibilityLabel={callerA11yLabel}
         style={({ pressed }) => [
           styles.caller,
           pressed && !disabled && styles.callerPressed,
@@ -132,12 +133,14 @@ export function ItalyScreen({
                     source={cell.image}
                     style={styles.cellImage}
                     resizeMode="contain"
+                    accessibilityElementsHidden
+                    importantForAccessibility="no"
                   />
                 ) : null}
                 <Text
                   style={[
                     styles.cellText,
-                    { color: cell.covered ? COVERED_TEXT : cell.textColor },
+                    { color: cell.covered ? COVERED_TEXT : readableAccentColor(cell.textColor) },
                   ]}
                   numberOfLines={2}
                   adjustsFontSizeToFit
