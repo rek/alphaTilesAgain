@@ -47,13 +47,13 @@ describe('bootSequence – native path', () => {
 });
 
 describe('bootSequence – web path', () => {
-  it('inserts web-gate phase between i18n and audio', async () => {
+  it('inserts web-gate phase after audio (so the tap can prime loaded clips)', async () => {
     const { opts, phases } = makeOpts({
       platform: 'web',
       waitForWebGesture: jest.fn().mockResolvedValue(undefined),
     });
     await bootSequence(opts);
-    expect(phases).toEqual(['fonts', 'i18n', 'web-gate', 'audio', 'precompute', 'hydration', 'done']);
+    expect(phases).toEqual(['fonts', 'i18n', 'audio', 'web-gate', 'precompute', 'hydration', 'done']);
   });
 
   it('awaits the web gesture promise', async () => {
@@ -64,6 +64,17 @@ describe('bootSequence – web path', () => {
     });
     await bootSequence(opts);
     expect(resolved).toBe(true);
+  });
+
+  it('does not show the gate until audio has loaded', async () => {
+    const order: string[] = [];
+    const { opts } = makeOpts({
+      platform: 'web',
+      awaitAudio: () => new Promise<void>((res) => setTimeout(() => { order.push('audio'); res(); }, 0)),
+      waitForWebGesture: () => { order.push('gate'); return Promise.resolve(); },
+    });
+    await bootSequence(opts);
+    expect(order).toEqual(['audio', 'gate']);
   });
 
   it('skips web-gate when platform is native even if waitForWebGesture provided', async () => {

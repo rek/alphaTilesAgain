@@ -17,6 +17,11 @@ import {
 import type { ImageSourcePropType } from 'react-native';
 
 const GRAYED_BG = '#A9A9A9';
+const TILE_FONT_SIZE = 22;
+
+function tileFontSize(tileHeight: number) {
+  return Math.max(10, Math.min(TILE_FONT_SIZE, Math.floor(tileHeight * 0.6)));
+}
 const GRAYED_TEXT = '#000000';
 const TILE_TEXT = '#FFFFFF';
 
@@ -38,6 +43,8 @@ export type EcuadorScreenProps = {
   interactionLocked: boolean;
   onTilePress: (slot: number) => void;
   onImagePress: () => void;
+  /** Tile field size; tiles are placed in this box, not the window. */
+  onFieldLayout: (size: { width: number; height: number }) => void;
 };
 
 export function EcuadorScreen({
@@ -47,6 +54,7 @@ export function EcuadorScreen({
   interactionLocked,
   onTilePress,
   onImagePress,
+  onFieldLayout,
 }: EcuadorScreenProps): React.JSX.Element {
   const { width, height } = useWindowDimensions();
   const imageSize = Math.min(Math.floor(width * 0.4), Math.floor(height * 0.18));
@@ -79,7 +87,14 @@ export function EcuadorScreen({
         </Text>
       </View>
 
-      <View style={styles.field} pointerEvents="box-none">
+      <View
+        style={styles.field}
+        pointerEvents="box-none"
+        onLayout={(e) => {
+          const { width: w, height: h } = e.nativeEvent.layout;
+          onFieldLayout({ width: Math.floor(w), height: Math.floor(h) });
+        }}
+      >
         {tiles.map((tile, i) => {
           const bg = tile.grayed ? GRAYED_BG : tile.bgColor;
           const fg = tile.grayed ? GRAYED_TEXT : TILE_TEXT;
@@ -105,7 +120,12 @@ export function EcuadorScreen({
               accessibilityState={{ disabled: tile.grayed || interactionLocked }}
             >
               <Text
-                style={[styles.tileText, { color: fg }]}
+                // adjustsFontSizeToFit is a no-op on web; cap the size to the
+                // tile height (height = width / 4) so text never clips (#47).
+                style={[
+                  styles.tileText,
+                  { color: fg, fontSize: tileFontSize(tile.height) },
+                ]}
                 numberOfLines={1}
                 adjustsFontSizeToFit
               >
@@ -122,6 +142,8 @@ export function EcuadorScreen({
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    // Shell centres its child; stretch so the measured field spans the width.
+    alignSelf: 'stretch',
   },
   promptRow: {
     alignItems: 'center',
@@ -155,6 +177,7 @@ const styles = StyleSheet.create({
   },
   field: {
     flex: 1,
+    alignSelf: 'stretch',
     position: 'relative',
   },
   tile: {
@@ -165,7 +188,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   tileText: {
-    fontSize: 22,
+    fontSize: TILE_FONT_SIZE,
     fontWeight: 'bold',
     textAlign: 'center',
   },

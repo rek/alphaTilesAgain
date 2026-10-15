@@ -48,6 +48,9 @@
       "@shared/ui-tile": ["libs/shared/ui-tile/src/index.ts"],
       "@shared/ui-game-board": ["libs/shared/ui-game-board/src/index.ts"],
       "@shared/ui-score-bar": ["libs/shared/ui-score-bar/src/index.ts"],
+      "@shared/ui-web-audio-unlock-gate": [
+        "libs/shared/ui-web-audio-unlock-gate/src/index.ts"
+      ],
       "@shared/ui-celebration": ["libs/shared/ui-celebration/src/index.ts"],
       "@shared/ui-player-card": ["libs/shared/ui-player-card/src/index.ts"],
       "@shared/ui-custom-keyboard": [

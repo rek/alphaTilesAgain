@@ -35,6 +35,7 @@ const meta: Meta<typeof EcuadorScreen> = {
     interactionLocked: false,
     onTilePress: () => undefined,
     onImagePress: () => undefined,
+    onFieldLayout: () => undefined,
   },
 };
 

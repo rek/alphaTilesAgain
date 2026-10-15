@@ -21,6 +21,8 @@ import { useContext } from 'react';
 import { Platform } from 'react-native';
 import { track } from '@shared/util-analytics';
 import { AudioContext } from './AudioContext';
+import { millisecondsSinceBoot } from './millisecondsSinceBoot';
+import { primeAudioHandles } from './primeAudioHandles';
 import type { SoundHandle } from './SoundHandle';
 
 // Module-level warn sets — survive re-renders, reset only on Metro reload.
@@ -187,44 +189,19 @@ export function useAudio() {
   };
 
   // ── Web unlock (design D9) ────────────────────────────────────────────
+  // Must be called from a user-gesture handler AFTER preload resolves
+  // (bootSequence awaits audio before the web gate; the root-layout gate
+  // disables its button until loaded) so every clip gets primed (#47).
   const unlockAudio = async (): Promise<void> => {
     if (Platform.OS !== 'web' || isAudioUnlocked) return;
 
-    // Priming requires loaded handles — skip if called before preload completes
-    // (e.g. from the loading screen tap handler before audio phase).
     if (handles) {
-      // Safari/iOS require EACH <audio> element's first play() to originate
-      // from a user gesture — priming just the chime leaves tiles/words/etc.
-      // silent on first play (issue #25). Fire play()+pause() synchronously
-      // on every loaded handle within the gesture frame; no awaits between
-      // elements so the whole loop stays in the gesture's task.
-      const primeOne = (handle: SoundHandle | null): void => {
-        if (!handle) return;
-        try {
-          const originalVolume = handle.volume;
-          handle.volume = 0;
-          handle.play();
-          handle.pause();
-          handle.volume = originalVolume;
-        } catch {
-          // Per-handle priming failure is non-fatal; keep going.
-        }
-      };
-
-      try {
-        primeOne(handles.chimes.correct);
-        primeOne(handles.chimes.incorrect);
-        primeOne(handles.chimes.correctFinal);
-        // Web pool is unbounded, so this primes every probed clip.
-        for (const h of handles.pool.liveHandles()) primeOne(h);
-      } catch {
-        if (__DEV__) {
-          console.warn('[data-audio] unlockAudio: priming loop failed (non-fatal)');
-        }
-      }
+      primeAudioHandles(handles);
+    } else if (__DEV__) {
+      console.warn('[data-audio] unlockAudio: called before preload finished; clips not primed');
     }
 
-    track('audio_unlock_web', { millisecondsSinceBoot: Date.now() });
+    track('audio_unlock_web', { millisecondsSinceBoot: millisecondsSinceBoot() });
 
     setIsAudioUnlocked(true);
   };

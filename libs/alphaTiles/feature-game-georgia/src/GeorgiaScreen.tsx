@@ -68,10 +68,13 @@ export function GeorgiaScreen({
   );
   const cols = columnsFor(gridShape);
   const buttonWidth = Math.floor((width - 16 - (cols + 1) * 6) / cols);
-  const buttonHeight = Math.max(
-    44,
-    Math.floor(((height - imageSize - 80) / Math.ceil(gridShape / cols)) - 6),
-  );
+  // Rows share the space left under the image (flex: 1 each) instead of a
+  // window-height estimate, which ignored the shell's score/bottom bars and
+  // clipped the last row on short/narrow viewports (#47).
+  const rows: number[][] = [];
+  for (let i = 0; i < choices.length; i += cols) {
+    rows.push(choices.slice(i, i + cols).map((_, j) => i + j));
+  }
 
   return (
     <View style={styles.root}>
@@ -107,42 +110,46 @@ export function GeorgiaScreen({
       ) : null}
 
       <View style={styles.grid}>
-        {choices.map((choice, i) => {
-          const bg = choice.grayed ? GRAYED_BG : choice.bgColor;
-          const fg = choice.grayed ? GRAYED_TEXT : BUTTON_TEXT;
-          return (
-            <Pressable
-              key={i}
-              onPress={
-                interactionLocked || choice.grayed
-                  ? undefined
-                  : () => onChoicePress(i)
-              }
-              style={({ pressed }) => [
-                styles.button,
-                {
-                  width: buttonWidth,
-                  height: buttonHeight,
-                  backgroundColor: bg,
-                },
-                pressed && !choice.grayed && styles.pressed,
-              ]}
-              accessibilityLabel={choice.text}
-              accessibilityRole="button"
-              accessibilityState={{
-                disabled: choice.grayed || interactionLocked,
-              }}
-            >
-              <Text
-                style={[styles.buttonText, { color: fg }]}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
-                {choice.text}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {rows.map((row) => (
+          <View key={row[0]} style={styles.gridRow}>
+            {row.map((i) => {
+              const choice = choices[i];
+              const bg = choice.grayed ? GRAYED_BG : choice.bgColor;
+              const fg = choice.grayed ? GRAYED_TEXT : BUTTON_TEXT;
+              return (
+                <Pressable
+                  key={i}
+                  onPress={
+                    interactionLocked || choice.grayed
+                      ? undefined
+                      : () => onChoicePress(i)
+                  }
+                  style={({ pressed }) => [
+                    styles.button,
+                    {
+                      width: buttonWidth,
+                      backgroundColor: bg,
+                    },
+                    pressed && !choice.grayed && styles.pressed,
+                  ]}
+                  accessibilityLabel={choice.text}
+                  accessibilityRole="button"
+                  accessibilityState={{
+                    disabled: choice.grayed || interactionLocked,
+                  }}
+                >
+                  <Text
+                    style={[styles.buttonText, { color: fg }]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                  >
+                    {choice.text}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -179,12 +186,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flex: 1,
+    alignSelf: 'stretch',
     gap: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: 8,
+  },
+  gridRow: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+    minHeight: 44,
+    maxHeight: 220,
   },
   button: {
     borderRadius: 10,

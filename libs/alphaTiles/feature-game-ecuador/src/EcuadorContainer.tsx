@@ -6,8 +6,7 @@
  *
  * Port of Ecuador.java — see design.md for the full mapping table.
  */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { useAudio } from '@alphaTiles/data-audio';
@@ -27,6 +26,8 @@ type RouteParams = Record<string, string | string[] | GameShellIcons | undefined
   icons?: GameShellIcons;
 };
 
+type FieldSize = { width: number; height: number };
+
 const TILE_COUNT = 8;
 const WRONG_PICKS_CAP = TILE_COUNT - 1; // Java visibleGameButtons - 1
 
@@ -38,7 +39,6 @@ function EcuadorGame(): React.JSX.Element {
   } = shell;
   const audio = useAudio();
   const assets = useLangAssets();
-  const { width, height } = useWindowDimensions();
 
   const wordRows = assets.words.rows;
   const colorPalette = assets.colors.hexByIndex;
@@ -53,9 +53,14 @@ function EcuadorGame(): React.JSX.Element {
   const wrongPicksRef = useRef<string[]>([]);
   const isMountedRef = useRef(true);
 
-  const area = useMemo(() => ({ width, height }), [width, height]);
+  // Placement area = the measured tile field, not the window: the field sits
+  // below the prompt and inside the shell chrome, so window-sized placement
+  // put tiles off-screen / under the bottom bar on narrow viewports (#47).
+  const fieldSizeRef = useRef<FieldSize | null>(null);
 
   const startRound = useCallback(() => {
+    const area = fieldSizeRef.current;
+    if (area === null) return; // first round starts from handleFieldLayout
     setInteractionLocked(false);
 
     let placement: ReturnType<typeof placeTiles> = null;
@@ -108,18 +113,33 @@ function EcuadorGame(): React.JSX.Element {
       wordInLOP: pick.prompt.wordInLOP,
       wordInLWC: pick.prompt.wordInLWC,
     });
-  }, [setRefWord, setInteractionLocked, wordRows, area, colorPalette, assets.images.wordsAlt]);
+  }, [setRefWord, setInteractionLocked, wordRows, colorPalette, assets.images.wordsAlt]);
 
   useEffect(() => {
     isMountedRef.current = true;
-    startRound();
     return () => {
       isMountedRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useShellAdvance(startRound);
+
+  const handleFieldLayout = useCallback(
+    (size: FieldSize) => {
+      const prev = fieldSizeRef.current;
+      fieldSizeRef.current = size;
+      if (prev === null) {
+        startRound();
+        return;
+      }
+      if (prev.width === size.width && prev.height === size.height) return;
+      // Resized (rotation / desktop window): keep the round, re-place tiles.
+      const placed = placeTiles({ area: size });
+      if (placed === null) return;
+      setTiles((cur) => cur.map((t, i) => ({ ...t, ...placed[i] })));
+    },
+    [startRound],
+  );
 
   const onTilePress = useCallback(
     (slot: number) => {
@@ -163,12 +183,12 @@ function EcuadorGame(): React.JSX.Element {
         interactionLocked
         onTilePress={() => undefined}
         onImagePress={() => undefined}
+        onFieldLayout={() => undefined}
       />
     );
   }
 
-  if (tiles.length === 0) return <></>;
-
+  // Render even before the first round (tiles = []) so the field can be measured.
   return (
     <EcuadorScreen
       promptImage={promptImage}
@@ -177,6 +197,7 @@ function EcuadorGame(): React.JSX.Element {
       interactionLocked={interactionLocked}
       onTilePress={onTilePress}
       onImagePress={onImagePress}
+      onFieldLayout={handleFieldLayout}
     />
   );
 }

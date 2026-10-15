@@ -96,6 +96,8 @@ export function UiDoorGrid({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    // Clip rather than bleed past the viewport on narrow web windows (#47).
+    overflow: 'hidden',
   },
   grid: {
     flexDirection: 'row',
