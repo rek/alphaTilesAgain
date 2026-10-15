@@ -17,4 +17,4 @@ artifacts:
     dependencies: [design]
 apply:
   requires: [tasks, spec]
-  status: pending
+  status: done
