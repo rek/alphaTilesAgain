@@ -9,6 +9,8 @@ import React from 'react';
 import { useTranslation } from '@shared/util-i18n';
 import type { AudioGate } from '@alphaTiles/data-audio';
 import { WebAudioUnlockGatePresenter } from '@shared/ui-web-audio-unlock-gate';
+import { useLangAssets } from '@alphaTiles/data-language-assets';
+import { packDisplayName } from './packDisplayName';
 
 export function TapToBegin({
   isReady,
@@ -16,10 +18,12 @@ export function TapToBegin({
   unlock,
 }: Parameters<Parameters<typeof AudioGate>[0]['renderLocked']>[0]) {
   const { t } = useTranslation('chrome');
+  const name = packDisplayName(useLangAssets().langInfo);
+  // Waiting for the tap is not "loading": show just the pack name then (U14).
   return (
     <WebAudioUnlockGatePresenter
       isReady={isReady}
-      title={t('loading.title')}
+      title={isReady ? name : t('loading.title', { name })}
       label={isReady ? t('loading.tap_to_begin') : t('loading.progress', { percent })}
       onUnlock={unlock}
     />
