@@ -11,9 +11,8 @@ on:
         options:
           - eng
           - yue
-          - development
       submit:
-        description: Submit to Google Play (internal track, draft) when the build finishes
+        description: Submit to Google Play (internal track, draft) when the build finishes (main only)
         required: true
         default: false
         type: boolean
@@ -26,6 +25,13 @@ jobs:
     name: EAS Build (${{ github.event.inputs.profile }})
     runs-on: ubuntu-latest
     steps:
+      # A submit consumes a Play versionCode: only from main, never a feature branch.
+      - name: Guard submit to main
+        if: ${{ github.event.inputs.submit == 'true' && github.ref != 'refs/heads/main' }}
+        run: |
+          echo "::error::submit is only allowed from main (got $GITHUB_REF)"
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v5
 
@@ -48,9 +54,11 @@ jobs:
         working-directory: apps/alphaTiles
         env:
           APP_LANG: ${{ github.event.inputs.profile }}
+          PROFILE: ${{ github.event.inputs.profile }}
+          SUBMIT_INPUT: ${{ github.event.inputs.submit }}
         run: |
           SUBMIT=""
-          if [ "${{ github.event.inputs.submit }}" = "true" ] && [ "${{ github.event.inputs.profile }}" != "development" ]; then
-            SUBMIT="--auto-submit-with-profile=${{ github.event.inputs.profile }}"
+          if [ "$SUBMIT_INPUT" = "true" ]; then
+            SUBMIT="--auto-submit-with-profile=$PROFILE"
           fi
-          eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --no-wait $SUBMIT
+          eas build --platform android --profile "$PROFILE" --non-interactive --no-wait $SUBMIT
