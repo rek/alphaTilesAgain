@@ -21,6 +21,8 @@ export type SelfTestScreenProps = {
         endTitle: string;
         scoreText: string;
         scoreA11yLabel: string;
+        /** Encouragement + suggested menu step for this score. */
+        suggestion: string;
         tryAgainLabel: string;
         backToMenuLabel: string;
         onTryAgain: () => void;
@@ -66,6 +68,7 @@ export function SelfTestScreen({ title, backLabel, onBack, body }: SelfTestScree
           <Text style={styles.score} accessibilityLabel={body.scoreA11yLabel}>
             {body.scoreText}
           </Text>
+          <Text style={styles.suggestion}>{body.suggestion}</Text>
           <View style={styles.actions}>
             <Pressable
               onPress={body.onTryAgain}
@@ -139,6 +142,14 @@ const styles = StyleSheet.create({
     fontSize: 64,
     fontWeight: '800',
     color: '#1565C0',
+  },
+  suggestion: {
+    fontSize: 18,
+    lineHeight: 26,
+    color: '#1F2937',
+    textAlign: 'center',
+    paddingHorizontal: 24,
+    maxWidth: 420,
   },
   actions: {
     flexDirection: 'row',
