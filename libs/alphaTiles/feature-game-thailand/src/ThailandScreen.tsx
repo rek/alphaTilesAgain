@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType, LayoutChangeEvent } from 'react-native';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 import type { ThailandType } from './decodeThailandChallengeLevel';
 
 // Java 588-595 correct-feedback parity: when the player taps the correct
@@ -71,6 +71,7 @@ function RefDisplay({
   onRefPress: () => void;
   accessibilityLabel: string;
 }): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   if (refDisplay.type === 'image') {
     return (
       <Pressable
@@ -146,6 +147,7 @@ function ChoiceCell({
   onPress: () => void;
   accessibilityLabel: string;
 }): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const bg = feedback?.backgroundColor ?? DEFAULT_CHOICE_BG;
   // Feedback colours are pack colours (refColor): derive a readable text
   // colour from the background instead of trusting a fixed white (U3).
@@ -196,6 +198,7 @@ export function ThailandScreen({
   accessibilityRefLabel,
   accessibilityChoiceLabels,
 }: ThailandScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   // Measure the slot we actually occupy (between ScoreBar and chrome footer)
   // instead of useWindowDimensions, which previously caused content to overflow
   // behind the footer because cellSize≈height/4 consumed the full window.
@@ -263,7 +266,7 @@ export function ThailandScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     // Fill the shell slot's width: the shell centres its children, so without
@@ -294,18 +297,18 @@ const styles = StyleSheet.create({
   },
   refFallbackText: {
     color: REF_WORD_TEXT_COLOR,
-    fontSize: 18,
+    fontSize: 18 * fs,
     textAlign: 'center',
     paddingHorizontal: 4,
   },
   refText: {
     color: WHITE,
-    fontSize: 36,
+    fontSize: 36 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },
   audioIcon: {
-    fontSize: 48,
+    fontSize: 48 * fs,
   },
   grid: {
     gap: 10,
@@ -326,7 +329,7 @@ const styles = StyleSheet.create({
   },
   choiceText: {
     color: CHOICE_TEXT_COLOR,
-    fontSize: 24,
+    fontSize: 24 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },

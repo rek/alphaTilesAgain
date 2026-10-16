@@ -18,7 +18,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 import type { CardState } from './setupMexicoBoard';
 
 const HIDDEN_BG = '#555555';
@@ -51,6 +51,7 @@ export function MexicoScreen({
   interactionLocked,
   onCardPress,
 }: MexicoScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
 
   // Compute card size: fit the most cards possible while keeping them square.
@@ -157,7 +158,7 @@ export function MexicoScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     height: '80%',
   },
   cardText: {
-    fontSize: 20,
+    fontSize: 20 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
     paddingHorizontal: 4,

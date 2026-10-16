@@ -8,6 +8,9 @@ export type { Theme, FontMap } from './lib/buildTheme';
 export { ThemeProvider } from './lib/ThemeProvider';
 export { useTheme } from './lib/useTheme';
 export { useFontsReady } from './lib/useFontsReady';
+export { useFontScale } from './lib/useFontScale';
+export { useScaledStyles } from './lib/useScaledStyles';
+export { buildTypography } from './lib/typography';
 
 export { style } from './lib/style';
 export { readableTextColor } from './lib/readableTextColor';

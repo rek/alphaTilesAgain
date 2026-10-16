@@ -5,6 +5,7 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useScaledStyles } from '@shared/util-theme';
 
 export type SettingsScreenProps = {
   title: string;
@@ -42,6 +43,7 @@ export function SettingsScreen({
   onFeedback,
   emptyLabel,
 }: SettingsScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -107,7 +109,7 @@ export function SettingsScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
@@ -125,7 +127,7 @@ const styles = StyleSheet.create({
     marginEnd: 8,
   },
   title: {
-    fontSize: 20,
+    fontSize: 20 * fs,
     fontWeight: '700',
     color: '#1F2937',
   },
@@ -146,17 +148,17 @@ const styles = StyleSheet.create({
     marginEnd: 12,
   },
   rowLabel: {
-    fontSize: 17,
+    fontSize: 17 * fs,
     fontWeight: '600',
     color: '#1F2937',
   },
   rowHint: {
-    fontSize: 14,
+    fontSize: 14 * fs,
     color: '#6B7280',
     marginTop: 2,
   },
   empty: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     color: '#4B5563',
     textAlign: 'center',
     paddingVertical: 24,

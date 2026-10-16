@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 const GRAYED_BG = '#A9A9A9';
 const GRAYED_TEXT = '#000000';
@@ -43,6 +43,7 @@ export function PeruScreen({
   onChoicePress,
   onImagePress,
 }: PeruScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
   const imageSize = Math.min(Math.floor(width * 0.5), Math.floor(height * 0.35));
   const buttonWidth = Math.floor((width - 32) / 2);
@@ -107,7 +108,7 @@ export function PeruScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
     height: '90%',
   },
   imageFallback: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   buttonText: {
-    fontSize: 28,
+    fontSize: 28 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },

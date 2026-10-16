@@ -1,5 +1,6 @@
 import type { LangAssets } from '@alphaTiles/data-language-pack';
 import type { PlayerPreferences } from '@alphaTiles/data-players';
+import { parseFontScale } from './parseFontScale';
 
 /**
  * aa_settings.txt labels + defaults for the cross-cutting settings. The ONLY
@@ -17,6 +18,9 @@ const PACK = {
   numberOfAvatars: { label: 'Number of avatars', fallback: 12 },
 } as const;
 
+/** Optional; absent / non-numeric → 1.0, clamped [0.5, 2.5] (parseFontScale). */
+const FONT_SCALE_LABEL = 'Font Scale';
+
 /**
  * Effective settings: the pack's aa_settings.txt values, typed and defaulted,
  * with the player's preferences layered on top of the player-overridable ones.
@@ -28,7 +32,7 @@ export function effectiveSettingsOf({
   settings,
   preferences = {},
 }: {
-  settings: Pick<LangAssets['settings'], 'findBoolean' | 'findInt'>;
+  settings: Pick<LangAssets['settings'], 'find' | 'findBoolean' | 'findInt'>;
   preferences?: PlayerPreferences;
 }) {
   const bool = (key: keyof typeof PACK) => {
@@ -55,6 +59,8 @@ export function effectiveSettingsOf({
     /** After 12 trackers: 1 keep playing, 2 menu, 3 celebrate + next game (acted on via @alphaTiles/data-door-progress). */
     afterTwelveCheckedTrackers: int('afterTwelveCheckedTrackers'),
     numberOfAvatars: int('numberOfAvatars'),
+    /** Pack-wide typography multiplier (font-scaling-accessibility). Not player-overridable. */
+    fontScale: parseFontScale(settings.find(FONT_SCALE_LABEL)),
   };
 }
 

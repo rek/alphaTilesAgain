@@ -25,6 +25,7 @@ import { pickTaiwanCharacters } from './pickTaiwanCharacters';
 import { createInkResetScheduler } from './inkResetScheduler';
 import type { TaiwanData } from './buildTaiwanData';
 import type { StrokeData } from '@alphaTiles/data-stroke-data';
+import { useScaledStyles } from '@shared/util-theme';
 
 const GOAL_COUNT = 5;
 const MISTAKE_HINT_THRESHOLD = 3;
@@ -58,6 +59,7 @@ export type TaiwanInnerProps = {
 };
 
 export function TaiwanInner(props: TaiwanInnerProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <GestureHandlerRootView style={styles.gestureRoot}>
       <GameShellContainer icons={props.icons} showInstructionsButton={false}>
@@ -68,6 +70,7 @@ export function TaiwanInner(props: TaiwanInnerProps): React.JSX.Element {
 }
 
 function TaiwanGame({ cl }: { cl: CLConfig }): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const shell = useGameShell();
   const assets = useLangAssets();
   const taiwanData = usePrecompute<TaiwanData>('taiwan');
@@ -314,7 +317,7 @@ function CharRound({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   gestureRoot: {
     flex: 1,
   },
@@ -325,7 +328,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 18 * fs,
     color: '#616161',
     textAlign: 'center',
   },

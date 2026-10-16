@@ -7,6 +7,7 @@
  */
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 import type { ImageSourcePropType } from 'react-native';
 
 const SOLVED_COLOR = '#4CAF50';
@@ -47,6 +48,7 @@ export function ChinaScreen({
   onImagePress,
   a11yLabels,
 }: ChinaScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
 
   // 5 columns total: 1 image column + 4 tile columns; 4 rows; leave room for chrome
@@ -120,7 +122,7 @@ export function ChinaScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -153,7 +155,7 @@ const styles = StyleSheet.create({
   },
   imageLabel: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: 11 * fs,
     textAlign: 'center',
     paddingHorizontal: 2,
   },
@@ -164,7 +166,7 @@ const styles = StyleSheet.create({
   },
   tileLabel: {
     color: '#fff',
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },

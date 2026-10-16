@@ -7,6 +7,7 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { UiPlayerCard } from '@shared/ui-player-card';
 import type { DeleteState } from '@shared/ui-player-card';
+import { useScaledStyles } from '@shared/util-theme';
 
 export type PlayerCardData = {
   id: string;
@@ -45,6 +46,7 @@ export function ChoosePlayerScreen({
   addLabel,
   a11y,
 }: ChoosePlayerScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const emptySlots = Math.max(0, avatarCount - players.length - 1);
 
   return (
@@ -86,12 +88,12 @@ export function ChoosePlayerScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: {
     padding: 16,
   },
   heading: {
-    fontSize: 24,
+    fontSize: 24 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 16,
@@ -117,11 +119,11 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   addIcon: {
-    fontSize: 28,
+    fontSize: 28 * fs,
     color: '#374151',
   },
   addLabel: {
-    fontSize: 14,
+    fontSize: 14 * fs,
     fontWeight: '600',
     color: '#374151',
     textAlign: 'center',

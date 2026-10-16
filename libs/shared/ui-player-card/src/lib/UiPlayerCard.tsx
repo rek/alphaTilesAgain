@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ImageSourcePropType } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 
 export type DeleteState = 'idle' | 'armed' | 'confirm';
 
@@ -46,6 +47,7 @@ export function UiPlayerCard({
   deleteState,
   a11y,
 }: UiPlayerCardProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const showDeleteIcon = deleteState === 'armed' || deleteState === 'confirm';
 
   return (
@@ -101,7 +103,7 @@ export function UiPlayerCard({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   card: {
     alignItems: 'center',
     padding: 8,
@@ -113,7 +115,7 @@ const styles = StyleSheet.create({
   },
   name: {
     marginTop: 4,
-    fontSize: 14,
+    fontSize: 14 * fs,
     textAlign: 'center',
     maxWidth: 80,
   },

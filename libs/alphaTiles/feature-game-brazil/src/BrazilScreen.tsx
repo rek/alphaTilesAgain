@@ -17,7 +17,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 const TILE_BG = '#A9A9A9';
 const CORRECT_BG = '#4CAF50';
@@ -69,6 +69,7 @@ function ChoiceTile({
   onPress: () => void;
   label: string;
 }): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   if (!choice.visible) {
     return <View style={[styles.choiceCell, styles.choiceHidden, { width: size, height: size }]} />;
   }
@@ -115,6 +116,7 @@ export function BrazilScreen({
   onWordImagePress,
   accessibilityChoiceLabels,
 }: BrazilScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
   const usingGrid = visibleChoiceCount > 4;
   const tileSize = usingGrid
@@ -175,7 +177,7 @@ export function BrazilScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -191,7 +193,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   wordImage: { width: '90%', height: '90%' },
-  wordImageFallback: { fontSize: 16, color: BLACK, textAlign: 'center', paddingHorizontal: 6 },
+  wordImageFallback: { fontSize: 16 * fs, color: BLACK, textAlign: 'center', paddingHorizontal: 6 },
   constructedWordRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -211,9 +213,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFDE7',
     borderColor: '#FBC02D',
   },
-  constructedTileText: { fontSize: 28, color: BLACK, fontWeight: '600' },
+  constructedTileText: { fontSize: 28 * fs, color: BLACK, fontWeight: '600' },
   constructedTileBlankText: { color: '#F57F17' },
-  constructedWordText: { fontSize: 36, color: BLACK, fontWeight: 'bold' },
+  constructedWordText: { fontSize: 36 * fs, color: BLACK, fontWeight: 'bold' },
   choicesContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -229,6 +231,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   choiceHidden: { opacity: 0 },
-  choiceText: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: WHITE },
+  choiceText: { fontSize: 24 * fs, fontWeight: 'bold', textAlign: 'center', color: WHITE },
   pressed: { opacity: 0.7, transform: [{ scale: 0.95 }] },
 });

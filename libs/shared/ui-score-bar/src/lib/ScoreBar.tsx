@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image, ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 export type TrackerState = 'complete' | 'incomplete';
 
@@ -26,6 +26,7 @@ export function ScoreBar({
   trackersLabel,
   trackerIcons,
 }: ScoreBarProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const textColor = readableTextColor(gameColor);
   return (
     <View style={styles.row}>
@@ -88,7 +89,7 @@ export function ScoreBar({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 16 * fs,
   },
   levelBadge: {
     minWidth: 36,
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
   levelText: {
     color: '#000',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 16 * fs,
   },
   trackers: {
     flex: 1,
@@ -146,6 +147,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#BDBDBD',
   },
   scoreLabel: {
-    fontSize: 10,
+    fontSize: 10 * fs,
   },
 });

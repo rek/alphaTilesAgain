@@ -14,6 +14,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@shared/util-analytics": "*",
     "@shared/util-i18n": "*",
+    "@shared/util-theme": "*",
     "expo-router": "~55.0.12",
     "@alphaTiles/data-doors": "*",
     "react": "*",

@@ -9,6 +9,7 @@
 
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export interface AboutScreenProps {
@@ -75,6 +76,7 @@ export interface AboutScreenProps {
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
 
 export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const {
     onBack,
     versionLabel,
@@ -212,7 +214,7 @@ export function AboutScreen(props: AboutScreenProps): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -231,29 +233,29 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   appName: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
   },
   langPlusCountry: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     color: '#555',
   },
   version: {
-    fontSize: 14,
+    fontSize: 14 * fs,
     color: '#888',
   },
   creditsHeading: {
-    fontSize: 18,
+    fontSize: 18 * fs,
     fontWeight: '600',
     marginTop: 12,
   },
   credits: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 14 * fs,
+    lineHeight: 20 * fs,
   },
   legal: {
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 12 * fs,
+    lineHeight: 17 * fs,
     color: '#444',
   },
   linkTarget: {
@@ -263,7 +265,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   link: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     color: '#0066CC',
     textDecorationLine: 'underline',
   },

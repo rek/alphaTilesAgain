@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 const GRAYED_BG = '#A9A9A9';
 const GRAYED_TEXT = '#000000';
@@ -66,6 +66,7 @@ export function GeorgiaScreen({
   onChoicePress,
   onImagePress,
 }: GeorgiaScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
   const imageSize = Math.min(
     Math.floor(width * 0.45),
@@ -171,7 +172,7 @@ export function GeorgiaScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   correctMark: {
     position: 'absolute',
     top: 6,
@@ -193,14 +194,14 @@ const styles = StyleSheet.create({
   },
   image: { width: '90%', height: '90%' },
   imageFallback: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
     paddingHorizontal: 8,
   },
   revealedText: {
-    fontSize: 26,
+    fontSize: 26 * fs,
     fontWeight: 'bold',
     color: '#222',
     textAlign: 'center',
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   buttonText: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },

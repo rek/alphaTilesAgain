@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg';
+import { useScaledStyles } from '@shared/util-theme';
 
 export interface ShareScreenProps {
   /** Called when user taps the back button */
@@ -46,6 +47,7 @@ export interface ShareScreenProps {
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
 
 export function ShareScreen(props: ShareScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const {
     onBack,
     available,
@@ -121,7 +123,7 @@ export function ShareScreen(props: ShareScreenProps): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   outerContainer: {
     flex: 1,
   },
@@ -144,12 +146,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   unavailable: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     color: '#666',
     textAlign: 'center',
   },
   instructions: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     textAlign: 'center',
   },
   qrWrapper: {
@@ -164,7 +166,7 @@ const styles = StyleSheet.create({
   },
   shareButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 16 * fs,
     fontWeight: '600',
   },
 });

@@ -13,6 +13,7 @@
 
 import React from 'react';
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 import { LangAssetsBindError } from '@alphaTiles/data-language-pack';
 import { LangPackParseError } from '@shared/util-lang-pack-parser';
 import { t } from '@shared/util-i18n';
@@ -40,6 +41,7 @@ function formatError(error: Error): string {
 }
 
 export function ErrorScreen({ error }: Props): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <View
       style={styles.container}
@@ -63,7 +65,7 @@ export function ErrorScreen({ error }: Props): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -73,23 +75,23 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   title: {
-    fontSize: 20,
+    fontSize: 20 * fs,
     fontWeight: 'bold',
     marginBottom: 12,
   },
   errorName: {
-    fontSize: 14,
+    fontSize: 14 * fs,
     fontWeight: '600',
     color: '#c00',
     marginBottom: 8,
   },
   errorMessage: {
-    fontSize: 14,
+    fontSize: 14 * fs,
     fontFamily: 'monospace',
     marginBottom: 16,
   },
   hint: {
-    fontSize: 12,
+    fontSize: 12 * fs,
     color: '#666',
     fontStyle: 'italic',
   },

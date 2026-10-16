@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ColorTile, TileColor } from './evaluateGuess';
+import { useScaledStyles } from '@shared/util-theme';
 
 const TILE_BG: Record<TileColor, string> = {
   GREEN:  '#4CAF50', // colorList[3]
@@ -87,6 +88,7 @@ export function ChileScreen({
   rtl = false,
   a11yLabels,
 }: ChileScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width } = useWindowDimensions();
   const iconFlip = rtl ? styles.iconFlipped : null;
 
@@ -212,7 +214,7 @@ export function ChileScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -236,7 +238,7 @@ const styles = StyleSheet.create({
   guessTileText: {
     color: TILE_TEXT_COLOR,
     fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 18 * fs,
     paddingHorizontal: 2,
   },
   buttonRow: {
@@ -261,7 +263,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: TILE_TEXT_COLOR,
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
   },
   keyboard: {
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
   keyTileText: {
     color: TILE_TEXT_COLOR,
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 14 * fs,
     paddingHorizontal: 2,
   },
   pressed: {

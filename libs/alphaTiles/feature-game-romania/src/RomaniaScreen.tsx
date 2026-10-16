@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 
 export type RomaniaScreenProps = {
   /** Display text for the focus tile (the tile being practiced). */
@@ -34,6 +35,7 @@ export function RomaniaScreen({
   onNext,
   onPrev,
 }: RomaniaScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <View style={styles.root}>
       <View style={styles.focusTileContainer}>
@@ -87,7 +89,7 @@ export function RomaniaScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -105,7 +107,7 @@ const styles = StyleSheet.create({
   },
   focusTileLabel: {
     color: '#fff',
-    fontSize: 48,
+    fontSize: 48 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -121,7 +123,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   wordTile: {
-    fontSize: 36,
+    fontSize: 36 * fs,
     color: '#212121',
   },
   boldTile: {
@@ -140,7 +142,7 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 18 * fs,
     fontWeight: '600',
   },
 });

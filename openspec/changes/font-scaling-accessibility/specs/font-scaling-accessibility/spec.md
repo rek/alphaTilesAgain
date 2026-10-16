@@ -2,12 +2,12 @@
 
 ### Requirement: Lang pack "Font Scale" setting scales the typography ladder
 
-`LangAssetsProvider` SHALL read the `"Font Scale"` value from `aa_settings.txt`, parse it to a number, and pass it as the third argument to `buildTheme`. When the key is absent or the parsed value is not a finite number, the provider SHALL pass `1.0`. The provider SHALL clamp parsed values to the closed range `[0.5, 2.5]`.
+The app shell (`AppShell`, via `effectiveSettingsOf(...).fontScale` in `@alphaTiles/data-settings`) SHALL read the `"Font Scale"` value from `aa_settings.txt`, parse it to a number, and pass it to `ThemeProvider`, which passes it as the third argument to `buildTheme`. When the key is absent or the parsed value is not a finite number, the provider SHALL pass `1.0`. The provider SHALL clamp parsed values to the closed range `[0.5, 2.5]`.
 
 #### Scenario: Setting "1.3" scales every slot by 1.3
 
 - **GIVEN** a lang pack whose `aa_settings.txt` contains `Font Scale\t1.3`
-- **WHEN** `LangAssetsProvider` builds the theme
+- **WHEN** the app shell builds the theme
 - **THEN** `theme.typography.xs.fontSize` equals `12 * 1.3`
 - **AND** `theme.typography.sm.fontSize` equals `14 * 1.3`
 - **AND** `theme.typography.md.fontSize` equals `16 * 1.3`
@@ -19,19 +19,19 @@
 #### Scenario: Absent setting yields default sizes
 
 - **GIVEN** a lang pack whose `aa_settings.txt` does not contain `Font Scale`
-- **WHEN** `LangAssetsProvider` builds the theme
+- **WHEN** the app shell builds the theme
 - **THEN** `theme.typography` matches the pre-change frozen values exactly
 
 #### Scenario: Non-numeric setting falls back to 1.0
 
 - **GIVEN** `aa_settings.txt` contains `Font Scale\tlarge`
-- **WHEN** `LangAssetsProvider` builds the theme
+- **WHEN** the app shell builds the theme
 - **THEN** the theme is built with `fontScale = 1.0`
 
 #### Scenario: Out-of-range setting is clamped
 
 - **GIVEN** `aa_settings.txt` contains `Font Scale\t10`
-- **WHEN** `LangAssetsProvider` builds the theme
+- **WHEN** the app shell builds the theme
 - **THEN** `fontScale` clamps to `2.5`
 - **AND** `theme.typography.md.fontSize` equals `16 * 2.5`
 
@@ -64,33 +64,30 @@
 - **WHEN** a caller invokes `buildTypography(2.0)`
 - **THEN** every slot's `fontSize` and `lineHeight` is exactly twice the value at `1.0`
 
-### Requirement: Non-geometry components consume `theme.typography`
+### Requirement: Non-geometry components scale with the pack font scale
 
-Every component listed in the migration scope (and any additional `fontSize: <number>` literal discovered in `libs/`) SHALL access font sizing via `useTheme().typography.<slot>` rather than a hardcoded numeric literal. The slot SHALL match the size mapping:
+Every non-geometry numeric `fontSize` / `lineHeight` literal in `libs/` SHALL be multiplied by the theme font scale (`useScaledStyles` / `useFontScale` from `@shared/util-theme`), keeping its numeric value so sizes are unchanged at scale `1.0`. (Re-validated: the earlier slot-snapping mapping changed default sizes; see design.md R2.) Outside `ThemeProvider` the scale SHALL be `1.0` rather than throwing.
 
-| Source `fontSize` | Slot |
-|---|---|
-| `≤ 12` | `xs` |
-| `13`–`15` | `sm` |
-| `16`–`18` | `md` |
-| `19`–`22` | `lg` |
-| `23`–`32` | `xl` |
-| `≥ 33` | `2xl` |
+#### Scenario: No unscaled numeric fontSize remains in non-geometry components
 
-#### Scenario: No hardcoded numeric fontSize remains in non-geometry components
-
-- **WHEN** `grep -rn "fontSize: [0-9]" libs/` is run after the migration
-- **THEN** the only matches are inside `libs/shared/ui-doors/src/lib/DoorSvg.tsx`
+- **WHEN** `grep -rnE "(fontSize|lineHeight): [0-9.]+ *(,|\}|$)" libs/` is run after the migration
+- **THEN** the only matches are lines marked with a `// geometry:` exemption comment
 
 #### Scenario: Migrated component scales with `Font Scale`
 
 - **GIVEN** a migrated component such as `<Tile>` rendered under a theme built with `fontScale=1.3`
 - **WHEN** the component renders
-- **THEN** its text uses `fontSize` equal to the mapped slot's scaled value (e.g. `xl` → `28 * 1.3`)
+- **THEN** its text uses `fontSize` equal to its literal size × 1.3 (e.g. `28 * 1.3`)
 
-### Requirement: `DoorSvg` geometry-based fontSize is exempt
+#### Scenario: Default scale is pixel-identical
 
-`DoorSvg.tsx` SHALL retain its geometry-based `fontSize = width * 0.35` calculation and SHALL NOT be migrated to `theme.typography`. The exemption SHALL be marked with an inline code comment so future audits do not flag it.
+- **GIVEN** a pack without `Font Scale`
+- **WHEN** any migrated component renders
+- **THEN** its `fontSize` equals the pre-change literal
+
+### Requirement: Geometry-based font sizes are exempt
+
+Font sizes derived from element geometry (DoorSvg `width * 0.35`, game-menu door sizes, Ecuador tile height, Myanmar cell side) SHALL NOT be scaled and SHALL carry a `// geometry:` comment. `DoorSvg.tsx` SHALL retain its geometry-based `fontSize = width * 0.35` calculation and SHALL NOT be migrated to `theme.typography`. The exemption SHALL be marked with an inline code comment so future audits do not flag it.
 
 #### Scenario: Exemption is preserved
 

@@ -4,6 +4,7 @@
  */
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 import { Ionicons } from '@expo/vector-icons';
 
 export type FeedbackScreenProps = {
@@ -35,6 +36,7 @@ export function FeedbackScreen({
   mailFailed,
   noMailAppMessage,
 }: FeedbackScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -79,7 +81,7 @@ export function FeedbackScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
     flexDirection: 'row',
@@ -90,9 +92,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#D1D5DB',
   },
   backButton: { padding: 4, marginEnd: 8 },
-  title: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
+  title: { fontSize: 20 * fs, fontWeight: '700', color: '#1F2937' },
   content: { padding: 20, gap: 16 },
-  intro: { fontSize: 16, lineHeight: 24, color: '#1F2937' },
+  intro: { fontSize: 16 * fs, lineHeight: 24 * fs, color: '#1F2937' },
   button: {
     minHeight: 48,
     borderRadius: 8,
@@ -101,8 +103,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
-  buttonText: { fontSize: 17, fontWeight: '600', color: '#FFFFFF' },
-  error: { fontSize: 15, lineHeight: 22, color: '#B91C1C' },
-  addressLabel: { fontSize: 14, color: '#6B7280' },
-  address: { fontSize: 17, fontWeight: '600', color: '#1F2937' },
+  buttonText: { fontSize: 17 * fs, fontWeight: '600', color: '#FFFFFF' },
+  error: { fontSize: 15 * fs, lineHeight: 22 * fs, color: '#B91C1C' },
+  addressLabel: { fontSize: 14 * fs, color: '#6B7280' },
+  address: { fontSize: 17 * fs, fontWeight: '600', color: '#1F2937' },
 });

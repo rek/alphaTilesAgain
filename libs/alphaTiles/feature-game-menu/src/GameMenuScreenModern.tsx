@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { readableAccentColor, readableTextColor } from '@shared/util-theme';
+import { readableAccentColor, readableTextColor, useScaledStyles } from '@shared/util-theme';
 import type { MenuDoor } from './buildMenuDoors';
 import { PlacementGuidanceSheet } from './PlacementGuidanceSheet';
 import type { PlacementGuidanceStrings } from './PlacementGuidanceSheet';
@@ -97,9 +97,10 @@ type CardProps = {
 };
 
 function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   // Named doors shrink the number to make room for the label underneath.
-  const fontSize = Math.floor(size * (door.name ? 0.26 : 0.38));
-  const nameFontSize = Math.max(11, Math.floor(size * 0.13));
+  const fontSize = Math.floor(size * (door.name ? 0.26 : 0.38)); // geometry: scales with door size, not pack font scale
+  const nameFontSize = Math.max(11, Math.floor(size * 0.13)); // geometry: scales with door size, not pack font scale
 
   const cardBg = door.visual === 'not-started'
     ? '#FFFFFF'
@@ -115,7 +116,7 @@ function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.El
   const numberColor = door.visual === 'in-process'
     ? (door.textColorHex ?? readableTextColor(door.colorHex))
     : readableAccentColor(door.colorHex, cardBg);
-  const levelFontSize = Math.max(11, Math.floor(size * 0.1));
+  const levelFontSize = Math.max(11, Math.floor(size * 0.1)); // geometry: scales with door size, not pack font scale
 
   return (
     <Pressable
@@ -201,6 +202,7 @@ export function GameMenuScreenModern({
   doorLabel,
   selfTest,
 }: GameMenuScreenModernProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width } = useWindowDimensions();
   // Measured inner width of the scroll content (excludes a desktop scrollbar);
   // until measured, estimate from the window (U9).
@@ -339,7 +341,7 @@ export function GameMenuScreenModern({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -378,11 +380,11 @@ const styles = StyleSheet.create({
   },
   playerName: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 16 * fs,
     fontWeight: '600',
   },
   score: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     fontWeight: '700',
     marginStart: 8,
     fontVariant: ['tabular-nums'],
@@ -428,7 +430,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     start: 8,
-    fontSize: 11,
+    fontSize: 11 * fs,
     fontWeight: '700',
   },
   masteryBadge: {
@@ -451,7 +453,7 @@ const styles = StyleSheet.create({
   },
   selfTestLabel: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 18 * fs,
     fontWeight: '700',
   },
   tabBar: {
@@ -478,7 +480,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 11 * fs,
     fontWeight: '600',
     color: '#4B5563',
     letterSpacing: 0.2,
@@ -493,6 +495,7 @@ type TabButtonProps = {
 };
 
 function TabButton({ icon, label, a11yLabel, onPress }: TabButtonProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <Pressable
       onPress={onPress}

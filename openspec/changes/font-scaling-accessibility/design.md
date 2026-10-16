@@ -142,3 +142,13 @@ For `StyleSheet.create` consumers, lift the style construction into the componen
 
 - Clamp range `[0.5, 2.5]` — confirm with design before merge.
 - Per-pack visual QA: should the verification step include a screenshot diff for at least one pack with `fontScale=1.3` (yue)? Default: manual smoke; automate later if regressions appear.
+
+## Re-validation against code (2026-10-16) — supersedes D1, D4, D5, D7 where they conflict
+
+Drafted before the current codebase; implementation deviates as follows.
+
+- **R1 (D1) — settings read site.** `LangAssetsProvider` doesn't build the theme; `ThemeProvider` is mounted in `feature-loading/AppShell.tsx`. Parsing lives in `@alphaTiles/data-settings` (`parseFontScale`, exposed as `effectiveSettingsOf(...).fontScale` — the one place app code spells settings labels). `AppShell` passes it to `<ThemeProvider fontScale>` → `buildTheme(palette, fontMap, fontScale)`. Same defaults/clamp `[0.5, 2.5]`. Validator lists `Font Scale` as a known key.
+- **R2 (D4) — no slot snapping.** Snapping literals to slots changes default sizes (18→16, 22→20, 24→28, 48/64→40 …), contradicting "default behavior unchanged" right before the yue release. Instead every literal keeps its value and is multiplied by the pack scale: `fontSize: 18 * fs`. Identical at 1.0, proportional at any scale. `theme.typography` (= ladder × scale) and `theme.fontScale` are both on the theme; future code should prefer slots.
+- **R3 (D7) — access path.** No component used `useTheme()`; ~45 files use module-level `StyleSheet.create`. Pattern: `const stylesFor = (fs: number) => StyleSheet.create({...})` + `const styles = useScaledStyles(stylesFor)` in each component (`@shared/util-theme`; memoized on scale). `useScaledStyles`/`useFontScale` do NOT throw outside `ThemeProvider` (fall back to 1.0): ErrorScreen/LoadingScreen render before the pack theme exists, and presenter tests render without a provider.
+- **R4 (D5) — scope.** Real count ~140 literal sites in ~45 files (paths in D5 are stale: `ui-custom-keyboard`, `ui-door-grid`, `ui-score-bar`, `ui-player-card`, `ui-celebration`, `ui-door`). Geometry-derived sizes are exempt like DoorSvg, with a `// geometry:` comment: DoorSvg, game-menu door number/name/level sizes, Ecuador tile font (tile height), Myanmar cell font (cell side). `apps/alphaTiles/src/dev/Spike*` dev screens are out of scope (not `libs/`).
+- **R5 — verification grep.** Unscaled literal check: `grep -rnE "(fontSize|lineHeight): [0-9.]+ *(,|\}|$)" libs/` → only geometry-commented lines.

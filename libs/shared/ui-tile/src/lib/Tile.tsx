@@ -6,7 +6,7 @@ import {
   Text,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 export type TileProps = {
   text?: string;
@@ -30,6 +30,7 @@ export function Tile({
   accessibilityLabel,
   accessibilityRole = 'button',
 }: TileProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <Pressable
       onPress={onPress}
@@ -58,7 +59,7 @@ export function Tile({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   tile: {
     flex: 1,
     aspectRatio: 1,
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   label: {
-    fontSize: 28,
+    fontSize: 28 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },

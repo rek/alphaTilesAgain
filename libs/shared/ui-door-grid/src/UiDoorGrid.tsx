@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 import { Ionicons } from '@expo/vector-icons';
 import { UiDoor } from '@shared/ui-door';
 
@@ -35,6 +36,7 @@ export function UiDoorGrid({
   doorWidth = 64,
   doorHeight = 88,
 }: UiDoorGridProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.grid}>
@@ -93,7 +95,7 @@ export function UiDoorGrid({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: {
     flex: 1,
     // Clip rather than bleed past the viewport on narrow web windows (#47).
@@ -113,7 +115,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   pageIndicator: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     minWidth: 60,
     textAlign: 'center',
   },

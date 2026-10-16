@@ -8,5 +8,6 @@ export default {
     '^@alphaTiles/data-language-assets$': '<rootDir>/src/__mocks__/data-language-assets.ts',
     '^@shared/util-i18n$': '<rootDir>/src/__mocks__/util-i18n.ts',
     '^@shared/util-analytics$': '<rootDir>/src/__mocks__/util-analytics.ts',
+    '^@shared/util-theme$': '<rootDir>/../../shared/util-theme/src/index.ts',
   },
 };

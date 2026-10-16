@@ -18,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType, ImageStyle } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 
 const TILE_BG = '#607D8B';
 const TILE_LOCKED_BG = '#4CAF50';
@@ -63,6 +64,7 @@ function TileBox({
   joinedRight: boolean;
   onPress: () => void;
 }): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <Pressable
       onPress={isLocked ? undefined : onPress}
@@ -95,6 +97,7 @@ function LinkButton({
   onPress: () => void;
   label: string;
 }): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   if (!visible) {
     return <View style={styles.linkButtonSpacer} />;
   }
@@ -126,6 +129,7 @@ export function JapanScreen({
   rtl = false,
   a11yLabels,
 }: JapanScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const mirror: ImageStyle | null = rtl ? { transform: [{ scaleX: -1 }] } : null;
 
   return (
@@ -186,7 +190,7 @@ export function JapanScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -206,7 +210,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   wordText: {
-    fontSize: 28,
+    fontSize: 28 * fs,
     fontWeight: 'bold',
     color: '#212121',
     textAlign: 'center',
@@ -244,7 +248,7 @@ const styles = StyleSheet.create({
   },
   tileText: {
     color: TILE_TEXT_COLOR,
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },
