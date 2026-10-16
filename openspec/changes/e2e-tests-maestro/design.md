@@ -97,3 +97,9 @@ iOS only, v1. `macos-14` GitHub Actions runner. Simulator: iPhone 15, iOS 17 (ma
 - Does `feature-game-door` already have a single tappable tile component to receive `testID`, or does the door navigate via a FlatList row?
 - Is `macos-14` available on the org's GitHub plan, or must we use `macos-13`?
 - Should flows share a Maestro `config.yaml` for appId / timeout defaults, or repeat per file?
+
+## D7. Split: WebMCP vs Maestro (supersedes D1, D4, D5 scope)
+
+Owner decision: most automated checking goes through dev-only WebMCP tools (`at_*`, see docs/TESTING.md) driven by Playwright against the yue web dev server (`apps/alphaTiles-agent-e2e`, `nx run alphaTiles-agent-e2e:e2e`). Tools prove state (door progress, scoring, audio probe), not buttons, and run anywhere Chrome does.
+
+Maestro keeps only what needs a native runtime: cold launch, on-screen keyboard player creation, door tap, the shell back button, and persistence across a full app relaunch, on Android (`yue-apk`, `com.makektm.alphatiles`). Flows 01, 02, 04 and a new 05 (relaunch persistence) remain; 03 (correct answer), the all-doors sweep, game classes, settings and share moved to WebMCP. Both layers are opt-in: no CI job (D4 dropped), no pre-push gate. Android replaces iOS as the Maestro target (the release is Android). Native audible output, release manifest permissions and boot time / memory with ~400 preloads stay manual (#57).

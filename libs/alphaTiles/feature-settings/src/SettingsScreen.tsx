@@ -51,6 +51,7 @@ export function SettingsScreen({
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel={backLabel}
+          testID="settings-back-button"
           hitSlop={HIT_SLOP}
           style={styles.backButton}
         >

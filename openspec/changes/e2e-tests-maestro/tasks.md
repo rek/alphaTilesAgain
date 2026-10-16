@@ -1,96 +1,55 @@
 # Tasks
 
-Implement golden-path Maestro E2E suite.
+Golden-path E2E. Scope changed (see design.md "D7. Split: WebMCP vs Maestro"): web-automatable checks moved to a WebMCP + Playwright project; Maestro keeps only what needs a native runtime. Re-validated against current code: routes in `apps/alphaTiles/app`, one game route `games/[classKey]`, door grid in `feature-game-menu`, choose-player / set-player-name / settings / self-test screens. Android (`yue-apk`, `com.makektm.alphatiles`) is the Maestro target, not iOS-only.
 
 ## 0. Preflight
 
-- [ ] Read `proposal.md` and `design.md` in full.
-- [ ] Confirm Maestro CLI installable in CI environment (`curl -Ls "https://get.maestro.mobile.dev" | bash`).
-- [ ] Confirm `macos-14` runner available on GitHub org plan; fall back to `macos-13` if not.
-- [ ] Identify which component exposes the game door tile (confirm `feature-game-door` or equivalent); note file path.
-- [ ] Confirm default language pack (China) is bundled in the Expo dev build used by CI.
+- [x] Read `proposal.md` and `design.md` in full.
+- [ ] Confirm Maestro CLI installable in CI environment — moved: no CI job (manual only), documented in docs/TESTING.md. — pending: device/emulator run
+- [x] Identify door tile component: `ModernDoorCard` in `libs/alphaTiles/feature-game-menu/src/GameMenuScreenModern.tsx` (+ classic `UiDoor`).
+- [x] Default pack for flows is `yue` (not China); door 1 is Thailand.
 
-## 1. Maestro Setup
+## 1. Maestro Setup (native only)
 
-- [ ] Create `e2e/maestro/` directory at repo root.
-- [ ] Create `e2e/maestro/config.yaml` with shared `appId` and default step timeout (30 s).
-- [ ] Verify `e2e/` is not excluded by `.gitignore`; add `e2e/` allowlist entry if needed.
+- [x] `e2e/maestro/` at repo root; `config.yaml` selects numbered flows only (`subflows/` are shared steps). `appId` is per flow (workspace config cannot hold it).
+- [x] `e2e/` not excluded by `.gitignore`.
 
 ## 2. testID Wiring
 
-Wire the four required `testID` props per design D2 table.
+- [x] `player-avatar-tile` (`UiPlayerCard`), `game-door-tile` (`ModernDoorCard`, `UiDoor`), `shell-back-button` (`GameShellScreen`).
+- [x] `game-board-tile` on the answer tile of Thailand, Mexico, Georgia, Italy, Sudan, Iraq (the classes the flows and WebMCP specs drive). Other classes: add as a flow needs them.
+- [x] Added for the flows and WebMCP tools: `add-player-button`, `avatar-option-N`, `keyboard-key-N`, `player-name-input`, `set-player-submit/cancel`, `menu-back-button`, `menu-tab-*`, `self-test-button`, `settings-back-button`, `self-test-back-button`, `shell-score-bar`, `shell-{instructions,replay,advance}-button`, `celebration-back-button`.
+- [x] No existing test/snapshot broke (`nx run-many -t test`).
+- [x] Typecheck affected libs.
 
-- [ ] `player-avatar-tile`: add `testID="player-avatar-tile"` to the player tile presenter in `libs/alphaTiles/feature-choose-player/`. Pass prop from container if needed.
-- [ ] `game-door-tile`: add `testID="game-door-tile"` to the game door tile/list-item presenter. Pass prop from container if needed.
-- [ ] `game-board-tile`: add `testID="game-board-tile"` to the tappable answer tile presenter in `libs/alphaTiles/feature-game-shell/`. Pass prop from container if needed.
-- [ ] `shell-back-button`: add `testID="shell-back-button"` to the back/close button in the shell header in `libs/alphaTiles/feature-game-shell/`.
-- [ ] Confirm no existing tests or storybook snapshots break due to the new `testID` props.
-- [ ] Type-check affected libs: `npx tsc --noEmit`.
+## 3. Flow Authoring (Maestro, native)
 
-## 3. Flow Authoring
-
-Write four Maestro `.yaml` flow files. Each file should start with `appId` (or reference config) and include `- waitForAnimationToEnd` before taps that follow navigation transitions.
-
-### Flow 1 — first-launch player creation (`01-player-creation.yaml`)
-
-- [ ] App launches to choose-player screen (or onboarding).
-- [ ] `waitForAnimationToEnd`.
-- [ ] Assert `player-avatar-tile` is visible.
-- [ ] Tap `player-avatar-tile`.
-- [ ] Assert app transitions away from choose-player screen (e.g., home/door screen visible).
-
-### Flow 2 — game door tap → game loads (`02-game-door-tap.yaml`)
-
-- [ ] App launches; navigate past player selection (tap `player-avatar-tile`).
-- [ ] `waitForAnimationToEnd`.
-- [ ] Assert `game-door-tile` is visible.
-- [ ] Tap `game-door-tile`.
-- [ ] `waitForAnimationToEnd`.
-- [ ] Assert `game-board-tile` is visible (game has loaded).
-
-### Flow 3 — correct answer tap → points increment (`03-correct-answer.yaml`)
-
-- [ ] Navigate to game (reuse steps from flow 2).
-- [ ] Assert `game-board-tile` is visible.
-- [ ] Tap `game-board-tile` (correct answer tile).
-- [ ] `waitForAnimationToEnd`.
-- [ ] Assert game progresses (next round or celebration visible; assert by element presence not score text).
-
-### Flow 4 — back navigation to menu (`04-back-navigation.yaml`)
-
-- [ ] Navigate to game (reuse steps from flow 2).
-- [ ] Assert `shell-back-button` is visible.
-- [ ] Tap `shell-back-button`.
-- [ ] `waitForAnimationToEnd`.
-- [ ] Assert `game-door-tile` or home screen is visible (returned to menu).
+- [x] `01-player-creation.yaml` — fresh launch, create player with the on-screen keyboard, door grid visible.
+- [x] `02-game-door-tap.yaml` — tap door 1, board loads.
+- [x] `04-back-navigation.yaml` — shell back button returns to the door grid.
+- [x] `05-relaunch-persistence.yaml` — player survives stop + relaunch (QA #57 persistence).
+- [ ] ~~`03-correct-answer.yaml`~~ — moved to WebMCP: `at_game_answer` (random correct tile; scoring is state, not a finger).
+- [ ] ~~All 28 doors / game classes / settings / share screen~~ — moved to WebMCP (`apps/alphaTiles-agent-e2e/specs`).
 
 ## 4. NX Target
 
-- [ ] Open `apps/alphaTiles/project.json`.
-- [ ] Add `e2e:maestro` target per design D3 JSON snippet.
-- [ ] Verify `nx run alphaTiles:e2e:maestro` resolves (dry-run without simulator: confirm command echoes correctly via `--verbose`).
+- [x] `e2e:maestro` in `apps/alphaTiles/project.json` per D3 (opt-in).
+- [ ] `nx run alphaTiles:e2e:maestro` against a booted emulator with the yue APK installed. — pending: device/emulator run
 
 ## 5. CI Wiring
 
-- [ ] Create `.github/workflows/e2e-maestro.yml`.
-- [ ] Trigger: `on: pull_request`.
-- [ ] Runner: `macos-14`.
-- [ ] Steps:
-  - [ ] `actions/checkout@v4`
-  - [ ] `actions/setup-node@v4` with Node version matching `.nvmrc` / `package.json engines`.
-  - [ ] Install Maestro CLI: `curl -Ls "https://get.maestro.mobile.dev" | bash && echo "$HOME/.maestro/bin" >> $GITHUB_PATH`.
-  - [ ] `npm ci` (or `yarn install --frozen-lockfile`).
-  - [ ] Boot iOS simulator: `xcrun simctl boot "iPhone 15"` (or Expo CLI prebuild step).
-  - [ ] Build/install app on simulator (Expo: `npx expo run:ios --configuration Release --simulator "iPhone 15"`).
-  - [ ] `nx run alphaTiles:e2e:maestro`.
-- [ ] Confirm job name appears in PR required checks (update branch protection if needed).
+- [x] No workflow: owner decision is opt-in e2e, not part of CI or the pre-push gate (D4 superseded; no `.github/workflows/e2e-maestro.yml`).
 
 ## 6. Verification
 
-- [ ] Run all four flows locally against a booted iOS simulator: `maestro test e2e/maestro/`.
-- [ ] Each flow exits 0 individually.
-- [ ] `nx run alphaTiles:e2e:maestro` runs all four and exits 0.
-- [ ] Introduce a deliberate break (comment out a `testID`), confirm Maestro fails and exits non-zero.
-- [ ] Push a PR; confirm GitHub Actions job appears and passes.
-- [ ] Confirm a PR with the deliberate break triggers a failed check.
-- [ ] Restore the break; merge.
+- [ ] Run flows 01, 02, 04, 05 against the `yue-apk` build on an emulator; each exits 0. — pending: device/emulator run
+- [ ] Deliberate break (comment out a testID): Maestro fails non-zero. — pending: device/emulator run
+- [x] YAML syntax of all flows validated (parse with a YAML loader).
+
+## 7. WebMCP + Playwright (moved scope)
+
+- [x] `libs/shared/util-agent-tools` (`defineAgentTool`, `registerAgentTools`, `agentProbe`), unit-tested; tsconfig path + tags (`type:util`, `scope:shared`).
+- [x] `at_location`, `at_navigate`, `at_players`, `at_doors`, `at_game_state`, `at_game_answer`, `at_audio_state`, `at_settings` in `libs/alphaTiles/feature-loading/src/agentTools/`, registered via `AgentToolsBridge` behind `__DEV__` + web; unit-tested.
+- [x] Production export carries no tool code (`expo export` grep for `at_*` names: 0 hits).
+- [x] `apps/alphaTiles-agent-e2e` Playwright project, `nx run alphaTiles-agent-e2e:e2e` (opt-in); 8 specs pass locally against the yue dev server.
+- [x] docs/TESTING.md: hand-check with Claude-in-Chrome, running both e2e layers.

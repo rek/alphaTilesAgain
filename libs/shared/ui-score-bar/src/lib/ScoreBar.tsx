@@ -50,6 +50,7 @@ export function ScoreBar({
         accessible
         accessibilityRole="progressbar"
         accessibilityLabel={trackersLabel}
+        testID="shell-score-bar"
         accessibilityValue={{
           min: 0,
           max: trackerStates.length,

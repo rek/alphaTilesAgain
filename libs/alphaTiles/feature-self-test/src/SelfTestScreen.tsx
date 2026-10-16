@@ -41,6 +41,7 @@ export function SelfTestScreen({ title, backLabel, onBack, body }: SelfTestScree
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel={backLabel}
+          testID="self-test-back-button"
           hitSlop={8}
           style={styles.backButton}
         >

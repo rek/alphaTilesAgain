@@ -1,0 +1,10 @@
+# Game shell -> menu door grid.
+appId: com.makektm.alphatiles
+---
+- waitForAnimationToEnd
+- tapOn:
+    id: shell-back-button
+- extendedWaitUntil:
+    visible:
+      id: game-door-tile
+    timeout: 15000

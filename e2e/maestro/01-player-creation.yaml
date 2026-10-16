@@ -1,0 +1,8 @@
+# Fresh launch -> choose-player -> create a player -> door grid.
+appId: com.makektm.alphatiles
+---
+- launchApp:
+    clearState: true
+- runFlow: subflows/create-player.yaml
+- assertVisible:
+    id: menu-tab-settings

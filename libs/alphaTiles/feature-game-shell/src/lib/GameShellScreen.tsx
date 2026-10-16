@@ -154,6 +154,7 @@ export function GameShellScreen({
             onPress={onBackPress}
             style={styles.chromeButton}
             accessibilityLabel={backLabel}
+            testID="shell-back-button"
             accessibilityRole="button"
             disabled={chromeLocked}
           >
@@ -170,6 +171,7 @@ export function GameShellScreen({
               onPress={onInstructionsPress}
               style={styles.chromeButton}
               accessibilityLabel={instructionsLabel}
+              testID="shell-instructions-button"
               accessibilityRole="button"
               disabled={chromeLocked}
             >
@@ -186,6 +188,7 @@ export function GameShellScreen({
             onPress={onReplayPress}
             style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
             accessibilityLabel={replayLabel}
+            testID="shell-replay-button"
             accessibilityRole="button"
             disabled={chromeLocked || advanceArrow === 'gray'}
           >
@@ -200,6 +203,7 @@ export function GameShellScreen({
               onPress={onAdvancePress}
               style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
               accessibilityLabel={a11yLabels.advance}
+              testID="shell-advance-button"
               accessibilityRole="button"
               disabled={chromeLocked || advanceArrow === 'gray'}
             >

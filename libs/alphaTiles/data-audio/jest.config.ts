@@ -14,6 +14,7 @@ export default {
     '^expo-audio$': '<rootDir>/src/__mocks__/expo-audio.ts',
     // react-native Platform is mocked per-test via jest.mock
     '^react-native$': '<rootDir>/src/__mocks__/react-native.ts',
+    '^@shared/util-agent-tools$': '<rootDir>/../../shared/util-agent-tools/src/index.ts',
     '^@shared/util-analytics$': '<rootDir>/src/__mocks__/util-analytics.ts',
   },
 };

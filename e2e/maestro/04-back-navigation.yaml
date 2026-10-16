@@ -1,0 +1,10 @@
+# Game -> back button -> door grid again.
+appId: com.makektm.alphatiles
+---
+- launchApp:
+    clearState: true
+- runFlow: subflows/create-player.yaml
+- runFlow: subflows/open-first-game.yaml
+- runFlow: subflows/back-to-menu.yaml
+- assertVisible:
+    id: game-door-tile

@@ -54,6 +54,7 @@ export function UiPlayerCard({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={a11y.select}
+      testID="player-avatar-tile"
       style={styles.card}
       onPress={onSelect}
       onLongPress={onRequestDelete}

@@ -62,6 +62,7 @@ export function UiCustomKeyboard({
         key={`key-${pageStart + i}`}
         accessibilityRole="button"
         accessibilityLabel={k.text}
+        testID={`keyboard-key-${pageStart + i}`}
         style={[styles.cell, { backgroundColor: k.colorHex || '#e0e0e0' }]}
         onPress={() => onKey(k.text)}
       >

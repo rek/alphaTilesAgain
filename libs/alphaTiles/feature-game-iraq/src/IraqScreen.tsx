@@ -115,6 +115,7 @@ export function IraqScreen({
               ]}
               accessibilityRole="button"
               accessibilityLabel={cell.text}
+              testID="game-board-tile"
               accessibilityState={{ disabled: interactionLocked }}
             >
               {overlayActive && overlay !== null && overlay.wordImage ? (

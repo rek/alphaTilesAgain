@@ -8,6 +8,7 @@
     "paths": {
       "expo-audio": ["libs/alphaTiles/data-audio/src/__mocks__/expo-audio.ts"],
       "react-native": ["libs/alphaTiles/data-audio/src/__mocks__/react-native.ts"],
+      "@shared/util-agent-tools": ["libs/shared/util-agent-tools/src/index.ts"],
       "@shared/util-analytics": ["libs/alphaTiles/data-audio/src/__mocks__/util-analytics.ts"]
     }
   },

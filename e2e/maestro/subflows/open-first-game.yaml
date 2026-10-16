@@ -1,0 +1,15 @@
+# Menu -> first door (yue door 1 = Thailand) -> game shell + board visible.
+appId: com.makektm.alphatiles
+---
+- waitForAnimationToEnd
+- tapOn:
+    id: game-door-tile
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: shell-back-button
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: game-board-tile
+    timeout: 20000

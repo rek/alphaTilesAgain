@@ -17,6 +17,7 @@
  */
 import React, { useContext, useState } from 'react';
 import { Platform } from 'react-native';
+import { agentProbe } from '@shared/util-agent-tools';
 import { track } from '@shared/util-analytics';
 import { AudioContext } from './AudioContext';
 import { millisecondsSinceBoot } from './millisecondsSinceBoot';
@@ -51,6 +52,7 @@ export function AudioGate({
       console.warn('[data-audio] AudioGate: preload failed; no clips to prime');
     }
     track('audio_unlock_web', { millisecondsSinceBoot: millisecondsSinceBoot() });
+    if (__DEV__) agentProbe.audioUnlocked();
     setIsUnlocked(true);
   };
 

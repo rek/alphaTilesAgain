@@ -73,6 +73,7 @@ export function ChoosePlayerScreen({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={addLabel}
+          testID="add-player-button"
           style={styles.addSlot}
           onPress={onAddPlayer}
         >

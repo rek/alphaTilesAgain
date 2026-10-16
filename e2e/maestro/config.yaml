@@ -1,0 +1,5 @@
+# Maestro workspace config. Only top-level numbered flows run; shared steps live
+# in subflows/ and are pulled in with runFlow. Each flow declares its own appId
+# (the workspace config cannot): the yue pack owns the bare store id.
+flows:
+  - "[0-9][0-9]-*.yaml"

@@ -10,6 +10,7 @@
     "expo-audio": "*",
     "react": "*",
     "react-native": "*",
+    "@shared/util-agent-tools": "*",
     "@shared/util-analytics": "*",
     "@shared/util-phoneme": "*",
     "@shared/util-hooks": "*"

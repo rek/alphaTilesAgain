@@ -1,0 +1,7 @@
+# Create player, tap the first door, game board loads.
+appId: com.makektm.alphatiles
+---
+- launchApp:
+    clearState: true
+- runFlow: subflows/create-player.yaml
+- runFlow: subflows/open-first-game.yaml
