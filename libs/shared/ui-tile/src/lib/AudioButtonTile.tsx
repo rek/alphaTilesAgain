@@ -1,11 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 import { Tile } from './Tile';
 import type { TileProps } from './Tile';
 
 export type AudioButtonTileProps = TileProps;
 
 export function AudioButtonTile(props: AudioButtonTileProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <View style={styles.wrapper}>
       <Tile {...props} />
@@ -16,7 +18,7 @@ export function AudioButtonTile(props: AudioButtonTileProps): React.JSX.Element 
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   wrapper: {
     flex: 1,
     aspectRatio: 1,
@@ -30,6 +32,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   speakerIcon: {
-    fontSize: 10,
+    fontSize: 10 * fs,
   },
 });

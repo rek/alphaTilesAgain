@@ -26,7 +26,7 @@ export function DoorSvg({
   const archY = arcR + sw / 2;
   const bottomY = height - sw / 2;
   const d = `M ${pad},${bottomY} L ${pad},${archY} A ${arcR},${arcR} 0 0 1 ${width - pad},${archY} L ${width - pad},${bottomY} Z`;
-  const fontSize = width * 0.35;
+  const fontSize = width * 0.35; // geometry: scales with SVG width, not theme typography
   const textY = height * 0.5 + height / 3;
 
   return (

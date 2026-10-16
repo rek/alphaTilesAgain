@@ -8,6 +8,7 @@
  */
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 
 export function WebAudioUnlockGatePresenter({
   isReady,
@@ -22,6 +23,7 @@ export function WebAudioUnlockGatePresenter({
   title: string;
   onUnlock: () => void;
 }) {
+  const styles = useScaledStyles(stylesFor);
   return (
     <Pressable
       style={styles.overlay}
@@ -40,7 +42,7 @@ export function WebAudioUnlockGatePresenter({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   overlay: {
     flex: 1,
     alignItems: 'center',
@@ -50,7 +52,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   title: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     color: '#212121',
     textAlign: 'center',
@@ -67,7 +69,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 16 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },

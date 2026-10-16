@@ -23,7 +23,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType, ImageStyle } from 'react-native';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 export type MalaysiaRow = {
   /** Standardized text shown to the learner (LOP, post-standardize). */
@@ -75,6 +75,7 @@ export function MalaysiaScreen({
   onNext,
   a11yLabels,
 }: MalaysiaScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width } = useWindowDimensions();
 
   const showPrev = page > 0;
@@ -178,7 +179,7 @@ export function MalaysiaScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'stretch',
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
   },
   rowText: {
     flex: 1,
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: '600',
     paddingEnd: 8,
   },
@@ -236,12 +237,12 @@ const styles = StyleSheet.create({
     height: 48,
   },
   arrowFallback: {
-    fontSize: 32,
+    fontSize: 32 * fs,
     fontWeight: 'bold',
     color: '#333',
   },
   pageLabel: {
-    fontSize: 14,
+    fontSize: 14 * fs,
     color: '#444',
     minWidth: 60,
     textAlign: 'center',

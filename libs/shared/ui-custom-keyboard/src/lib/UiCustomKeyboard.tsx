@@ -11,6 +11,7 @@
  */
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 import { Ionicons } from '@expo/vector-icons';
 
 const KEYS_PER_PAGE = 33;
@@ -38,6 +39,7 @@ export function UiCustomKeyboard({
   onBackspace,
   a11y,
 }: UiCustomKeyboardProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const [page, setPage] = useState(0);
 
   const needsPagination = keys.length > TOTAL_CELLS;
@@ -137,7 +139,7 @@ export function UiCustomKeyboard({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   wrapper: {
     width: '100%',
   },
@@ -161,7 +163,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#c8c8c8',
   },
   keyText: {
-    fontSize: 18,
+    fontSize: 18 * fs,
     textAlign: 'center',
   },
   backspaceButton: {
@@ -173,6 +175,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   backspaceText: {
-    fontSize: 20,
+    fontSize: 20 * fs,
   },
 });

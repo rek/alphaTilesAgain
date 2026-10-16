@@ -12,6 +12,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@shared/util-analytics": "*",
     "@shared/util-i18n": "*",
+    "@shared/util-theme": "*",
     "expo-application": "*",
     "expo-constants": "*",
     "expo-router": "~55.0.12",

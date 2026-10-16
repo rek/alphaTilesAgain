@@ -12,6 +12,8 @@
 
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+import { ThemeProvider } from '@shared/util-theme';
 import { AboutScreen } from './AboutScreen';
 
 const BASE_PROPS = {
@@ -160,5 +162,24 @@ describe('AboutScreen', () => {
       <AboutScreen {...BASE_PROPS} thirdPartyLicence={{ ...licence, expanded: true }} />,
     );
     expect(expanded.getByText('ARPHIC PUBLIC LICENSE ...')).toBeTruthy();
+  });
+});
+
+describe('AboutScreen font scale (font-scaling-accessibility)', () => {
+  const fontSizeOf = (el: { props: { style?: unknown } }) =>
+    StyleSheet.flatten(el.props.style as never)?.fontSize;
+
+  it('no provider → literal size (22)', () => {
+    const { getByText } = render(<AboutScreen {...BASE_PROPS} />);
+    expect(fontSizeOf(getByText('English'))).toBe(22);
+  });
+
+  it('pack Font Scale 1.5 → 22 * 1.5', () => {
+    const { getByText } = render(
+      <ThemeProvider palette={['#9C27B0']} fontMap={{}} fontScale={1.5}>
+        <AboutScreen {...BASE_PROPS} />
+      </ThemeProvider>,
+    );
+    expect(fontSizeOf(getByText('English'))).toBe(33);
   });
 });

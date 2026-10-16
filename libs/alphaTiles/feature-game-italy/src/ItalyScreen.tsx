@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ImageSourcePropType } from 'react-native';
-import { readableAccentColor } from '@shared/util-theme';
+import { readableAccentColor, useScaledStyles } from '@shared/util-theme';
 
 export type ItalyBoardCell = {
   /** Text to render on the cell (wordInLOP for T variant, syllable for S). */
@@ -68,6 +68,7 @@ export function ItalyScreen({
   onTilePress,
   onCallerPress,
 }: ItalyScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
 
   const cols = 4;
@@ -192,7 +193,7 @@ const GAP = 4;
 const PADDING = 8;
 const COVERED_TEXT = '#000000';
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
     height: 48,
   },
   callerText: {
-    fontSize: 28,
+    fontSize: 28 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   cellText: {
-    fontSize: 14,
+    fontSize: 14 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
     paddingHorizontal: 2,

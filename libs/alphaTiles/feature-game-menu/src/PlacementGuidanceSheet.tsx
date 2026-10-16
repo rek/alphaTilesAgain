@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 
 export type PlacementGuidanceStrings = {
   title: string;
@@ -24,6 +25,7 @@ export function PlacementGuidanceSheet({
   strings: PlacementGuidanceStrings;
   onClose: () => void;
 }): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
@@ -55,7 +57,7 @@ export function PlacementGuidanceSheet({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontSize: 20,
+    fontSize: 20 * fs,
     fontWeight: '700',
     color: '#111827',
   },
@@ -87,18 +89,18 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   bandTitle: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     fontWeight: '700',
     color: '#1F2937',
   },
   body: {
-    fontSize: 15,
-    lineHeight: 21,
+    fontSize: 15 * fs,
+    lineHeight: 21 * fs,
     color: '#374151',
   },
   tip: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 14 * fs,
+    lineHeight: 20 * fs,
     color: '#4B5563',
     fontStyle: 'italic',
   },
@@ -110,7 +112,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#D1D5DB',
   },
   closeLabel: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     fontWeight: '700',
     color: '#2563EB',
   },

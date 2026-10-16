@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BackHandler, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 import LottieView from 'lottie-react-native';
 import type { AnimationObject } from 'lottie-react-native';
 
@@ -16,6 +17,7 @@ export function Celebration({
   backLabel,
   onMount,
 }: CelebrationProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   useEffect(() => {
     onMount?.();
     // Mount-only — fire once when Celebration appears.
@@ -49,7 +51,7 @@ export function Celebration({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   screen: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#fff',
@@ -71,7 +73,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 18 * fs,
     fontWeight: 'bold',
   },
 });

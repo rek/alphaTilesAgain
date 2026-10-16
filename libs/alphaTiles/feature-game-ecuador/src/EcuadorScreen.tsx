@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 const GRAYED_BG = '#A9A9A9';
 const TILE_FONT_SIZE = 22;
@@ -56,6 +56,7 @@ export function EcuadorScreen({
   onImagePress,
   onFieldLayout,
 }: EcuadorScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
   const imageSize = Math.min(Math.floor(width * 0.4), Math.floor(height * 0.18));
 
@@ -124,7 +125,7 @@ export function EcuadorScreen({
                 // tile height (height = width / 4) so text never clips (#47).
                 style={[
                   styles.tileText,
-                  { color: fg, fontSize: tileFontSize(tile.height) },
+                  { color: fg, fontSize: tileFontSize(tile.height) }, // geometry: scales with tile height, not pack font scale
                 ]}
                 numberOfLines={1}
                 adjustsFontSizeToFit
@@ -139,7 +140,7 @@ export function EcuadorScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     // Shell centres its child; stretch so the measured field spans the width.
@@ -163,14 +164,14 @@ const styles = StyleSheet.create({
     height: '90%',
   },
   imageFallback: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
     paddingHorizontal: 8,
   },
   promptLabel: {
-    fontSize: 24,
+    fontSize: 24 * fs,
     fontWeight: 'bold',
     color: '#222',
     textAlign: 'center',
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   tileText: {
-    fontSize: TILE_FONT_SIZE,
+    fontSize: TILE_FONT_SIZE, // geometry: scales with tile height, not pack font scale
     fontWeight: 'bold',
     textAlign: 'center',
   },

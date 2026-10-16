@@ -42,6 +42,20 @@ describe('buildTheme', () => {
       expect(keys).toEqual(expect.arrayContaining(['xs', 'sm', 'md', 'lg', 'xl', '2xl']));
       expect(keys.length).toBe(6);
     });
+
+    it('two-arg call: fontScale 1, unscaled ladder', () => {
+      const theme = buildTheme(ENG_PALETTE, { primary: 'font-r' });
+      expect(theme.fontScale).toBe(1);
+      expect(theme.typography.md).toEqual({ fontSize: 16, lineHeight: 24 });
+    });
+
+    it('fontScale 1.3 scales every slot', () => {
+      const theme = buildTheme(ENG_PALETTE, { primary: 'font-r' }, 1.3);
+      expect(theme.fontScale).toBe(1.3);
+      expect(theme.typography.xs.fontSize).toBeCloseTo(12 * 1.3);
+      expect(theme.typography.md.fontSize).toBeCloseTo(16 * 1.3);
+      expect(theme.typography['2xl'].lineHeight).toBeCloseTo(48 * 1.3);
+    });
   });
 
   describe('spacing', () => {

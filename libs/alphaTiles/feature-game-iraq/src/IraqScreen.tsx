@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import { IRAQ_GRID_COLUMNS, IRAQ_PAGE_SIZE } from './iraqPagination';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 export type IraqTileView = {
   /** Visible label — base text or stripped iconic word when overlay active. */
@@ -74,6 +74,7 @@ export function IraqScreen({
   onNext,
   a11yLabels,
 }: IraqScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
   const gridWidth = Math.min(width - 32, height * 1.4);
   const tileSize = Math.floor(gridWidth / IRAQ_GRID_COLUMNS) - 4;
@@ -174,7 +175,7 @@ export function IraqScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   cellText: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
     paddingHorizontal: 4,
@@ -230,14 +231,14 @@ const styles = StyleSheet.create({
     transform: [{ scaleX: -1 }],
   },
   arrowText: {
-    fontSize: 24,
+    fontSize: 24 * fs,
     color: '#000',
   },
   arrowHidden: {
     opacity: 0,
   },
   pageLabel: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     fontWeight: '600',
     color: '#333',
   },

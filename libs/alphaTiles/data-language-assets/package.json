@@ -10,6 +10,7 @@
     "@alphaTiles/data-language-pack": "*",
     "@shared/util-lang-pack-parser": "*",
     "@shared/util-i18n": "*",
+    "@shared/util-theme": "*",
     "react": "*",
     "react-native": "*"
   }

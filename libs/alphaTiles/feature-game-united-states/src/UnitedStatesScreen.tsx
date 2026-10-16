@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import type { TilePair } from './setupRound';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 const UNSELECTED_BG = '#A9A9A9';
 const IMAGE_BG = '#555555';
@@ -71,6 +71,7 @@ export function UnitedStatesScreen({
   onTilePress,
   onImagePress,
 }: UnitedStatesScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
 
   // Total slots includes invisible placeholders so grid keeps a fixed footprint
@@ -178,7 +179,7 @@ export function UnitedStatesScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
   },
   imageLabel: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 14 * fs,
     textAlign: 'center',
     paddingHorizontal: 4,
   },
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   tileText: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   wordText: {
-    fontSize: 28,
+    fontSize: 28 * fs,
     fontWeight: 'bold',
     color: '#333333',
     letterSpacing: 4,

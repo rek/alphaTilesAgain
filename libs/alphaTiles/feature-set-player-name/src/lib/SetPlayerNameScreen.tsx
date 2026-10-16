@@ -17,6 +17,7 @@ import {
 import { UiAvatarGrid } from '@shared/ui-avatar-grid';
 import { UiCustomKeyboard } from '@shared/ui-custom-keyboard';
 import type { KeyEntry } from '@shared/ui-custom-keyboard';
+import { useScaledStyles } from '@shared/util-theme';
 
 export type SetPlayerNameScreenProps = {
   /** Current name value. */
@@ -67,6 +68,7 @@ export function SetPlayerNameScreen({
   onCancel,
   a11y,
 }: SetPlayerNameScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const useCustomKeyboard = keys.length > 0;
 
   return (
@@ -149,13 +151,13 @@ export function SetPlayerNameScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: {
     padding: 16,
     gap: 12,
   },
   nameDisplay: {
-    fontSize: 24,
+    fontSize: 24 * fs,
     textAlign: 'center',
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   textInput: {
-    fontSize: 24,
+    fontSize: 24 * fs,
     textAlign: 'center',
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -178,7 +180,7 @@ const styles = StyleSheet.create({
   error: {
     color: '#cc0000',
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 14 * fs,
   },
   footer: {
     flexDirection: 'row',
@@ -194,7 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   cancelText: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     color: '#333',
   },
   submitButton: {
@@ -205,7 +207,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   submitText: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     color: '#fff',
   },
 });

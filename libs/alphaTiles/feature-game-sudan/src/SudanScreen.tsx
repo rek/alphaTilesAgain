@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { readableTextColor } from '@shared/util-theme';
+import { readableTextColor, useScaledStyles } from '@shared/util-theme';
 
 const GAP = 4;
 const TEXT_LIGHT = '#FFFFFF';
@@ -59,6 +59,7 @@ export type SudanScreenProps =
     });
 
 export function SudanScreen(props: SudanScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
 
   const cells: readonly SudanCell[] =
@@ -181,7 +182,7 @@ export function SudanScreen(props: SudanScreenProps): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   cellText: {
-    fontSize: 18,
+    fontSize: 18 * fs,
     fontWeight: 'bold',
     textAlign: 'center',
     paddingHorizontal: 2,
@@ -231,7 +232,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   pageLabel: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     fontWeight: '600',
     color: TEXT_DARK,
   },

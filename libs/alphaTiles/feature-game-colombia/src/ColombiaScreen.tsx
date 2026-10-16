@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 import type { AttemptStatus, KeyTile } from './types';
 
 const STATUS_BG: Record<AttemptStatus, string> = {
@@ -79,6 +80,7 @@ export function ColombiaScreen({
   onImagePress,
   a11yLabels,
 }: ColombiaScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
   const imageSize = Math.min(Math.floor(width * 0.4), Math.floor(height * 0.28));
   const cols = Math.min(7, Math.max(1, keys.length));
@@ -188,7 +190,7 @@ export function ColombiaScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -205,7 +207,7 @@ const styles = StyleSheet.create({
   },
   image: { width: '90%', height: '90%' },
   imageFallback: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'center',
@@ -220,7 +222,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  attemptText: { fontSize: 32, fontWeight: 'bold', textAlign: 'center' },
+  attemptText: { fontSize: 32 * fs, fontWeight: 'bold', textAlign: 'center' },
   keyGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -235,7 +237,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 6,
   },
-  keyText: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'center' },
+  keyText: { fontSize: 24 * fs, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'center' },
   pressed: { opacity: 0.78, transform: [{ scale: 0.97 }] },
   bottomBar: {
     flexDirection: 'row',
@@ -254,7 +256,7 @@ const styles = StyleSheet.create({
   },
   navBtnInactive: { backgroundColor: '#A9A9A9' },
   navBtnSpacer: { width: 56, height: 56 },
-  navText: { color: '#FFFFFF', fontSize: 28, fontWeight: 'bold' },
+  navText: { color: '#FFFFFF', fontSize: 28 * fs, fontWeight: 'bold' },
   deleteBtn: {
     width: 64,
     height: 56,
@@ -265,5 +267,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   deleteBtnDisabled: { backgroundColor: '#A9A9A9' },
-  deleteText: { color: '#FFFFFF', fontSize: 22, fontWeight: 'bold' },
+  deleteText: { color: '#FFFFFF', fontSize: 22 * fs, fontWeight: 'bold' },
 });

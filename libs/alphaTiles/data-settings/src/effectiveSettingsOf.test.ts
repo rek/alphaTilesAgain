@@ -24,6 +24,7 @@ describe('effectiveSettingsOf', () => {
       hidePrivacyPolicy: false,
       afterTwelveCheckedTrackers: 1,
       numberOfAvatars: 12,
+      fontScale: 1,
     });
   });
 
@@ -40,6 +41,20 @@ describe('effectiveSettingsOf', () => {
     expect(effectiveSettingsOf({ settings })).toMatchObject({
       afterTwelveCheckedTrackers: 2,
       changeArrowColors: true,
+    });
+  });
+
+  describe('fontScale ("Font Scale")', () => {
+    it.each([
+      ['absent', {}, 1],
+      ['1.3', { 'Font Scale': '1.3' }, 1.3],
+      ['numbered label', { '40. Font Scale': '1.2' }, 1.2],
+      ['non-numeric', { 'Font Scale': 'banana' }, 1],
+      ['blank', { 'Font Scale': '' }, 1],
+      ['too big clamps', { 'Font Scale': '10' }, 2.5],
+      ['too small clamps', { 'Font Scale': '0.1' }, 0.5],
+    ])('%s', (_name, rows: Record<string, string>, expected) => {
+      expect(effectiveSettingsOf({ settings: settingsFrom(rows) }).fontScale).toBe(expected);
     });
   });
 

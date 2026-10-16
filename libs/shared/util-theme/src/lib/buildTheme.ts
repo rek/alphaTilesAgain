@@ -4,11 +4,13 @@
  *
  * palette — hexByIndex array from parseColors (index-stable per aa_colors.txt)
  * fontMap — { primary, primaryBold? } font names from langManifest.fonts
+ * fontScale — pack "Font Scale" (parsed/clamped via parseFontScale)
  *
  * See design.md §D1, §D2, §D3, §D4.
  */
-import { typography } from './typography';
+import { buildTypography } from './typography';
 import { spacing } from './spacing';
+import { DEFAULT_FONT_SCALE } from './fontScale';
 
 // primary undefined → system font (pack ships no fonts/).
 export type FontMap = {
@@ -16,7 +18,11 @@ export type FontMap = {
   primaryBold?: string;
 };
 
-export function buildTheme(palette: readonly string[], fontMap: FontMap) {
+export function buildTheme(
+  palette: readonly string[],
+  fontMap: FontMap,
+  fontScale: number = DEFAULT_FONT_SCALE,
+) {
   return {
     /**
      * Full integer-indexed palette from aa_colors.txt.
@@ -31,7 +37,10 @@ export function buildTheme(palette: readonly string[], fontMap: FontMap) {
       /** Hardcoded — no pack has ever varied black text */
       text: '#000000' as const,
     },
-    typography,
+    /** 6-slot ladder × fontScale. */
+    typography: buildTypography(fontScale),
+    /** Pack "Font Scale"; multiplier for off-ladder literal sizes. */
+    fontScale,
     spacing,
     fontFamily: {
       primary: fontMap.primary,

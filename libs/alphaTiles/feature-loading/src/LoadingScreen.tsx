@@ -6,6 +6,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import type { Phase } from './bootSequence';
+import { useScaledStyles } from '@shared/util-theme';
 
 const RING_SIZE = 80;
 const STROKE_WIDTH = 6;
@@ -31,6 +32,7 @@ export function LoadingScreen({
   error,
   labels,
 }: LoadingScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const progress = phase === 'audio' ? audioProgress : phase === 'done' ? 1 : 0;
   const strokeDashoffset = CIRCUMFERENCE * (1 - progress);
   const isIndeterminate = phase !== 'audio' && phase !== 'done';
@@ -82,7 +84,7 @@ export function LoadingScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   screen: {
     flex: 1,
     alignItems: 'center',
@@ -91,7 +93,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   title: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     fontWeight: 'bold',
     color: '#212121',
   },
@@ -100,11 +102,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   progressLabel: {
-    fontSize: 14,
+    fontSize: 14 * fs,
     color: '#757575',
   },
   error: {
-    fontSize: 14,
+    fontSize: 14 * fs,
     color: '#f44336',
     textAlign: 'center',
     paddingHorizontal: 24,

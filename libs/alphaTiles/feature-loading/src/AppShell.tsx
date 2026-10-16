@@ -32,6 +32,12 @@ export function AppShell({ children }: { children: React.ReactNode }): React.JSX
     [assets, fontsFailed],
   );
 
+  // Pack-wide typography multiplier ("Font Scale" in aa_settings.txt).
+  const fontScale = useMemo(
+    () => effectiveSettingsOf({ settings: assets.settings }).fontScale,
+    [assets],
+  );
+
   // Stable loader — assets from LangAssetsProvider are fixed for the app lifetime.
   const audioLoader = useMemo(() => {
     // Pack values only: preload is per build, not per player.
@@ -50,7 +56,11 @@ export function AppShell({ children }: { children: React.ReactNode }): React.JSX
   return (
     <AudioProvider loader={audioLoader}>
       {fontsReady ? (
-        <ThemeProvider palette={assets.colors.hexByIndex} fontMap={fontNameMap}>
+        <ThemeProvider
+          palette={assets.colors.hexByIndex}
+          fontMap={fontNameMap}
+          fontScale={fontScale}
+        >
           {/* Web: browsers block audio until a gesture (#47). AudioGate covers
               every route (cold start, reload, deep link); native passes through. */}
           <AudioGate renderLocked={(gate) => <TapToBegin {...gate} />}>

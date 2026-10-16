@@ -10,6 +10,7 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import { HanziWriter, type useHanziWriter } from '@jamsch/react-native-hanzi-writer';
+import { useScaledStyles } from '@shared/util-theme';
 
 export type TaiwanScreenProps = {
   writer: ReturnType<typeof useHanziWriter>;
@@ -47,6 +48,7 @@ export type TaiwanScreenProps = {
 };
 
 export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const {
     writer,
     outlineVisible,
@@ -129,7 +131,7 @@ export function TaiwanScreen(props: TaiwanScreenProps): React.JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -140,7 +142,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   progress: {
-    fontSize: 18,
+    fontSize: 18 * fs,
     fontWeight: '600',
     color: '#424242',
   },
@@ -158,12 +160,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   contextWord: {
-    fontSize: 22,
+    fontSize: 22 * fs,
     color: '#424242',
   },
   progressSuccess: {
     color: '#2e7d32',
-    fontSize: 24,
+    fontSize: 24 * fs,
   },
   clearBtn: {
     // ≥ 44×44 touch target (U11).

@@ -25,6 +25,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { ScoreBar } from '@shared/ui-score-bar';
 import { Celebration, celebrationAnimation } from '@shared/ui-celebration';
 import type { CelebrationProps } from '@shared/ui-celebration';
+import { useScaledStyles } from '@shared/util-theme';
 import type { Breakpoint } from '@shared/util-theme';
 
 /**
@@ -117,6 +118,7 @@ export function GameShellScreen({
   icons,
   a11yLabels,
 }: GameShellScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const trackerIcons =
     icons?.trackerComplete && icons?.trackerIncomplete
       ? { complete: icons.trackerComplete, incomplete: icons.trackerIncomplete }
@@ -223,7 +225,7 @@ export function GameShellScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#fff',
@@ -270,7 +272,7 @@ const styles = StyleSheet.create({
   chromeLabel: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 13,
+    fontSize: 13 * fs,
   },
   chromeLabelGray: {
     color: '#e0e0e0',

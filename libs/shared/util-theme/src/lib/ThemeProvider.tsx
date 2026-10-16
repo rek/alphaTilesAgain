@@ -15,11 +15,21 @@ import { ThemeContext } from './ThemeContext';
 type Props = {
   palette: readonly string[];
   fontMap: FontMap;
+  /** Pack "Font Scale" (parsed/clamped). Defaults to 1.0. */
+  fontScale?: number;
   children: React.ReactNode;
 };
 
-export function ThemeProvider({ palette, fontMap, children }: Props): React.JSX.Element {
-  const theme = useMemo(() => buildTheme(palette, fontMap), [palette, fontMap]);
+export function ThemeProvider({
+  palette,
+  fontMap,
+  fontScale,
+  children,
+}: Props): React.JSX.Element {
+  const theme = useMemo(
+    () => buildTheme(palette, fontMap, fontScale),
+    [palette, fontMap, fontScale],
+  );
 
   return (
     <ThemeContext.Provider value={theme}>

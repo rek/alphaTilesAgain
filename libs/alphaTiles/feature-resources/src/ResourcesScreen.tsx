@@ -14,6 +14,7 @@
 import React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useScaledStyles } from '@shared/util-theme';
 
 export interface ResourceRow {
   name: string;
@@ -40,6 +41,7 @@ export interface ResourcesScreenProps {
 const HIT_SLOP = { top: 10, bottom: 10, start: 10, end: 10 };
 
 export function ResourcesScreen(props: ResourcesScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { onBack, isEmpty, resources, emptyMessage, onResourceTap, backLabel } = props;
 
   const backButton = (
@@ -93,7 +95,7 @@ export function ResourcesScreen(props: ResourcesScreenProps): React.JSX.Element 
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -108,7 +110,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emptyMessage: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     color: '#666',
     textAlign: 'center',
   },
@@ -123,7 +125,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
   },
   resourceText: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     color: '#0066CC',
     textDecorationLine: 'underline',
   },

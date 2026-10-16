@@ -7,6 +7,7 @@ import React from 'react';
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThailandScreen } from '@alphaTiles/feature-game-thailand';
+import { useScaledStyles } from '@shared/util-theme';
 
 type QuestionProps = Parameters<typeof ThailandScreen>[0];
 
@@ -32,6 +33,7 @@ export type SelfTestScreenProps = {
 };
 
 export function SelfTestScreen({ title, backLabel, onBack, body }: SelfTestScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -99,7 +101,7 @@ export function SelfTestScreen({ title, backLabel, onBack, body }: SelfTestScree
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
@@ -116,12 +118,12 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 20,
+    fontSize: 20 * fs,
     fontWeight: '700',
     color: '#1F2937',
   },
   progress: {
-    fontSize: 16,
+    fontSize: 16 * fs,
     fontWeight: '600',
     color: '#475569',
   },
@@ -133,19 +135,19 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   endTitle: {
-    fontSize: 24,
+    fontSize: 24 * fs,
     fontWeight: '700',
     color: '#1F2937',
     textAlign: 'center',
   },
   score: {
-    fontSize: 64,
+    fontSize: 64 * fs,
     fontWeight: '800',
     color: '#1565C0',
   },
   suggestion: {
-    fontSize: 18,
-    lineHeight: 26,
+    fontSize: 18 * fs,
+    lineHeight: 26 * fs,
     color: '#1F2937',
     textAlign: 'center',
     paddingHorizontal: 24,
@@ -174,7 +176,7 @@ const styles = StyleSheet.create({
     borderColor: '#1565C0',
   },
   buttonText: {
-    fontSize: 18,
+    fontSize: 18 * fs,
     fontWeight: '700',
     color: '#1565C0',
   },
@@ -185,7 +187,7 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   empty: {
-    fontSize: 18,
+    fontSize: 18 * fs,
     color: '#475569',
     textAlign: 'center',
   },

@@ -44,6 +44,8 @@ const KNOWN_KEYS = new Set<string>([
   ...INT_SETTINGS,
   'Stage correspondence ratio',
   'Stand-in base for combining tiles',
+  // Optional typography multiplier (font-scaling-accessibility); app parses/clamps.
+  'Font Scale',
 ]);
 
 function isBooleanValue(val: string): boolean {

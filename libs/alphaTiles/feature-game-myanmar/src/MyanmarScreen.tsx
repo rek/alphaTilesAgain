@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import { useScaledStyles } from '@shared/util-theme';
 
 export type MyanmarCell = {
   text: string;
@@ -54,10 +55,11 @@ export function MyanmarScreen({
   onCellPress,
   onImagePress,
 }: MyanmarScreenProps): React.JSX.Element {
+  const styles = useScaledStyles(stylesFor);
   const { width, height } = useWindowDimensions();
   const gridSide = Math.min(Math.floor(width * 0.65), Math.floor(height * 0.7));
   const cellSide = Math.floor(gridSide / COLS);
-  const tileFontSize = Math.max(14, Math.floor(cellSide * 0.45));
+  const tileFontSize = Math.max(14, Math.floor(cellSide * 0.45)); // geometry: scales with cell size, not pack font scale
   const slotSide = Math.max(40, Math.floor(cellSide * 0.85));
 
   return (
@@ -139,7 +141,7 @@ export function MyanmarScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const stylesFor = (fs: number) => StyleSheet.create({
   root: {
     flex: 1,
     alignItems: 'center',
@@ -189,7 +191,7 @@ const styles = StyleSheet.create({
     height: '90%',
   },
   bankFallback: {
-    fontSize: 12,
+    fontSize: 12 * fs,
     color: '#444',
     paddingHorizontal: 4,
     textAlign: 'center',
@@ -200,7 +202,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   activeWord: {
-    fontSize: 32,
+    fontSize: 32 * fs,
     fontWeight: 'bold',
     color: '#222',
   },
