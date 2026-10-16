@@ -139,6 +139,7 @@ export function GeorgiaScreen({
                     pressed && !choice.grayed && styles.pressed,
                   ]}
                   accessibilityLabel={choice.text}
+                  testID="game-board-tile"
                   accessibilityRole="button"
                   accessibilityState={{
                     disabled: choice.grayed || interactionLocked,

@@ -43,6 +43,7 @@ export function Celebration({
         style={styles.backButton}
         onPress={onBackPress}
         accessibilityLabel={backLabel}
+        testID="celebration-back-button"
         accessibilityRole="button"
       >
         <Text style={styles.backText}>{backLabel}</Text>

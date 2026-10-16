@@ -1,0 +1,24 @@
+# Fresh install -> one player named with the first on-screen keyboard key.
+# Assumes the app was just launched with clearState (no players yet).
+appId: com.makektm.alphatiles
+---
+- extendedWaitUntil:
+    visible:
+      id: add-player-button
+    timeout: 60000
+- tapOn:
+    id: add-player-button
+- extendedWaitUntil:
+    visible:
+      id: set-player-submit
+    timeout: 15000
+- tapOn:
+    id: avatar-option-0
+- tapOn:
+    id: keyboard-key-0
+- tapOn:
+    id: set-player-submit
+- extendedWaitUntil:
+    visible:
+      id: game-door-tile
+    timeout: 15000

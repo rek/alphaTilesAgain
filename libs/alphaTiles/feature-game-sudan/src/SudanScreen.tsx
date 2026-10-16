@@ -97,6 +97,7 @@ export function SudanScreen(props: SudanScreenProps): React.JSX.Element {
             <Pressable
               key={`${index}-${cell.text}`}
               accessibilityLabel={cell.text}
+              testID="game-board-tile"
               accessibilityRole="button"
               accessibilityState={{ disabled: !isPressable }}
               onPress={isPressable ? () => onCellPress(index) : undefined}

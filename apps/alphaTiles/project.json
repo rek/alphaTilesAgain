@@ -21,6 +21,14 @@
         "cwd": "."
       }
     },
+    "e2e:maestro": {
+      "executor": "nx:run-commands",
+      "// description": "OPT-IN, native only (needs a booted emulator/simulator with the yue app installed). Never part of CI. See docs/TESTING.md.",
+      "options": {
+        "command": "maestro test e2e/maestro/",
+        "cwd": "{workspaceRoot}"
+      }
+    },
     "prebuild": {
       "executor": "nx:run-commands",
       "options": {

@@ -1,0 +1,25 @@
+{
+  "name": "alphaTiles-agent-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/alphaTiles-agent-e2e/specs",
+  "projectType": "application",
+  "tags": ["type:e2e", "scope:alphaTiles"],
+  "implicitDependencies": ["alphaTiles"],
+  "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit -p apps/alphaTiles-agent-e2e/tsconfig.json",
+        "cwd": "{workspaceRoot}"
+      }
+    },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "// description": "OPT-IN, never part of CI or the pre-push gate. Drives the yue web dev server through the dev-only WebMCP tools (at_*), headless in installed Chrome (CHROME_PATH overrides). See docs/TESTING.md.",
+      "options": {
+        "command": "playwright test --config apps/alphaTiles-agent-e2e/playwright.config.ts",
+        "cwd": "{workspaceRoot}"
+      }
+    }
+  }
+}

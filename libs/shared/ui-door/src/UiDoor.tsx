@@ -47,6 +47,7 @@ export function UiDoor({
     <Pressable
       onPress={onPress}
       accessibilityLabel={a11yLabel}
+      testID="game-door-tile"
       accessibilityRole="button"
     >
       <DoorSvg

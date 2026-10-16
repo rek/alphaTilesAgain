@@ -90,6 +90,7 @@ export function SetPlayerNameScreen({
           style={[styles.nameDisplay, !name && styles.placeholder]}
           accessibilityRole="text"
           accessibilityLabel={name || placeholder}
+          testID="player-name-input"
         >
           {name || placeholder}
         </Text>
@@ -101,6 +102,7 @@ export function SetPlayerNameScreen({
           maxLength={20}
           style={styles.textInput}
           accessibilityLabel={placeholder}
+          testID="player-name-input"
           autoFocus
           returnKeyType="done"
           onSubmitEditing={onSubmit}
@@ -133,6 +135,7 @@ export function SetPlayerNameScreen({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={cancelLabel}
+          testID="set-player-cancel"
           style={styles.cancelButton}
           onPress={onCancel}
         >
@@ -141,6 +144,7 @@ export function SetPlayerNameScreen({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={submitLabel}
+          testID="set-player-submit"
           style={styles.submitButton}
           onPress={onSubmit}
         >

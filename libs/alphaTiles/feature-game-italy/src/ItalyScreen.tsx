@@ -126,6 +126,7 @@ export function ItalyScreen({
               ]}
               accessibilityRole="button"
               accessibilityLabel={cell.text}
+              testID="game-board-tile"
               accessibilityState={{ disabled: cell.covered || disabled }}
             >
               <View style={styles.cellContent}>

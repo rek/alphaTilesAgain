@@ -163,6 +163,7 @@ function ChoiceCell({
       ]}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
+      testID="game-board-tile"
     >
       {choice.type === 'image' ? (
         choice.imageSource ? (

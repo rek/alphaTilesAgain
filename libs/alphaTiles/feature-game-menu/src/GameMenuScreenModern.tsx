@@ -123,6 +123,7 @@ function ModernDoorCard({ door, size, onPress, label }: CardProps): React.JSX.El
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
+      testID="game-door-tile"
       style={({ pressed }) => [
         styles.card,
         borderProps,
@@ -225,6 +226,7 @@ export function GameMenuScreenModern({
           onPress={onBack}
           accessibilityRole="button"
           accessibilityLabel={a11y.back}
+          testID="menu-back-button"
           hitSlop={8}
           style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
         >
@@ -282,6 +284,7 @@ export function GameMenuScreenModern({
               onPress={selfTest.onPress}
               accessibilityRole="button"
               accessibilityLabel={selfTest.a11yLabel}
+          testID="self-test-button"
               style={({ pressed }) => [styles.selfTestButton, pressed && styles.pressed]}
             >
               <Ionicons
@@ -303,6 +306,7 @@ export function GameMenuScreenModern({
             icon="information-circle-outline"
             label={tabLabels.about}
             a11yLabel={a11y.about}
+            testID="menu-tab-about"
             onPress={onAbout}
           />
         )}
@@ -311,6 +315,7 @@ export function GameMenuScreenModern({
             icon="share-social-outline"
             label={tabLabels.share}
             a11yLabel={a11y.share}
+            testID="menu-tab-share"
             onPress={onShare}
           />
         )}
@@ -319,6 +324,7 @@ export function GameMenuScreenModern({
             icon="library-outline"
             label={tabLabels.resources}
             a11yLabel={a11y.resources}
+            testID="menu-tab-resources"
             onPress={onResources}
           />
         )}
@@ -327,6 +333,7 @@ export function GameMenuScreenModern({
             icon="volume-high-outline"
             label={tabLabels.audioInstructions}
             a11yLabel={a11y.audioInstructions}
+            testID="menu-tab-audio-instructions"
             onPress={onAudioInstructions}
           />
         )}
@@ -334,6 +341,7 @@ export function GameMenuScreenModern({
           icon="settings-outline"
           label={tabLabels.settings}
           a11yLabel={a11y.settings}
+          testID="menu-tab-settings"
           onPress={onSettings}
         />
       </View>
@@ -491,16 +499,18 @@ type TabButtonProps = {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   label: string;
   a11yLabel: string;
+  testID: string;
   onPress: () => void;
 };
 
-function TabButton({ icon, label, a11yLabel, onPress }: TabButtonProps): React.JSX.Element {
+function TabButton({ icon, label, a11yLabel, testID, onPress }: TabButtonProps): React.JSX.Element {
   const styles = useScaledStyles(stylesFor);
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={a11yLabel}
+      testID={testID}
       hitSlop={6}
       style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
     >

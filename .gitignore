@@ -79,3 +79,7 @@ node_modules/
 
 # Serena (local tooling)
 .serena/
+
+# Playwright
+test-results/
+playwright-report/

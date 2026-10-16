@@ -1,0 +1,21 @@
+# QA #57: player data persists across restarts (AsyncStorage). Native only:
+# the web equivalent (reload) is covered by alphaTiles-agent-e2e.
+appId: com.makektm.alphatiles
+---
+- launchApp:
+    clearState: true
+- runFlow: subflows/create-player.yaml
+# Relaunch WITHOUT clearing state: the saved player is still there.
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: player-avatar-tile
+    timeout: 60000
+- tapOn:
+    id: player-avatar-tile
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: game-door-tile
+    timeout: 15000

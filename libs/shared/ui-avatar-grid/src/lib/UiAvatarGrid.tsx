@@ -43,6 +43,7 @@ export function UiAvatarGrid({
             key={idx}
             accessibilityRole="button"
             accessibilityLabel={a11yLabel(idx)}
+            testID={`avatar-option-${idx}`}
             accessibilityState={{ selected: isSelected }}
             style={[
               styles.cell,

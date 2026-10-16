@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Platform } from 'react-native';
 import { useLangAssets } from '@alphaTiles/data-language-assets';
 import { ThemeProvider, useFontsReady } from '@shared/util-theme';
 import { AudioProvider, AudioGate, preloadAudio, BASE_CHIMES } from '@alphaTiles/data-audio';
@@ -7,6 +8,15 @@ import { effectiveSettingsOf } from '@alphaTiles/data-settings';
 import { TapToBegin } from './TapToBegin';
 import { fontNameMapOf } from './fontNameMapOf';
 import { BootGate } from './BootGate';
+
+// Dev-only WebMCP agent tools (docs/TESTING.md). A `require` inside the
+// `__DEV__` branch, not a static import: Metro does not tree-shake, but it
+// constant-folds `__DEV__` before collecting dependencies, so a production
+// export never bundles the module.
+const AgentToolsBridge =
+  __DEV__ && Platform.OS === 'web'
+    ? (require('./agentTools/AgentToolsBridge') as typeof import('./agentTools/AgentToolsBridge')).AgentToolsBridge
+    : null;
 
 /**
  * Inside LangAssetsProvider (AppRoot). AudioProvider mounts unconditionally so
@@ -55,6 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }): React.JSX
 
   return (
     <AudioProvider loader={audioLoader}>
+      {AgentToolsBridge ? <AgentToolsBridge /> : null}
       {fontsReady ? (
         <ThemeProvider
           palette={assets.colors.hexByIndex}

@@ -16,6 +16,7 @@ import { AudioContext } from './AudioContext';
 import type { AudioHandles } from './AudioHandles';
 import { createPackSpeech } from './createPackSpeech';
 import type { ClipCategory } from './planSpeech';
+import { agentProbe } from '@shared/util-agent-tools';
 import { playHandle } from './playHandle';
 
 type Pack = Parameters<typeof createPackSpeech>[0]['pack'];
@@ -51,6 +52,7 @@ export function usePackSpeech(pack: Pack, holdLock?: () => () => void) {
         const source = h?.[SOURCES[category]].get(id);
         if (!h || source === undefined || source === null) return;
         try {
+          if (__DEV__) agentProbe.clipPlayed(`${category}:${id}`);
           void playHandle(h.pool.acquire(`${category}:${id}`, source));
         } catch (err) {
           if (__DEV__) {

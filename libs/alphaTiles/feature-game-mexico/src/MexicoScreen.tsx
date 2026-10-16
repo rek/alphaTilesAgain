@@ -102,6 +102,7 @@ export function MexicoScreen({
                 pressed && !isPaired && !isHidden && styles.pressed,
               ]}
               accessibilityLabel={cardLabels[index]}
+              testID="game-board-tile"
               accessibilityRole="button"
               accessibilityState={{ disabled: isPaired || interactionLocked }}
             >

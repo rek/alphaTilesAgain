@@ -26,6 +26,7 @@
       "@shared/util-ota": ["libs/shared/util-ota/src/index.ts"],
       "@shared/util-hooks": ["libs/shared/util-hooks/src/index.ts"],
       "@shared/util-precompute": ["libs/shared/util-precompute/src/index.ts"],
+      "@shared/util-agent-tools": ["libs/shared/util-agent-tools/src/index.ts"],
       "@shared/util-analytics": ["libs/shared/util-analytics/src/index.ts"],
       "@shared/util-lang-pack-parser": [
         "libs/shared/util-lang-pack-parser/src/index.ts"
