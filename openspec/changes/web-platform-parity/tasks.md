@@ -16,12 +16,12 @@ Decisions that changed tasks are recorded in `design.md` § Implementation decis
 
 - [x] Generate library — created as `libs/shared/ui-web-audio-unlock-gate` (`type:ui,scope:shared`, I3).
 - [x] Add path alias to `tsconfig.base.json`: `@shared/ui-web-audio-unlock-gate`.
-- [ ] ~~Add `resumeAudioContext()` helper~~ — dropped: no AudioContext to resume (I4). Replaced by `primeAudioHandles()` (chunked) + `millisecondsSinceBoot()` in `data-audio`.
+- [x] ~~Add `resumeAudioContext()` helper~~ — dropped: no AudioContext to resume (I4). Replaced by `primeAudioHandles()` (chunked) + `millisecondsSinceBoot()` in `data-audio`.
 - [x] Implement presenter `WebAudioUnlockGatePresenter.tsx` — `isLocked`, `isReady`, `title`, `label`, `onUnlock`, `children`; pure.
 - [x] ~~Implement container `WebAudioUnlockGate.tsx` in `feature-loading`~~ — superseded (1bc1f0f): the gate is `AudioGate` in `data-audio` (render prop `renderLocked`, filled by feature-loading `TapToBegin`); `unlock()` primes all clips in chunks + tracks `audio_unlock_web` once (I6).
 - [x] ~~Export `WebAudioUnlockGate` from `@alphaTiles/feature-loading`~~ — superseded: `AudioGate` exported from `@alphaTiles/data-audio`.
 - [x] Unit test: overlay renders initially; pressing calls `onUnlock`; children hidden until unlocked; press ignored until ready (`WebAudioUnlockGatePresenter.test.tsx`, `AudioGate.test.tsx`).
-- [ ] ~~Unit test: `resumeAudioContext`~~ — dropped with the helper (I4). Covered instead: `primeAudioHandles.test.ts`, `millisecondsSinceBoot.test.ts`, `AudioGate.test.tsx`.
+- [x] ~~Unit test: `resumeAudioContext`~~ — dropped with the helper (I4). Covered instead: `primeAudioHandles.test.ts`, `millisecondsSinceBoot.test.ts`, `AudioGate.test.tsx`.
 
 ## 2. Root Layout Wiring
 
@@ -41,7 +41,7 @@ Decisions that changed tasks are recorded in `design.md` § Implementation decis
 
 - [x] Read `libs/shared/ui-door-grid/src/` — identify row container style.
 - [x] Add `flexWrap: 'wrap'` and `overflow: 'hidden'` (wrap already present; `overflow: 'hidden'` added).
-- [ ] ~~Compute tile `flexBasis`~~ — not needed: door size comes from the menu container and the grid already wraps; no overflow measured at 320/375/768 (I10).
+- [x] ~~Compute tile `flexBasis`~~ — not needed: door size comes from the menu container and the grid already wraps; no overflow measured at 320/375/768 (I10).
 - [x] Visual test at 320px, 375px, 768px viewport widths: tiles remain inside container (Playwright, headless Chromium).
 
 ### 4b. ui-score-bar
@@ -64,8 +64,8 @@ Decisions that changed tasks are recorded in `design.md` § Implementation decis
 - [x] Lint: `nx lint ui-web-audio-unlock-gate`.
 - [x] Unit tests pass: `nx test ui-web-audio-unlock-gate`.
 - [x] `nx lint data-audio`.
-- [ ] Grep libs for `Platform.OS === 'web'` — must find zero matches. **Not met**: 9 pre-existing matches in unrelated libs; new code adds none (I7).
+- [ ] Grep libs for `Platform.OS === 'web'` — must find zero matches. **Not met**: 9 pre-existing matches in unrelated libs; new code adds none (I7). — not done (accepted deviation: 9 pre-existing matches in unrelated libs; no new ones)
 - [x] Smoke (web, headless Chromium, yue export): gate visible; tap dismisses after preload; deep link `/menu` gated then revealed; in-game `play()` calls all resolve (0 `NotAllowedError`), 0 console errors. Audible check on real Chrome desktop + Android Chrome still needs a human.
 - [x] Manifest fields present (fetched + parsed in smoke). DevTools → Application → Manifest check on a real browser still recommended.
 - [x] Smoke (web, 320px viewport): door grid wraps; score bar visible; all 28 yue doors with no horizontal overflow.
-- [ ] Manual smoke (native iOS/Android): confirm gate never appears; audio plays normally. Needs a device (gate is behind `Platform.OS === 'web'`; native `isAudioUnlocked` starts true).
+- [ ] Manual smoke (native iOS/Android): confirm gate never appears; audio plays normally. Needs a device (gate is behind `Platform.OS === 'web'`; native `isAudioUnlocked` starts true). — pending: device QA (#57)

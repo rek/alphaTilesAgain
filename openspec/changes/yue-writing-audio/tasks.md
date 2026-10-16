@@ -18,19 +18,19 @@
 
 ## 0. Preflight
 
-- [ ] 0.1 Read `proposal.md`, `design.md`, and `specs/yue-writing-audio/spec.md` end-to-end.
-- [ ] 0.2 Read `docs/GAME_PATTERNS.md` § "Reusing a game class for a new pack feature" and § "Audio sequencing on correct".
-- [ ] 0.3 Read `openspec/changes/archive/2026-05-14-yue-syllable-game/{proposal,design,tasks}.md` — closest precedent for an audio-asset swap.
-- [ ] 0.4 Read `libs/alphaTiles/feature-game-taiwan/src/TaiwanInner.tsx` (both audio call sites: `onRepeat` at line ~80-83, `handleCharComplete` audio block at line ~97-99) and `buildTaiwanData.ts` lines 48-56 (compound-fallback construction).
-- [ ] 0.5 Read `libs/alphaTiles/data-audio/src/lib/useAudio.ts` lines 95-118 (`playSyllable` silent-no-op-on-missing semantics) and `libs/alphaTiles/data-language-pack/src/LangAssets.ts:53-62` (confirm `audio.syllables` is `Record<string, number>` — a pack-shipped predicate, not a runtime-loaded one).
-- [ ] 0.6 Read `openspec/changes/game-taiwan/specs/game-taiwan/spec.md` lines 97-109 — the stale "Character Audio On Completion" requirement that this change supersedes (design § D8).
+- [x] 0.1 Read `proposal.md`, `design.md`, and `specs/yue-writing-audio/spec.md` end-to-end. — moot: change shipped (7a27f56)
+- [x] 0.2 Read `docs/GAME_PATTERNS.md` § "Reusing a game class for a new pack feature" and § "Audio sequencing on correct". — moot: change shipped (7a27f56)
+- [x] 0.3 Read `openspec/changes/archive/2026-05-14-yue-syllable-game/{proposal,design,tasks}.md` — closest precedent for an audio-asset swap. — moot: change shipped (7a27f56)
+- [x] 0.4 Read `libs/alphaTiles/feature-game-taiwan/src/TaiwanInner.tsx` (both audio call sites: `onRepeat` at line ~80-83, `handleCharComplete` audio block at line ~97-99) and `buildTaiwanData.ts` lines 48-56 (compound-fallback construction). — moot: change shipped (7a27f56)
+- [x] 0.5 Read `libs/alphaTiles/data-audio/src/lib/useAudio.ts` lines 95-118 (`playSyllable` silent-no-op-on-missing semantics) and `libs/alphaTiles/data-language-pack/src/LangAssets.ts:53-62` (confirm `audio.syllables` is `Record<string, number>` — a pack-shipped predicate, not a runtime-loaded one). — moot: change shipped (7a27f56)
+- [x] 0.6 Read `openspec/changes/game-taiwan/specs/game-taiwan/spec.md` lines 97-109 — the stale "Character Audio On Completion" requirement that this change supersedes (design § D8). — moot: change shipped (7a27f56)
 - [x] 0.7 Curtis replied on issue #27 (2026-05-26): supplied fresh `011 手.mp3` (Drive link) + confirmed repeat button SHOULD mirror completion (syllable-first). Scope is 13 files; no behaviour split between repeat and completion.
 - [x] 0.8 Updated `proposal.md`, `design.md` (§§ D2, D3, D6, D7, Open Questions), and `specs/yue-writing-audio/spec.md` to reflect 13-file scope and resolved repeat-button question.
 
 ## 1. Asset Swap
 
-- [ ] 1.1 Quick listening pass on Curtis's 13 files vs the existing auto-cut clips in `languages/yue/audio/syllables/` to confirm they're materially different and the customer recordings sound correct.
-- [ ] 1.2 Loudness sanity check — sample 2-3 of Curtis's files and 2-3 existing auto-cut files; if there's a clear volume cliff, run `ffmpeg -af loudnorm` over Curtis's bundle before copying. Otherwise skip.
+- [ ] 1.1 Quick listening pass on Curtis's 13 files vs the existing auto-cut clips in `languages/yue/audio/syllables/` to confirm they're materially different and the customer recordings sound correct. — pending: owner (#27 listening pass)
+- [ ] 1.2 Loudness sanity check — sample 2-3 of Curtis's files and 2-3 existing auto-cut files; if there's a clear volume cliff, run `ffmpeg -af loudnorm` over Curtis's bundle before copying. Otherwise skip. — pending: owner (#27 loudness check)
 - [x] 1.3 Copy Curtis's 13 mp3s into place with normalised filenames (per D2 mapping table in `design.md`). One `cp` per file; do not script for a one-shot.
 - [x] 1.4 Verify exactly 13 files in `git status --short languages/yue/audio/syllables/` show as modified — no new files, no deletions.
 
@@ -59,35 +59,35 @@
 ## 5. Manual QA (yue build)
 
 - [x] 5.1 `APP_LANG=yue` web build runs without TypeScript errors: `npx tsc --noEmit` (or `nx typecheck feature-game-taiwan` if scoped target exists).
-- [ ] 5.2 `nx start-web-yue alphaTiles` — boot the yue build, navigate to Door 6 (Taiwan CL1).
-- [ ] 5.3 Trace the first character (`人`); confirm the audio that plays is Curtis's `人.mp3` (not a compound word).
-- [ ] 5.4 Press the repeat button on `人`; confirm the same syllable audio plays (Curtis confirmed syllable-first on repeat per D6).
-- [ ] 5.5 Trace through positions 2-10 (`士 女 丈 大 上 下 工 小 叉`) confirming each plays the corresponding customer recording.
-- [ ] 5.6 Trace position 11 (`手`); confirm it plays Curtis's `手.mp3` (the freshly supplied recording, not the prior auto-cut clip).
-- [ ] 5.7 Trace positions 12-13 (`公 夫`) confirming customer recordings.
-- [ ] 5.8 Trace a character past position 13 (e.g. `心` at position 15) and confirm it plays the auto-cut syllable clip, not the compound — proves the engine swap applies pack-wide, not just to the 13 replaced files.
-- [ ] 5.9 Repeat smoke on Door 7 (Taiwan CL2) and Door 8 (Taiwan CL3) — same characters, audio behaviour should be identical (CL only affects rendering, not audio source).
-- [ ] 5.10 Verify Door 9 (Georgia S) still plays audio correctly — Georgia is unchanged, regression check.
-- [ ] 5.11 Verify Doors 10-11 (Georgia CL2 / CL3 S — added by `yue-numerals-game`) still play audio correctly. Trace through a few numerals via the Taiwan rotation (`一`, `二`, etc.) — confirm syllable audio plays for numerals too.
+- [ ] 5.2 `nx start-web-yue alphaTiles` — boot the yue build, navigate to Door 6 (Taiwan CL1). — pending: device QA (#57)
+- [ ] 5.3 Trace the first character (`人`); confirm the audio that plays is Curtis's `人.mp3` (not a compound word). — pending: device QA (#57)
+- [ ] 5.4 Press the repeat button on `人`; confirm the same syllable audio plays (Curtis confirmed syllable-first on repeat per D6). — pending: device QA (#57)
+- [ ] 5.5 Trace through positions 2-10 (`士 女 丈 大 上 下 工 小 叉`) confirming each plays the corresponding customer recording. — pending: device QA (#57)
+- [ ] 5.6 Trace position 11 (`手`); confirm it plays Curtis's `手.mp3` (the freshly supplied recording, not the prior auto-cut clip). — pending: device QA (#57)
+- [ ] 5.7 Trace positions 12-13 (`公 夫`) confirming customer recordings. — pending: device QA (#57)
+- [ ] 5.8 Trace a character past position 13 (e.g. `心` at position 15) and confirm it plays the auto-cut syllable clip, not the compound — proves the engine swap applies pack-wide, not just to the 13 replaced files. — pending: device QA (#57)
+- [ ] 5.9 Repeat smoke on Door 7 (Taiwan CL2) and Door 8 (Taiwan CL3) — same characters, audio behaviour should be identical (CL only affects rendering, not audio source). — pending: device QA (#57)
+- [ ] 5.10 Verify Door 9 (Georgia S) still plays audio correctly — Georgia is unchanged, regression check. — pending: device QA (#57)
+- [ ] 5.11 Verify Doors 10-11 (Georgia CL2 / CL3 S — added by `yue-numerals-game`) still play audio correctly. Trace through a few numerals via the Taiwan rotation (`一`, `二`, etc.) — confirm syllable audio plays for numerals too. — pending: device QA (#57)
 
 ## 6. Cross-Pack Regression
 
 - [x] 6.1 The `eng` pack has no Taiwan door in `aa_games.txt` (script type is Roman, not Chinese) — so there's no English Taiwan path to smoke. Skip cross-pack runtime QA; pack-agnostic correctness is covered by the unit-test on `pickAudioForChar` ("compound-word fallback plays when no syllable audio is shipped" scenario).
-- [ ] 6.2 Optional sanity: `APP_LANG=eng tools/validate-lang-pack.ts` — expected: zero new errors / warnings introduced by this change.
+- [x] 6.2 Optional sanity: `APP_LANG=eng tools/validate-lang-pack.ts` — expected: zero new errors / warnings introduced by this change. — `APP_LANG=eng` validate: 0 errors, 0 warnings (2026-10-16)
 
 ## 7. Validator + Manifest
 
 - [x] 7.1 `APP_LANG=yue tools/validate-lang-pack.ts` — zero errors.
-- [ ] 7.2 `APP_LANG=yue tools/generate-lang-manifest.ts` — expected: counts unchanged from HEAD baseline (**163 syllables / 114 words / 116 tiles** — post-`yue-numerals-game` state).
+- [ ] 7.2 `APP_LANG=yue tools/generate-lang-manifest.ts` — expected: counts unchanged from HEAD baseline (**163 syllables / 114 words / 116 tiles** — post-`yue-numerals-game` state). — not done: manifest drifted to 165 syllables / 116 words; baseline text stale
 - [x] 7.3 `git diff apps/alphaTiles/src/generated/langManifest.ts` — expected: empty diff (require-id strings unchanged; only the bytes behind the requires differ).
 
 ## 8. Quality Gates
 
-- [ ] 8.1 `nx affected:lint` — zero violations.
-- [ ] 8.2 `nx affected:test` — all green.
-- [ ] 8.3 `npx tsc --noEmit` — zero errors.
+- [ ] 8.1 `nx affected:lint` — zero violations. — not done: only lib-scoped lint/tests/tsc run; affected-wide run outstanding
+- [ ] 8.2 `nx affected:test` — all green. — not done: only lib-scoped lint/tests/tsc run; affected-wide run outstanding
+- [ ] 8.3 `npx tsc --noEmit` — zero errors. — not done: only lib-scoped lint/tests/tsc run; affected-wide run outstanding
 - [x] 8.4 `openspec validate --strict yue-writing-audio` — passes.
-- [ ] 8.5 `nx graph` — confirm no new dependency violations introduced.
+- [ ] 8.5 `nx graph` — confirm no new dependency violations introduced. — not done: only lib-scoped lint/tests/tsc run; affected-wide run outstanding
 
 ## 9. OTA + Commit Hygiene
 
@@ -95,8 +95,8 @@
   - `chore(yue): re-record 13 syllable mp3s (#27)`
   - `feat(game-taiwan): syllable audio on completion (#27)`
   - `test(game-taiwan): cover pickAudioForChar branches`
-- [ ] 9.2 Push branch, open PR linking issue #27 and the proposal folder.
-- [ ] 9.3 After merge, plan OTA update: `eas update --branch yue --message "fix(audio): per-syllable audio in writing game"` (per `docs/decisions/ADR-009`).
+- [x] 9.2 Push branch, open PR linking issue #27 and the proposal folder. — moot: landed on main as 7a27f56
+- [ ] 9.3 After merge, plan OTA update: `eas update --branch yue --message "fix(audio): per-syllable audio in writing game"` (per `docs/decisions/ADR-009`). — pending: owner (OTA release)
 
 ## Close-out note (2026-10-15, #45)
 
@@ -109,5 +109,5 @@
 
 ## 10. Followups
 
-- [ ] 10.1 Open a coordinated edit / comment on `openspec/changes/game-taiwan/` notifying the owner that lines 97-109 of `specs/game-taiwan/spec.md` need the reconciliation in `design.md` § D8 before archive — including the `assets.tileAudio` → `assets.audio.syllables` surface-name fix.
-- [ ] 10.2 Comment on issue #27 with the merge commit hash and OTA channel info so Curtis can confirm in-app.
+- [ ] 10.1 Open a coordinated edit / comment on `openspec/changes/game-taiwan/` notifying the owner that lines 97-109 of `specs/game-taiwan/spec.md` need the reconciliation in `design.md` § D8 before archive — including the `assets.tileAudio` → `assets.audio.syllables` surface-name fix. — not done: game-taiwan spec still has stale "Character Audio On Completion" (spec.md:125-137, `assets.tileAudio`)
+- [x] 10.2 Comment on issue #27 with the merge commit hash and OTA channel info so Curtis can confirm in-app. — done: comment on #27 cites 7a27f56 (OTA channel not named)

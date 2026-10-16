@@ -1,7 +1,7 @@
 ## 1. Asset Setup
 
 - [x] 1.1 Copy `zz_games_home.png`, `zz_instructions.png`, `zz_forward.png`, `zz_forward_inactive.png`, `zz_complete.png`, `zz_incomplete.png` from Java `drawable-hdpi/` into `apps/alphaTiles/assets/`
-- [ ] 1.2 Add `@2x`/`@3x` variants if visual QA requires (use hdpi as `@1x` baseline)
+- [ ] 1.2 Add `@2x`/`@3x` variants if visual QA requires (use hdpi as `@1x` baseline) — pending: device QA (#57) (only needed if visual QA demands @2x/@3x)
 
 ## 2. ScoreBar — Tracker Accessibility + Icon Rendering
 
@@ -29,9 +29,9 @@
 
 ## 6. Verification
 
-- [ ] 6.1 Run the game; confirm chrome buttons show icons not text
-- [ ] 6.2 Run the game; confirm tracker dots show `zz_complete`/`zz_incomplete` images
-- [ ] 6.3 Run accessibility inspector; confirm each tracker reads "Tracker N of 12, complete/incomplete"
+- [ ] 6.1 Run the game; confirm chrome buttons show icons not text — pending: device QA (#57)
+- [ ] 6.2 Run the game; confirm tracker dots show `zz_complete`/`zz_incomplete` images — pending: device QA (#57)
+- [ ] 6.3 Run accessibility inspector; confirm each tracker reads "Tracker N of 12, complete/incomplete" — pending: device QA (#57) (label is implemented and unit-tested; inspector pass is manual)
 - [x] 6.4 Update `ScoreBar.stories.tsx` to include a story with `trackerIcons` supplied
 - [x] 6.5 Run `nx test shared-ui-score-bar` — all tests pass
 
@@ -50,5 +50,5 @@ half of what a yue player sees today falls back to non-image trackers.
 The rest become relevant as games are switched on for yue (issues #34-#36) — mexico,
 italy, chile, japan, brazil, romania and sudan are all on that list.
 
-- [ ] 7.1 Add `trackerComplete` / `trackerIncomplete` requires to `thailand.tsx`
-- [ ] 7.2 Add the same to the remaining 8 routes, or hoist the icon map to one shared module so new routes cannot miss it
+- [x] 7.1 Add `trackerComplete` / `trackerIncomplete` requires to `thailand.tsx` — done: icons hoisted to `apps/alphaTiles/src/gameIcons.ts`, shared by the single `games/[classKey].tsx` route (8f91150)
+- [x] 7.2 Add the same to the remaining 8 routes, or hoist the icon map to one shared module so new routes cannot miss it — done: shared module (8f91150)
