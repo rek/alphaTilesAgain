@@ -133,6 +133,15 @@ Add a `submit` top-level key to `eas.json`:
 
 The `eng` language pack is a developer fixture used for CI and local testing. It contains placeholder content and must never appear in a public store listing. No submit profile references `eng`. This is enforced by convention (no `store-metadata/eng/` directory) and documented here.
 
+## Implementation notes (yue, Android first)
+
+- `eas.json` lives at `apps/alphaTiles/eas.json` and already has `submit.yue` (internal track, draft) used by CI. D5's `yue-production` profile is not added: EAS Submit's Android options have no `metadataPath` (it is iOS-only and points to an EAS Metadata `store.config.json`, not a directory). Android listing text is pasted into Play Console from `store-metadata/yue/android/`.
+- Play has no `zh-Hant` locale; `android/zh-Hant/` maps to Play **zh-HK**. App Store keeps `zh-Hant`.
+- iOS tree, keywords and iOS screenshot slots deferred until iOS ships.
+- D4 screen 1 is "choose player" (single-language build, no language select); screen 4 shows the writing game, celebration moves to 5.
+- Extra Play inputs (data safety, IARC, Families/target audience, graphics) live beside the text in `store-metadata/yue/android/` and `yue/graphics/`.
+- `submit.eng` exists for the separate `.eng` Play app; it has no listing. Removing it per D6 is an owner decision.
+
 ## Unresolved Questions
 
 - `eas.json` bundle identifier and Apple team ID — confirm not placeholder before wiring submit profile.
