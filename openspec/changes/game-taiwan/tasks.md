@@ -87,30 +87,30 @@
 - [x] 9.3 `bun nx test feature-game-taiwan data-stroke-data lang-pack-parser lang-pack-validator` — green
 - [x] 9.4 `bun nx storybook storybook-host` — Taiwan stories render across CL1/CL2/CL3 + insufficient-content
 - [x] 9.5 Manual smoke (web): full round on `APP_LANG=yue` — score rises by stroke-count per char, audio plays, celebration fires after 12-correct threshold, hardware-back returns to Earth
-- [ ] 9.6 Manual smoke (Android emu): repeat 9.5; check gesture responsiveness
-- [ ] 9.7 Manual smoke (iOS sim): repeat 9.5
-- [ ] 9.8 Bundle-size delta check — `bun nx build alphaTiles` before/after; expect ~320KB increase for yue
-- [ ] 9.9 Low-end Android perf spike on real device from yue device-target list. If frame drops on stroke trace, file follow-up issue and consider gating behind device-class flag.
+- [ ] 9.6 Manual smoke (Android emu): repeat 9.5; check gesture responsiveness — pending: device QA (#57)
+- [ ] 9.7 Manual smoke (iOS sim): repeat 9.5 — pending: device QA (#57)
+- [ ] 9.8 Bundle-size delta check — `bun nx build alphaTiles` before/after; expect ~320KB increase for yue — not done: no before/after bundle measurement recorded
+- [ ] 9.9 Low-end Android perf spike on real device from yue device-target list. If frame drops on stroke trace, file follow-up issue and consider gating behind device-class flag. — pending: device QA (#57), blocked on 10.4
 
 ## 10. Risk Mitigation Tasks
 
 - [x] 10.1 Add NOTICE entry naming Make Me a Hanzi + Arphic — `apps/alphaTiles/NOTICE.md` (corrected 2026-10-15: Arphic PL, not LGPL; fonts KaitiM GB + UKai)
 - [x] 10.2 Pin exact `@jamsch/react-native-hanzi-writer` version in `package.json` (no caret) — small-maintainer mitigation
 - [x] 10.3 Licence review of shipped stroke data (issue #46) — `docs/licensing/stroke-data.md`. Finding: Arphic Public License (MMH `graphics.txt` via hanzi-writer-data 2.0.1); LGPL applies only to unused `dictionary.txt`. Compliance implemented: verbatim APL in-app (About → Open-source licences) + `strokes/ARPHICPL.TXT`, per-file `_notice` (APL §2a), CDN pinned to 2.0.1, NOTICE fixed. Engineering analysis, not legal advice.
-- [ ] 10.5 Owner: accept 10.3 analysis (or get optional counsel review of its §6) and commit to keeping `languages/*/strokes/` publicly available (APL §2b) while builds with the data are distributed
-- [ ] 10.4 Confirm yue device-target list with PM before perf spike (9.9)
+- [ ] 10.5 Owner: accept 10.3 analysis (or get optional counsel review of its §6) and commit to keeping `languages/*/strokes/` publicly available (APL §2b) while builds with the data are distributed — pending: owner (#46)
+- [ ] 10.4 Confirm yue device-target list with PM before perf spike (9.9) — pending: owner (PM device list)
 
 ## 11. Documentation
 
 - [x] 11.1 Append a Taiwan section to `docs/GAME_PATTERNS.md` capturing OSS-wrap discipline (this is the first non-Java mechanic; the pattern is reusable)
 - [x] 11.2 Add Taiwan row to `## Challenge level decoding` table in `docs/GAME_PATTERNS.md`
-- [ ] 11.3 Comment on issue #13 noting the change is in flight + link to `openspec/changes/game-taiwan`
+- [ ] 11.3 Comment on issue #13 noting the change is in flight + link to `openspec/changes/game-taiwan` — not done: issue #13 has no comment linking `openspec/changes/game-taiwan`
 
 ## 12. Open Questions To Resolve Before Apply
 
 Impl shipped with the design.md defaults; PM/legal sign-off still required.
 
-- [ ] 12.1 PM: confirm 5-char round goal vs different number — **shipped: 5**
-- [ ] 12.2 PM: confirm mistake threshold (3 fixed vs `aa_settings.txt`-driven) — **shipped: 3 fixed**
+- [ ] 12.1 PM: confirm 5-char round goal vs different number — **shipped: 5** — pending: owner (PM)
+- [ ] 12.2 PM: confirm mistake threshold (3 fixed vs `aa_settings.txt`-driven) — **shipped: 3 fixed** — pending: owner (PM)
 - [x] 12.3 Licence sign-off — **resolved by 10.3** (Arphic PL, compliant after changes; no longer blocks yue v1; owner acceptance tracked in 10.5)
-- [ ] 12.4 Engineering: stage gating — round draws from current stage's tilelist or from the full pack? Default: stage-filtered (mirrors other games) — **shipped: NOT stage-filtered (deferred to v1.1)**
+- [ ] 12.4 Engineering: stage gating — round draws from current stage's tilelist or from the full pack? Default: stage-filtered (mirrors other games) — **shipped: NOT stage-filtered (deferred to v1.1)** — pending: owner (PM/engineering)
