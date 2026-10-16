@@ -1,6 +1,6 @@
 # Release notes
 
-User-facing changes, newest first. Source for store "What's new" text.
+User-facing changes, newest first. Source for store "What's new" text (condensed per release into `store-metadata/yue/android/*/release-notes.txt`, ≤500 chars).
 
 ## Unreleased (yue v1)
 

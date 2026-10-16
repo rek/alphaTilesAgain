@@ -1,0 +1,6 @@
+First release of 學廣話 (AlphaTiles Cantonese).
+• More than 25 Cantonese reading games, grouped into steps from easiest to hardest
+• Writing game: practise characters stroke by stroke
+• Several players per device, each with their own avatar and progress
+• App screens in Traditional Chinese (Hong Kong)
+• Settings: show or hide game names on the menu

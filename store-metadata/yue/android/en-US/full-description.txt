@@ -1,0 +1,24 @@
+學廣話 (AlphaTiles Cantonese) helps children and new readers learn to read Cantonese written in Traditional Chinese characters, as used in Hong Kong.
+
+Every character and word is spoken aloud in Cantonese, so learners connect what they hear with what they see. Short, playful games build skills one step at a time.
+
+WHAT'S INSIDE
+• More than 25 short games, grouped into steps from easiest to hardest, with a guide to where to start
+• Hear each character and word spoken in Cantonese
+• Match sounds, pictures and words
+• Build words from character tiles
+• Practise writing characters stroke by stroke
+• Trackers and celebrations reward progress
+• Several players can share one device, each with their own avatar and progress
+• App screens in Traditional Chinese (Hong Kong)
+
+SAFE FOR CHILDREN
+• No ads and no in-app purchases
+• No account or sign-up
+• Player names and progress stay on the device
+• All games, pictures and audio are built in and work offline
+
+ABOUT ALPHATILES
+學廣話 is built with AlphaTiles, an open-source literacy game generator for minority and community languages. A language community provides its word list, sounds, pictures and recordings, and AlphaTiles turns them into tile-based reading games.
+
+Feedback and source code: https://github.com/rek/alphaTilesAgain

@@ -223,6 +223,6 @@ One-time owner setup:
 - [ ] Android keystore for `com.makektm.alphatiles` exists in EAS (new package ID — first build must create it: run `eas credentials` or one interactive `eas build -p android --profile yue` locally; `--non-interactive` CI builds can't generate a keystore).
 - [ ] Play Console app created for `com.makektm.alphatiles`, and the **first** AAB uploaded by hand (Google requires a manual first upload before API submissions work).
 - [ ] Google Play service account JSON key with release permissions, uploaded to EAS (`eas credentials` → Android → Google Service Account).
-- [ ] Store listing, content rating, data safety form, target audience (children → Families policy), privacy policy URL (#54).
+- [ ] Store listing, content rating, data safety form, target audience (children → Families policy), privacy policy URL (#54). Drafts and answers in [`store-metadata/`](../store-metadata/README.md) (`yue/android/play-console.md` is the checklist); entered by hand in Play Console, EAS Submit uploads only the AAB.
 
 Profile `eng` (package `com.makektm.alphatiles.eng`) is a **separate Play app**: before ticking submit for it, repeat every item above for that package (keystore, Play Console app + manual first AAB, service-account access, listing). Until then, build `eng` without submit.
