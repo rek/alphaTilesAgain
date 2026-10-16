@@ -1,3 +1,9 @@
+> **Revision (2026-10-16, implementation).** Superseded parts — see `tasks.md` re-validation note:
+> - D1/D5/D6: hook uses `useWindowDimensions()` (reactive on rotation/resize, no listener in our code); no `useMemo`/`key` needed.
+> - D3: dropped. Live grid is `GameMenuScreenModern` (already 3/4 cols, capped 720dp); `ui-door-grid` unused.
+> - D4: board slot NOT capped (games size from window width → clipping). Cap applied to chrome button row instead; presenter takes `breakpoint` prop.
+> - Unresolved Q1 resolved: `ui-game-board` caps its own cell sizing at 500dp (lib currently has no runtime consumer).
+
 ## Context
 
 All layouts are currently phone-first with no responsive breakpoints. Tablets receive the same single-column layout stretched to full width. The fix is additive: a breakpoint hook drives conditional styles at the container level only.
