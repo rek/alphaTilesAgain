@@ -15,5 +15,9 @@ export { readableAccentColor } from './lib/readableAccentColor';
 export { contrastRatio } from './lib/contrastRatio';
 export type { SpacingKey } from './lib/spacing';
 
+export { TABLET_MIN_WIDTH, breakpointForWidth } from './lib/breakpoints';
+export type { Breakpoint } from './lib/breakpoints';
+export { useBreakpoint } from './lib/useBreakpoint';
+
 // Testing sub-path exports — available via direct import in test/storybook files.
 // Not re-exported here to keep the public runtime bundle clean.

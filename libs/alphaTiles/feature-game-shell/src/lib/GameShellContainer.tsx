@@ -30,6 +30,7 @@ import { useDoor } from '@alphaTiles/data-doors';
 import { useDoorProgress } from '@alphaTiles/data-door-progress';
 import type { MasteryAction } from '@alphaTiles/data-door-progress';
 import { useEffectiveSettings } from '@alphaTiles/data-settings';
+import { useBreakpoint } from '@shared/util-theme';
 import type { Door } from '@alphaTiles/data-doors';
 import { GameShellContextProvider } from './GameShellContext';
 import { GameShellScreen } from './GameShellScreen';
@@ -337,6 +338,7 @@ function GameShell({
 
   // Advance arrow state: blue when changeArrowColor=false or not repeatLocked
   // (design.md §D1 row: onPostCreate → setAdvanceArrowToBlue)
+  const breakpoint = useBreakpoint();
   const changeArrowColor = useEffectiveSettings().changeArrowColors;
   const advanceArrow: 'blue' | 'gray' | 'hidden' = !showAdvanceArrow
     ? 'hidden'
@@ -362,6 +364,7 @@ function GameShell({
     showInstructionsButton: instructionAudioId !== undefined,
     advanceArrow,
     showCelebration,
+    breakpoint,
     backLabel: t('back'),
     replayLabel: t('replay'),
     instructionsLabel: t('instructions'),

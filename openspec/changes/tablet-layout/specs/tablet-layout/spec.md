@@ -2,7 +2,7 @@
 
 ### Requirement: useBreakpoint returns 'phone' for widths below 768dp
 
-`libs/shared/util-theme` SHALL export a `useBreakpoint()` hook that returns the string `'phone'` when `Dimensions.get('window').width` is strictly less than `TABLET_MIN_WIDTH` (768).
+`libs/shared/util-theme` SHALL export a `useBreakpoint()` hook that returns the string `'phone'` when the window width (`useWindowDimensions().width`) is strictly less than `TABLET_MIN_WIDTH` (768).
 
 #### Scenario: Narrow screen returns phone
 
@@ -12,7 +12,7 @@
 
 ### Requirement: useBreakpoint returns 'tablet' for widths at or above 768dp
 
-`useBreakpoint()` SHALL return the string `'tablet'` when `Dimensions.get('window').width` is greater than or equal to `TABLET_MIN_WIDTH` (768).
+`useBreakpoint()` SHALL return the string `'tablet'` when the window width (`useWindowDimensions().width`) is greater than or equal to `TABLET_MIN_WIDTH` (768).
 
 #### Scenario: Width exactly at threshold returns tablet
 
@@ -26,70 +26,61 @@
 - **WHEN** a component calls `useBreakpoint()`
 - **THEN** the hook returns `'tablet'`
 
-### Requirement: ui-door-grid renders two-column grid with max-width on tablet
+### Requirement: Game menu door grid stays capped and centred on wide screens
 
-`ui-door-grid` SHALL render a two-column door grid constrained to a max-width of 600dp and centered horizontally when `useBreakpoint()` returns `'tablet'`.
+The live door grid (`feature-game-menu` `GameMenuScreenModern`) SHALL keep its existing wide-screen treatment: 4 columns when the grid is at least 600dp wide (3 below), grid capped at 720dp and centred. This change SHALL NOT reduce its column count on tablet. (`@shared/ui-door-grid` has no runtime consumer and is unchanged.)
 
-#### Scenario: Tablet — two columns
+#### Scenario: Tablet — grid unchanged
 
-- **GIVEN** `useBreakpoint()` returns `'tablet'`
-- **WHEN** `ui-door-grid` renders
-- **THEN** the door list uses two columns
-- **AND** the container has `maxWidth: 600` and `alignSelf: 'center'`
+- **GIVEN** the window is at least 768dp wide
+- **WHEN** the game menu renders
+- **THEN** the door list uses 4 columns within a centred grid of at most 720dp
 
-#### Scenario: Phone — single column unchanged
+### Requirement: GameShellScreen centres the chrome buttons on tablet
 
-- **GIVEN** `useBreakpoint()` returns `'phone'`
-- **WHEN** `ui-door-grid` renders
-- **THEN** the door list uses one column
-- **AND** no max-width constraint is applied
+`GameShellContainer` SHALL pass `useBreakpoint()` to `GameShellScreen` as `breakpoint`. When `breakpoint` is `'tablet'`, the chrome button row SHALL have `maxWidth: 500`, `alignSelf: 'center'` and `width: '100%'`; the chrome bar background and border SHALL stay full-width. The board slot SHALL NOT be width-capped, because game screens size themselves from the window width and a narrower slot would clip them.
 
-### Requirement: ui-door-grid remounts when breakpoint changes
+#### Scenario: Tablet — chrome row constrained
 
-`ui-door-grid` SHALL include a `key` prop derived from the current breakpoint on its list component so that a breakpoint change forces a remount and avoids stale column counts.
+- **GIVEN** `breakpoint` is `'tablet'`
+- **WHEN** `GameShellScreen` renders
+- **THEN** the chrome button row has `maxWidth: 500` and `alignSelf: 'center'`
 
-#### Scenario: Breakpoint change triggers list remount
+#### Scenario: Phone — layout unchanged
 
-- **GIVEN** `useBreakpoint()` previously returned `'phone'`
-- **WHEN** `useBreakpoint()` returns `'tablet'` on the next render
-- **THEN** the door list component remounts (key changes)
+- **GIVEN** `breakpoint` is `'phone'` or absent
+- **WHEN** `GameShellScreen` renders
+- **THEN** no max-width is applied to the chrome row
 
-### Requirement: GameShellContainer wraps content in max-width column on tablet
-
-`GameShellContainer` in `feature-game-shell` SHALL wrap its game content in a `View` with `maxWidth: 500`, `alignSelf: 'center'`, `width: '100%'`, and `paddingHorizontal: 24` when `useBreakpoint()` returns `'tablet'`.
-
-#### Scenario: Tablet — content column constrained
-
-- **GIVEN** `useBreakpoint()` returns `'tablet'`
-- **WHEN** `GameShellContainer` renders
-- **THEN** the inner content view has `maxWidth: 500` and is centered (`alignSelf: 'center'`)
-- **AND** the content view has `paddingHorizontal: 24`
-
-#### Scenario: Phone — content layout unchanged
-
-- **GIVEN** `useBreakpoint()` returns `'phone'`
-- **WHEN** `GameShellContainer` renders
-- **THEN** no max-width or extra padding is applied to the content view
-
-#### Scenario: Status bar and tab bar remain full-width
+#### Scenario: Board slot never capped
 
 - **GIVEN** any breakpoint value
-- **WHEN** `GameShellContainer` renders
-- **THEN** the status bar and tab bar components are outside the max-width content column and remain full-width
+- **WHEN** `GameShellScreen` renders
+- **THEN** neither the board slot nor any ancestor of the board has a `maxWidth`
+
+### Requirement: ui-game-board caps cell sizing on tablet
+
+`GameBoard` SHALL size cells from `min(windowWidth, 500)` when `useBreakpoint()` returns `'tablet'`, and from the full window width on phone (unchanged).
+
+#### Scenario: Tablet — board at most 500dp
+
+- **GIVEN** `useBreakpoint()` returns `'tablet'`
+- **WHEN** `GameBoard` renders
+- **THEN** its width is at most 500dp and it is centred
 
 ### Requirement: Rotation re-renders breakpoint correctly
 
-A component that re-renders after device rotation SHALL reflect the updated `Dimensions.get('window').width` in its `useBreakpoint()` return value.
+`useBreakpoint()` SHALL derive from `useWindowDimensions()`, so a component re-renders with the updated breakpoint after device rotation or a browser resize, with no listener or effect in project code.
 
 #### Scenario: Portrait-to-landscape re-render updates breakpoint
 
 - **GIVEN** a component rendered with `useBreakpoint()` returning `'phone'` in portrait
-- **WHEN** the device rotates to landscape and the component re-renders (e.g., via `key` change)
+- **WHEN** the device rotates to landscape (window width changes)
 - **THEN** `useBreakpoint()` returns the breakpoint corresponding to the new width
 
 ### Requirement: Per-game UIs are unchanged
 
-Individual game UI components (tile grids, answer boards, match cards, etc.) SHALL NOT be modified as part of this change. Only `ui-door-grid`, `ui-game-board`, and `GameShellContainer` receive tablet treatment.
+Individual game UI components (tile grids, answer boards, match cards, etc.) SHALL NOT be modified as part of this change. Only `ui-game-board` and the game shell chrome receive tablet treatment.
 
 #### Scenario: Game UI not affected
 

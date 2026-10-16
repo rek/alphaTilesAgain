@@ -8,7 +8,8 @@
   "dependencies": {
     "tslib": "^2.3.0",
     "react": "*",
-    "expo-font": "*"
+    "expo-font": "*",
+    "react-native": "*"
   },
   "peerDependencies": {
     "react": "*"

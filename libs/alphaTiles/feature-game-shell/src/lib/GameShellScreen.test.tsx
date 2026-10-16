@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { GameShellScreen } from './GameShellScreen';
 
@@ -58,5 +58,37 @@ describe('GameShellScreen chrome lock', () => {
     }
     fireEvent.press(getByLabelText('Next'));
     expect(p.onAdvancePress).not.toHaveBeenCalled();
+  });
+});
+
+describe('GameShellScreen tablet layout', () => {
+  it('phone (default): chrome row uncapped', () => {
+    const { getByTestId } = render(<GameShellScreen {...props()} />);
+    expect(getByTestId('game-shell-chrome-row')).not.toHaveStyle({ maxWidth: 500 });
+  });
+
+  it('tablet: chrome buttons gather in a centred 500dp row', () => {
+    const { getByTestId } = render(<GameShellScreen {...props({ breakpoint: 'tablet' })} />);
+    expect(getByTestId('game-shell-chrome-row')).toHaveStyle({
+      maxWidth: 500,
+      alignSelf: 'center',
+      width: '100%',
+    });
+  });
+
+  it('tablet: board slot is NOT capped (games size from window width)', () => {
+    const { getByText } = render(<GameShellScreen {...props({ breakpoint: 'tablet' })} />);
+    let node = getByText('board').parent;
+    while (node) {
+      expect(StyleSheet.flatten(node.props.style)?.maxWidth).toBeUndefined();
+      node = node.parent;
+    }
+  });
+
+  it('tablet: chrome buttons still render and fire', () => {
+    const p = props({ breakpoint: 'tablet' });
+    const { getByLabelText } = render(<GameShellScreen {...p} />);
+    fireEvent.press(getByLabelText('Next'));
+    expect(p.onAdvancePress).toHaveBeenCalledTimes(1);
   });
 });

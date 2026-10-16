@@ -25,6 +25,16 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { ScoreBar } from '@shared/ui-score-bar';
 import { Celebration, celebrationAnimation } from '@shared/ui-celebration';
 import type { CelebrationProps } from '@shared/ui-celebration';
+import type { Breakpoint } from '@shared/util-theme';
+
+/**
+ * Tablet / wide-web cap for the chrome buttons (tablet-layout). The bar's
+ * background + border stay full-width; only the buttons gather in a centred
+ * column instead of spreading across a 1024dp+ window. The board slot is NOT
+ * capped: game screens size from the window width, so a narrower slot would
+ * clip them.
+ */
+const CHROME_MAX_WIDTH = 500;
 
 export type GameShellIcons = {
   back?: ImageSourcePropType;
@@ -52,6 +62,8 @@ export type GameShellScreenProps = {
   showInstructionsButton: boolean;
   advanceArrow: 'blue' | 'gray' | 'hidden';
   showCelebration: boolean;
+  /** From `useBreakpoint()` in the container; absent → phone layout. */
+  breakpoint?: Breakpoint;
   // Pre-translated strings
   backLabel: string;
   replayLabel: string;
@@ -89,6 +101,7 @@ export function GameShellScreen({
   showInstructionsButton,
   advanceArrow,
   showCelebration,
+  breakpoint = 'phone',
   backLabel,
   replayLabel,
   instructionsLabel,
@@ -130,67 +143,72 @@ export function GameShellScreen({
 
       {/* Bottom chrome row (GameActivity.java: goBackToEarth, playAudioInstructions, clickPicHearAudio, setAdvanceArrowToBlue) */}
       <View style={styles.chrome}>
-        {/* Back / home button */}
-        <Pressable
-          onPress={onBackPress}
-          style={styles.chromeButton}
-          accessibilityLabel={backLabel}
-          accessibilityRole="button"
-          disabled={chromeLocked}
+        <View
+          testID="game-shell-chrome-row"
+          style={[styles.chromeRow, breakpoint === 'tablet' && styles.chromeRowTablet]}
         >
-          {icons?.back ? (
-            <Image source={icons.back} style={styles.chromeIcon} />
-          ) : (
-            <Text style={styles.chromeLabel}>{backLabel}</Text>
-          )}
-        </Pressable>
-
-        {/* Instructions button — hidden when showInstructionsButton is false */}
-        {showInstructionsButton && (
+          {/* Back / home button */}
           <Pressable
-            onPress={onInstructionsPress}
+            onPress={onBackPress}
             style={styles.chromeButton}
-            accessibilityLabel={instructionsLabel}
+            accessibilityLabel={backLabel}
             accessibilityRole="button"
             disabled={chromeLocked}
           >
-            {icons?.instructions ? (
-              <Image source={icons.instructions} style={styles.chromeIcon} />
+            {icons?.back ? (
+              <Image source={icons.back} style={styles.chromeIcon} />
             ) : (
-              <Text style={styles.chromeLabel}>{instructionsLabel}</Text>
+              <Text style={styles.chromeLabel}>{backLabel}</Text>
             )}
           </Pressable>
-        )}
 
-        {/* Audio-replay button — always visible */}
-        <Pressable
-          onPress={onReplayPress}
-          style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
-          accessibilityLabel={replayLabel}
-          accessibilityRole="button"
-          disabled={chromeLocked || advanceArrow === 'gray'}
-        >
-          <Text style={[styles.chromeLabel, advanceArrow === 'gray' && styles.chromeLabelGray]}>
-            {replayLabel}
-          </Text>
-        </Pressable>
+          {/* Instructions button — hidden when showInstructionsButton is false */}
+          {showInstructionsButton && (
+            <Pressable
+              onPress={onInstructionsPress}
+              style={styles.chromeButton}
+              accessibilityLabel={instructionsLabel}
+              accessibilityRole="button"
+              disabled={chromeLocked}
+            >
+              {icons?.instructions ? (
+                <Image source={icons.instructions} style={styles.chromeIcon} />
+              ) : (
+                <Text style={styles.chromeLabel}>{instructionsLabel}</Text>
+              )}
+            </Pressable>
+          )}
 
-        {/* Advance arrow (separate from replay) — hidden when advanceArrow='hidden' */}
-        {advanceArrow !== 'hidden' && (
+          {/* Audio-replay button — always visible */}
           <Pressable
-            onPress={onAdvancePress}
+            onPress={onReplayPress}
             style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
-            accessibilityLabel={a11yLabels.advance}
+            accessibilityLabel={replayLabel}
             accessibilityRole="button"
             disabled={chromeLocked || advanceArrow === 'gray'}
           >
-            <MaterialIcons
-              name="arrow-forward"
-              size={28}
-              color={advanceArrow === 'gray' ? '#e0e0e0' : '#fff'}
-            />
+            <Text style={[styles.chromeLabel, advanceArrow === 'gray' && styles.chromeLabelGray]}>
+              {replayLabel}
+            </Text>
           </Pressable>
-        )}
+
+          {/* Advance arrow (separate from replay) — hidden when advanceArrow='hidden' */}
+          {advanceArrow !== 'hidden' && (
+            <Pressable
+              onPress={onAdvancePress}
+              style={[styles.chromeButton, advanceArrow === 'gray' && styles.chromeButtonGray]}
+              accessibilityLabel={a11yLabels.advance}
+              accessibilityRole="button"
+              disabled={chromeLocked || advanceArrow === 'gray'}
+            >
+              <MaterialIcons
+                name="arrow-forward"
+                size={28}
+                color={advanceArrow === 'gray' ? '#e0e0e0' : '#fff'}
+              />
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {/* Celebration overlay (GameActivity.java:331-342 / Celebration.java) */}
@@ -221,14 +239,21 @@ const styles = StyleSheet.create({
     pointerEvents: 'none' as never,
   },
   chrome: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
     backgroundColor: '#fff',
+  },
+  chromeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  chromeRowTablet: {
+    width: '100%',
+    maxWidth: CHROME_MAX_WIDTH,
+    alignSelf: 'center',
   },
   chromeButton: {
     padding: 8,
