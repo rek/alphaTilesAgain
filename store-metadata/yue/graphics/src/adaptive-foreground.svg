@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
+  <g transform="translate(256 256) scale(0.7) translate(-256 -256)">
+    <g transform="rotate(-12 256 256)"><rect x="96" y="96" width="320" height="320" rx="44" fill="#2196F3"/></g>
+    <g transform="rotate(10 256 256)"><rect x="96" y="96" width="320" height="320" rx="44" fill="#F44336"/></g>
+    <rect x="96" y="96" width="320" height="320" rx="44" fill="#FFFFFF"/>
+    <text x="256" y="372" font-family="Noto Sans CJK HK" font-weight="900" font-size="290" text-anchor="middle" fill="#7B1FA2">廣</text>
+  </g>
+</svg>

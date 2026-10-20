@@ -27,7 +27,7 @@ zh-Hant text in this repo goes into the Play **zh-HK** locale (Play has no zh-Ha
 | Category | Education |
 | Tags | Education, Language learning, Kids (pick from Play's list) |
 | Email | **pending: owner (#39)** (pack has placeholder `yue@example.com`) |
-| Website | https://rek.github.io/alphaTilesAgain/ (or the web build https://rek.github.io/alphaTilesAgain/yueCantonese/) |
+| Website | https://alphatilesagain.makektm.com (not yet published) |
 | Phone | leave blank |
 | External marketing | owner choice |
 
@@ -35,7 +35,7 @@ zh-Hant text in this repo goes into the Play **zh-HK** locale (Play has no zh-Ha
 
 | Declaration | Answer |
 |-------------|--------|
-| Privacy policy | URL **pending: owner (#54)** |
+| Privacy policy | https://alphatilesagain.makektm.com/privacy (**pending: page must be published, #54**) |
 | App access | All functionality available without special access (no login). |
 | Ads | No, the app does not contain ads. |
 | Content rating | `content-rating.md` |

@@ -51,4 +51,4 @@ Only valid if the owner accepts that the EAS client ID is not "user data" under 
 
 ## Privacy policy
 
-Play requires a privacy policy URL for any app whose target audience includes children. The language pack currently lists `https://alphatilesapps.org/privacy` (original AlphaTiles project). It must describe *this* app's behaviour (no analytics, local-only storage, Expo update check, GitHub Pages hosting for the web build). **pending: owner (#54).**
+Play requires a privacy policy URL for any app whose target audience includes children. The language pack lists `https://alphatilesagain.makektm.com/privacy` (project website, not yet published). It must describe *this* app's behaviour (no analytics, local-only storage, Expo update check, GitHub Pages hosting for the web build). **pending: owner (#54).**

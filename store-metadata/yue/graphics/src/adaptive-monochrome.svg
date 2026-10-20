@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
+  <defs>
+    <mask id="m">
+      <rect width="512" height="512" fill="#000"/>
+      <g transform="translate(256 256) scale(0.7) translate(-256 -256)">
+        <rect x="96" y="96" width="320" height="320" rx="44" fill="#fff"/>
+        <text x="256" y="372" font-family="Noto Sans CJK HK" font-weight="900" font-size="290" text-anchor="middle" fill="#000">廣</text>
+      </g>
+    </mask>
+  </defs>
+  <rect width="512" height="512" fill="#000" mask="url(#m)"/>
+</svg>

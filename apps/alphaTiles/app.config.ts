@@ -114,6 +114,19 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ? `../../languages/${lang}/images/splash.png`
     : './assets/images/splash-icon.png';
 
+  // Per-pack adaptive icon: all three layers must exist, else the generic set is used.
+  const adaptiveDir = path.join(repoRoot, 'languages', lang, 'images');
+  const adaptiveLayers = ['foreground', 'background', 'monochrome'].map(
+    (layer) => `android-icon-${layer}.png`,
+  );
+  const hasPackAdaptive = adaptiveLayers.every((f) =>
+    fs.existsSync(path.join(adaptiveDir, f)),
+  );
+  const adaptiveSrc = (layer: string) =>
+    hasPackAdaptive
+      ? `../../languages/${lang}/images/android-icon-${layer}.png`
+      : `./assets/images/android-icon-${layer}.png`;
+
   const appId = resolveAppId(lang);
 
   return {
@@ -136,9 +149,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       package: appId,
       adaptiveIcon: {
         backgroundColor: '#E6F4FE',
-        foregroundImage: './assets/images/android-icon-foreground.png',
-        backgroundImage: './assets/images/android-icon-background.png',
-        monochromeImage: './assets/images/android-icon-monochrome.png',
+        foregroundImage: adaptiveSrc('foreground'),
+        backgroundImage: adaptiveSrc('background'),
+        monochromeImage: adaptiveSrc('monochrome'),
       },
       // edgeToEdgeEnabled landed in Expo 53/54 Android config but isn't in
       // @expo/config-types yet (as of our pin). Cast keeps the runtime value.

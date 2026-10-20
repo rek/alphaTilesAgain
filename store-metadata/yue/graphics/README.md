@@ -1,6 +1,15 @@
 # Store graphics: yue
 
-Status: spec only. **Artwork pending: owner/customer (#53).** Drop finished files here as `icon-512.png` and `feature-graphic.png`.
+Status: **draft artwork committed** (2026-10-20): `icon-512.png`, `feature-graphic.png`. Customer approval pending (#53).
+
+Both are generated from `src/icon.svg` and `src/feature-graphic.svg` (Noto Sans CJK HK, open licence; AlphaTiles theme colours; no third-party pictures). Rebuild:
+
+```
+rsvg-convert -w 512 -h 512 src/icon.svg -o icon-512.png
+rsvg-convert -w 1024 -h 500 src/feature-graphic.svg -o fg.png && magick fg.png -background '#6A1B9A' -alpha remove -alpha off feature-graphic.png
+```
+
+Icon: white tile with 廣 over two tilted blue/red tiles on purple. Feature graphic: 學廣話, tagline 廣東話識字遊戲, four tiles 聽 拼 寫 字 (listen, spell, write, character). Text sits in the top two-thirds.
 
 ## App icon (Play listing)
 
@@ -20,3 +29,7 @@ Status: spec only. **Artwork pending: owner/customer (#53).** Drop finished file
 
 - Promo video (YouTube URL): optional, skip.
 - TV banner, Wear, Chromebook assets: not applicable (portrait phone app).
+
+## Launcher icons
+
+Same artwork, sources `src/adaptive-*.svg`, outputs in `languages/yue/images/` (`icon.png` 1024², `android-icon-foreground|background|monochrome.png`). Foreground content is scaled to 70% to stay inside Android's adaptive safe zone; background is solid `#9C27B0`; monochrome is the tile with 廣 cut out. Render with `rsvg-convert -w 1024 -h 1024 src/<name>.svg -o ...`.
