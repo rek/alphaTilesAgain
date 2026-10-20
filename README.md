@@ -1,3 +1,5 @@
+> **This repo has moved.** Development continues in the [makektm/apps](https://github.com/makektm/apps) monorepo (`apps/alphaTiles`, `packages/alphaTiles`, `packages/shared`). This repo is archived for code; GitHub issues stay here for now (customer communication). Web: <https://alphatilesagain.makektm.com>.
+
 # AlphaTiles
 
 *An app generator for literacy games for minority language communities.*
